@@ -1,0 +1,143 @@
+---
+/**
+ * Layout base del sitio. Carga el stylesheet global (Tailwind + tokens).
+ * NO renombrar (ver docs/PLAN-EJECUCION.md §3.3).
+ *
+ * Provee: canonical autorreferencial, Open Graph por ruta, JSON-LD global
+ * (GeneralContractor + Organization desde site.ts). Las páginas pueden pasar
+ * structured data adicional (Person, Service, BreadcrumbList…) vía `jsonLd`.
+ */
+import '@/styles/global.css';
+import { site } from '@/data/site';
+// Preload solo el peso del hero/<h1> (300, latin) — el resto compite con el LCP (identidad §2.1).
+import heroFont from '@fontsource/roboto-condensed/files/roboto-condensed-latin-300-normal.woff2?url';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Ruta relativa a una imagen social (og:image). Opcional. */
+  ogImage?: string;
+  /** Texto alternativo de la og:image. Pasar siempre que se pase ogImage. */
+  ogImageAlt?: string;
+  /** true en rutas que no deben indexarse (ej. /contacto/gracias). */
+  noindex?: boolean;
+  /** Structured data específico de la página, se agrega al global. */
+  jsonLd?: Record<string, unknown>[];
+}
+
+// Cast explícito: el binding implícito de `Props` a `Astro.props` no es fiable
+// en todos los .astro de este toolchain (algunos quedan como Record<string,any>).
+const {
+  title = `${site.marca} | Constructora premium en Zona Norte y CABA | Viviendas y proyectos`,
+  description = site.descripcion,
+  ogImage,
+  ogImageAlt,
+  noindex = false,
+  jsonLd = [],
+} = Astro.props as Props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+
+// Escapa `<` para que ningún valor de datos pueda cerrar el <script> del JSON-LD
+// e inyectar HTML/JS (XSS, CWE-79/83). Crítico cuando `jsonLd` traiga datos de
+// contenido (obras) en Fase 4. JSON.stringify NO escapa `<`, `>` ni `/`.
+const toSafeJson = (data: unknown) => JSON.stringify(data).replace(/</g, '\\u003c');
+
+// JSON-LD global: GeneralContractor + Organization. `address` se omite hasta
+// tener la dirección real (§11) — no se inventan datos. Fundadores, contactPoint
+// y descripción son datos reales del spec (§1). Sin AggregateRating/Review (§6.6).
+const organizacionLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': ['GeneralContractor', 'Organization'],
+  '@id': `${site.url}/#organizacion`,
+  name: site.nombre,
+  alternateName: site.marca,
+  description: site.descripcion,
+  url: site.url,
+  email: site.email,
+  telephone: `+${site.whatsapp.numero}`,
+  areaServed: site.areaServed,
+  founder: [
+    { '@type': 'Person', name: 'Morena Alegre', jobTitle: 'Arquitecta' },
+    { '@type': 'Person', name: 'Carlos Alegre', jobTitle: 'Ingeniero Civil' },
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    telephone: `+${site.whatsapp.numero}`,
+    email: site.email,
+    areaServed: 'AR',
+    availableLanguage: ['es'],
+  },
+  sameAs: [site.instagram],
+};
+if (site.direccion) {
+  organizacionLd.address = {
+    '@type': 'PostalAddress',
+    streetAddress: site.direccion.calle,
+    addressLocality: site.direccion.localidad,
+    addressRegion: site.direccion.provincia,
+    postalCode: site.direccion.codigoPostal,
+    addressCountry: site.direccion.pais,
+  };
+}
+
+const webSiteLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${site.url}/#website`,
+  name: site.nombre,
+  alternateName: site.marca,
+  url: site.url,
+  inLanguage: 'es-AR',
+  publisher: { '@id': `${site.url}/#organizacion` },
+};
+
+const structuredData = [organizacionLd, webSiteLd, ...jsonLd];
+---
+
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href={heroFont} as="font" type="font/woff2" crossorigin />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta
+      name="robots"
+      content={noindex
+        ? 'noindex, nofollow'
+        : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}
+    />
+    <link rel="canonical" href={canonical} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.nombre} />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {ogImageUrl && ogImageAlt && <meta property="og:image:alt" content={ogImageAlt} />}
+
+    <meta name="twitter:card" content={ogImageUrl ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
+    {ogImageUrl && ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
+
+    {
+      structuredData.map((data) => (
+        <script type="application/ld+json" is:inline set:html={toSafeJson(data)} />
+      ))
+    }
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

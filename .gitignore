@@ -1,0 +1,33 @@
+# build output
+dist/
+.vercel/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json
+
+# Skills de terceros: se restauran desde skills-lock.json; no se versiona el
+# código MIT de terceros dentro de este repo propietario (code review PR #1).
+.agents/
+.claude/skills/
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/

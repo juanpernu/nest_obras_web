@@ -1,0 +1,32 @@
+---
+/**
+ * Video de fondo del hero (docs/PLAN-EJECUCION.md §7.2).
+ * El <source> matchea solo en ≥768px Y sin prefers-reduced-motion: en mobile o
+ * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de
+ * video, solo pinta el poster. Se resuelve en el media del <source>, no con CSS
+ * (ocultar por CSS descarga igual). El LCP es el <h1>: `preload="none"` + poster.
+ */
+interface Props {
+  srcDesktop: string;
+  poster: string;
+  class?: string;
+}
+const { srcDesktop, poster, class: className } = Astro.props as Props;
+---
+
+<video
+  poster={poster}
+  preload="none"
+  autoplay
+  muted
+  playsinline
+  loop
+  aria-hidden="true"
+  class:list={['hero-video', className]}
+>
+  <source
+    media="(min-width: 768px) and (prefers-reduced-motion: no-preference)"
+    src={srcDesktop}
+    type="video/mp4"
+  />
+</video>
