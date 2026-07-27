@@ -1,9 +1,10 @@
 ---
 /**
  * Video de fondo del hero (docs/PLAN-EJECUCION.md §7.2).
- * En mobile (<768px) ningún <source> matchea → el navegador NUNCA pide bytes
- * de video, solo pinta el poster. NUNCA ocultar con CSS: eso descarga igual.
- * El LCP debe ser el <h1>, no el video: `preload="none"` + poster liviano.
+ * El <source> matchea solo en ≥768px Y sin prefers-reduced-motion: en mobile o
+ * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de
+ * video, solo pinta el poster. Se resuelve en el media del <source>, no con CSS
+ * (ocultar por CSS descarga igual). El LCP es el <h1>: `preload="none"` + poster.
  */
 interface Props {
   srcDesktop: string;
@@ -23,16 +24,9 @@ const { srcDesktop, poster, class: className } = Astro.props as Props;
   aria-hidden="true"
   class:list={['hero-video', className]}
 >
-  <source media="(min-width: 768px)" src={srcDesktop} type="video/mp4" />
+  <source
+    media="(min-width: 768px) and (prefers-reduced-motion: no-preference)"
+    src={srcDesktop}
+    type="video/mp4"
+  />
 </video>
-
-<style>
-  /* prefers-reduced-motion es preferencia de runtime (no conocible en build):
-   * ocultar por CSS es correcto acá (no aplica la regla anti "load-and-hide",
-   * que es solo para el caso mobile por presupuesto de datos). */
-  @media (prefers-reduced-motion: reduce) {
-    .hero-video {
-      display: none;
-    }
-  }
-</style>

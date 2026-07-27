@@ -73,7 +73,25 @@
   - **`vercel.json` `trailingSlash: false`** (matchea `astro.config`, evita duplicados).
   - **Guardarraíles creados**: `FotoObra.astro` (§7.4), `HeroVideo.astro` (§7.2), `scripts/verificar-perf.sh` (budget CSS/JS).
   - **CLS**: stopgap "Arial Narrow" en el stack. **fontaine descartado** (evidencia: mal-derivó métricas → "Roboto fallback" con size-adjust ~100%, y no inyecta en la CSS-var de Tailwind v4). → **Fallback métrico definitivo diferido a Fase 4** (medir CLS contra el hero real; un `<h1>` placeholder no da CLS medible).
-- [x] **P2. SEO/GEO** con el skill `seo-geo` — instalado (`.agents/skills/seo-geo`, revisado: benigno) y aplicado. Auditoría reconciliada con §6 en **`docs/seo-geo-checklist.md`**. Aplicado en fundación: `<meta robots>` con rich-preview, JSON-LD enriquecido (`WebSite`, `founder`, `contactPoint`, `alternateName`). Rechazado por conflicto con §6: `meta keywords`, `AggregateRating`/`Review`, keyword-stuffing. Diferido a Fase 4-6: métodos GEO en el copy, `FAQPage` (a decidir con el usuario), Bing Webmaster.
+- [x] **P2. SEO/GEO** con el skill `seo-geo` — instalado (revisado: benigno) y aplicado. Auditoría reconciliada con §6 en **`docs/seo-geo-checklist.md`**. Aplicado en fundación: `<meta robots>` con rich-preview, JSON-LD enriquecido (`WebSite`, `founder`, `contactPoint`, `alternateName`). Rechazado por conflicto con §6: `meta keywords`, `AggregateRating`/`Review`, keyword-stuffing. Diferido a Fase 4-6: métodos GEO en el copy, `FAQPage` (a decidir con el usuario), Bing Webmaster.
+
+## Code review PR #1 (implementado)
+Findings verificados contra el código e implementados con criterio senior:
+- [x] **JSON-LD: escapado de `<`** (`toSafeJson`) — cierra inyección XSS cuando `jsonLd` traiga datos de obras en Fase 4. (HIGH)
+- [x] `FotoObra`: `sizes` **obligatorio** (§7.4 prohíbe `100vw` por defecto).
+- [x] `prune-orphan-js.mjs`: **alcanzabilidad transitiva** (paths anidados + imports abs/rel); `verificar-perf.sh` mide el budget real (JS referenciado/ruta), no "0 archivos".
+- [x] `HeroVideo`: `prefers-reduced-motion` plegado en `<source media>` (no descarga-y-oculta).
+- [x] Skill `seo-geo` **des-vendorizado** del repo (gitignore + `skills-lock.json`) — no versionar código MIT de terceros en repo propietario.
+- [x] `as Props` estandarizado (binding implícito no fiable en el toolchain).
+- [x] OG/Twitter completos: `twitter:image`, `og:image:alt`, prop `ogImageAlt`; JSON-LD con `@id`/`publisher`.
+- [x] `global.css`: bloque reservado con el mapeo shadcn §3.2 (arena nunca sobre blanco).
+
+Follow-ups tracked (no bloquean el merge):
+- [ ] Fase 3: aplicar el mapeo shadcn §3.2 reservado; grep de CI que exija `Astro.props as <T>` en cada `.astro`.
+- [ ] Revisar el pin de TypeScript 6.x cuando `astro check` soporte el compilador TS 7.
+- [ ] Quitar `minimumReleaseAgeExclude: astro@7.1.4` de `pnpm-workspace.yaml` cuando envejezca el paquete.
+- [ ] Verificar el link `wa.me` (dígito `9` móvil AR) en un dispositivo real antes del launch.
+- [ ] Fase 4: `og:image:width/height/type` cuando existan imágenes sociales (1200×630).
 
 ## Fase 2 — Modelo de contenido
 

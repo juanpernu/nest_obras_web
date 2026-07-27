@@ -1,10 +1,15 @@
-// Elimina de dist/_astro cualquier .js que ningún HTML final referencie.
+// Elimina de dist los .js de _astro que no sean ALCANZABLES desde el HTML.
 // Con cero directivas client:*, el único JS legítimo es el que linkeamos con
-// <script>. Todo lo demás es output muerto del build de Astro: el runtime de
-// React que @astrojs/react registra como clientEntrypoint aunque nada se hidrate
-// (ver docs/PLAN-EJECUCION.md §2.7, §12 y la auditoría de performance).
+// <script> (y lo que ese JS importe transitivamente). El resto es output muerto
+// del build: el runtime de React que @astrojs/react registra como clientEntrypoint
+// aunque nada se hidrate (ver docs/PLAN-EJECUCION.md §2.7/§12 y la auditoría de perf).
+//
+// Alcanzabilidad transitiva sobre los archivos emitidos: se parte de las
+// referencias del HTML y se siguen los imports (absolutos `/_astro/…` y relativos
+// `./…`) dentro de cada .js. El sesgo es conservador: ante la duda se MARCA como
+// referenciado (nunca se borra un chunk que alguien pueda estar usando).
 import { readdir, readFile, unlink } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
@@ -18,22 +23,49 @@ async function walk(dir, out = []) {
   return out;
 }
 
+/** Path público (`/_astro/…`) de un archivo absoluto dentro de dist. */
+const toPublic = (absPath) => '/' + relative(DIST, absPath).split(/[\\/]/).join('/');
+
+// Referencias absolutas a un .js bajo _astro; y specifiers de import relativos.
+const ABS_JS = /\/_astro\/[\w./-]+\.js/g;
+const REL_IMPORT = /(?:import|from|import\s*\()\s*["'](\.{1,2}\/[\w./-]+\.js)["']/g;
+
 const files = await walk(DIST);
-const html = files.filter((f) => f.endsWith('.html'));
-const js = files.filter((f) => f.includes('/_astro/') && f.endsWith('.js'));
+const jsByPublic = new Map();
+for (const f of files) {
+  const pub = toPublic(f);
+  if (f.endsWith('.js') && pub.startsWith('/_astro/')) jsByPublic.set(pub, f);
+}
+const htmlFiles = files.filter((f) => f.endsWith('.html'));
 
 const referenced = new Set();
-for (const f of html) {
+const queue = [];
+const mark = (pub) => {
+  if (jsByPublic.has(pub) && !referenced.has(pub)) {
+    referenced.add(pub);
+    queue.push(pub);
+  }
+};
+
+// Semilla: lo que el HTML linkea.
+for (const f of htmlFiles) {
   const content = await readFile(f, 'utf-8');
-  for (const m of content.matchAll(/\/_astro\/[\w.-]+\.js/g)) referenced.add(m[0]);
+  for (const m of content.matchAll(ABS_JS)) mark(m[0]);
+}
+
+// Cierre transitivo: seguir imports dentro de cada JS alcanzable.
+while (queue.length) {
+  const abs = jsByPublic.get(queue.pop());
+  const content = await readFile(abs, 'utf-8');
+  for (const m of content.matchAll(ABS_JS)) mark(m[0]);
+  for (const m of content.matchAll(REL_IMPORT)) mark(toPublic(resolve(dirname(abs), m[1])));
 }
 
 let removed = 0;
-for (const f of js) {
-  const publicPath = '/_astro/' + f.split('/_astro/')[1];
-  if (!referenced.has(publicPath)) {
-    await unlink(f);
-    console.log(`[prune-orphan-js] eliminado (sin referencias): ${publicPath}`);
+for (const [pub, abs] of jsByPublic) {
+  if (!referenced.has(pub)) {
+    await unlink(abs);
+    console.log(`[prune-orphan-js] eliminado (inalcanzable): ${pub}`);
     removed++;
   }
 }

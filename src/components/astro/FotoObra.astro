@@ -12,12 +12,14 @@ import type { ImageMetadata } from 'astro';
 interface Props {
   src: ImageMetadata;
   alt: string;
-  sizes?: string;
+  /** Requerido: layout real por breakpoint. §7.4 prohíbe `100vw` por defecto —
+   * un default silencioso enviaría srcset de viewport completo en tarjetas. */
+  sizes: string;
   prioridad?: boolean;
   class?: string;
 }
 
-const { src, alt, sizes = '100vw', prioridad = false, class: className } = Astro.props;
+const { src, alt, sizes, prioridad = false, class: className } = Astro.props as Props;
 ---
 
 <Picture

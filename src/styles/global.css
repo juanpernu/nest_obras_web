@@ -80,6 +80,19 @@
   --radius: 0;
 }
 
+/*
+ * RESERVADO PARA FASE 3 — mapeo de tokens semánticos de shadcn (identidad §3.2).
+ * Aplicar EXACTAMENTE esto al correr `shadcn init` (no usar sus defaults).
+ * Regla de contraste: arena #D9C2B6 sobre blanco = 1.70 → FALLA a11y (Lighthouse
+ * exige 100). El acento sobre fondo claro es NAVY; --border/--input/--ring NUNCA arena.
+ *   --background:#FFFFFF        --foreground:#003057
+ *   --primary:#003057           --primary-foreground:#FFFFFF
+ *   --secondary:#D9C2B6         --secondary-foreground:#003057 (nunca blanco)
+ *   --muted:#F2F5F7             --muted-foreground:#66839A (verificar ≥ 4.5)
+ *   --accent:#D9C2B6 (solo fondo)  --accent-foreground:#003057
+ *   --border:#CCD6DD  --input:#B3C1CD  --ring:#003057  (NO arena)  --destructive:#B3402F
+ */
+
 @layer base {
   body {
     background-color: #ffffff;

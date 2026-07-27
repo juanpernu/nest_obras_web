@@ -21,6 +21,11 @@ pnpm-debug.log*
 # Claude Code local settings (machine-specific)
 .claude/settings.local.json
 
+# Skills de terceros: se restauran desde skills-lock.json; no se versiona el
+# código MIT de terceros dentro de este repo propietario (code review PR #1).
+.agents/
+.claude/skills/
+
 # macOS-specific files
 .DS_Store
 
