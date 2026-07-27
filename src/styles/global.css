@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/* Roboto Condensed self-hosted (Fontsource). Solo pesos 300/400/500 (identidad §2.1)
+ * y solo subsets latin + latin-ext (español rioplatense). Importar los CSS
+ * all-subset metía cyrillic/greek/vietnamese y base64-inlineaba greek-ext
+ * (~62% del presupuesto de CSS) — ver auditoría de performance. Preload del
+ * peso 300 (hero/LCP) va en main.astro. */
+@import "@fontsource/roboto-condensed/latin-300.css";
+@import "@fontsource/roboto-condensed/latin-ext-300.css";
+@import "@fontsource/roboto-condensed/latin-400.css";
+@import "@fontsource/roboto-condensed/latin-ext-400.css";
+@import "@fontsource/roboto-condensed/latin-500.css";
+@import "@fontsource/roboto-condensed/latin-ext-500.css";
+
+/*
+ * Sistema de diseño de Nest Obras — de docs/identidad-visual.md.
+ * EXTRAÍDO = medido del sitio real (es la marca). PROPUESTO = extensión para
+ * un sistema utilizable. Restricción crítica: arena sobre blanco = 1.70 (falla
+ * WCAG). El acento sobre fondo claro es NAVY, nunca arena (§1.2).
+ */
+@theme {
+  /* ---- Marca (EXTRAÍDO) ---- */
+  --color-navy: #003057;
+  --color-arena: #d9c2b6;
+
+  /* ---- Escala de navy (PROPUESTO) — deriva del navy, no grises ajenos ---- */
+  --color-navy-50: #f2f5f7;
+  --color-navy-100: #e6eaee;
+  --color-navy-200: #ccd6dd;
+  --color-navy-300: #b3c1cd;
+  --color-navy-400: #99acbc;
+  --color-navy-500: #8098ab;
+  --color-navy-600: #66839a;
+  --color-navy-700: #4d6e89;
+  --color-navy-800: #335979;
+  --color-navy-900: #1a4568;
+  --color-navy-950: #002646;
+
+  /* ---- Escala de arena (PROPUESTO) ---- */
+  --color-arena-300: #ece1db;
+  --color-arena-600: #c3afa4;
+  --color-arena-700: #ae9b92;
+
+  /* ---- Semánticos (PROPUESTO — verificar ratios en implementación) ---- */
+  --color-error: #b3402f;
+  --color-error-light: #f0a392;
+  --color-exito: #146b3a;
+  --color-exito-light: #7fd3a0;
+  --color-aviso: #8a5a12;
+  --color-aviso-light: #e8c07a;
+
+  /* ---- Tipografía ---- */
+  /* "Arial Narrow" es un stopgap condensado (desktop) para reducir el salto al
+   * hacer swap. El fallback métrico definitivo (ascent/descent/size-adjust
+   * override, que sí ayuda en mobile) se define en Fase 4, medido contra el
+   * hero real — un <h1> placeholder no da CLS medible. fontaine no sirve acá:
+   * no inyecta en la CSS-var de Tailwind v4 y mal-derivó las métricas. */
+  --font-sans: "Roboto Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+
+  --text-hero: clamp(2.125rem, 1.2rem + 4.6vw, 4rem);
+  --text-hero--line-height: 1.1;
+  --text-hero--letter-spacing: -0.022em;
+
+  --text-stat: clamp(2.5rem, 1.9rem + 3vw, 3.5rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.02em;
+
+  --text-h1: clamp(1.75rem, 1.4rem + 1.7vw, 2.5rem);
+  --text-h1--line-height: 1.15;
+  --text-h1--letter-spacing: -0.01em;
+
+  --text-h2: clamp(1.5rem, 1.3rem + 1.0vw, 2rem);
+  --text-h2--line-height: 1.2;
+  --text-h2--letter-spacing: -0.01em;
+
+  --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --text-h3--line-height: 1.3;
+
+  /* Geometría (EXTRAÍDO §3.3): sin radios, sin sombras, sin degradados. */
+  --radius: 0;
+}
+
+@layer base {
+  body {
+    background-color: #ffffff;
+    color: var(--color-navy);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
