@@ -1,0 +1,21 @@
+---
+/**
+ * Clientes corporativos como TEXTO (§6.5): cada nombre es un elemento propio, no
+ * una imagen única. Fallback texto-solo mientras no haya assets de logo.
+ */
+import { clientes } from '@/data/clientes';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props as Props;
+---
+
+<ul class:list={['flex flex-wrap items-center justify-center gap-x-10 gap-y-6', className]}>
+  {
+    /* Sin color propio: hereda del contexto (navy sobre blanco, blanco sobre navy). */
+    clientes.map((c) => (
+      <li class="text-lg font-medium uppercase tracking-[0.08em]">{c.nombre}</li>
+    ))
+  }
+</ul>

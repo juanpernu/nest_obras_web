@@ -1,0 +1,51 @@
+---
+import Layout from '@/layouts/main.astro';
+import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
+import Boton from '@/components/astro/Boton.astro';
+import { whatsappUrl, site } from '@/data/site';
+
+// Bloques de confianza PROVISIONALES — reemplazar por el copy del PDF pp.15-17
+// (§5.6: separar título y párrafo, que en el PDF vienen pegados).
+const bloques = [
+  { titulo: 'Respuesta en el día', texto: 'En horario hábil respondemos tu consulta en el momento; siempre en menos de 24 horas hábiles.' },
+  { titulo: 'Sin costo ni compromiso', texto: 'La primera consulta y el asesoramiento inicial no tienen costo. Nos contás tu proyecto y te orientamos.' },
+  { titulo: '+30 años de obra', texto: 'Ingeniería de nivel corporativo y arquitectura, con clientes como Google, WeWork y PRUNE.' },
+];
+---
+
+<Layout
+  title="Contacto | NEST Constructora Zona Norte y CABA"
+  description="Contanos tu proyecto de vivienda, refacción u obra corporativa. Respondemos en menos de 24 horas hábiles. Zona Norte y CABA."
+>
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h1 class="text-h1 font-medium text-navy">Contanos tu proyecto</h1>
+      <p class="mt-3 text-navy-700">Respondemos en menos de 24 horas en días hábiles.</p>
+
+      <div class="mt-12 grid gap-12 md:grid-cols-2">
+        <FormularioConsulta />
+
+        <div>
+          <div class="bg-navy-50 p-6">
+            <p class="text-sm uppercase tracking-[0.06em] text-navy-700">¿Preferís escribirnos?</p>
+            <div class="mt-4"><Boton href={whatsappUrl} variante="secundario">Escribinos por WhatsApp</Boton></div>
+            <p class="mt-4 text-sm text-navy-700">
+              <a href={`mailto:${site.email}`} class="hover:text-navy">{site.email}</a>
+            </p>
+          </div>
+
+          <dl class="mt-8 space-y-6">
+            {
+              bloques.map((b) => (
+                <div class="border-t border-navy-200 pt-4">
+                  <dt class="font-medium uppercase tracking-[0.04em] text-navy">{b.titulo}</dt>
+                  <dd class="mt-1 leading-relaxed text-navy-700">{b.texto}</dd>
+                </div>
+              ))
+            }
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

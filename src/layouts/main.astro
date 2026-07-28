@@ -11,6 +11,8 @@ import '@/styles/global.css';
 import { site } from '@/data/site';
 // Preload solo el peso del hero/<h1> (300, latin) — el resto compite con el LCP (identidad §2.1).
 import heroFont from '@fontsource/roboto-condensed/files/roboto-condensed-latin-300-normal.woff2?url';
+import Nav from '@/components/astro/Nav.astro';
+import Footer from '@/components/astro/Footer.astro';
 
 interface Props {
   title?: string;
@@ -94,7 +96,18 @@ const webSiteLd = {
   publisher: { '@id': `${site.url}/#organizacion` },
 };
 
-const structuredData = [organizacionLd, webSiteLd, ...jsonLd];
+// Un solo documento JSON-LD con @graph: más robusto que bloques sueltos y los
+// @id se resuelven dentro del mismo grafo. El @context va una vez arriba; se lo
+// quita de cada nodo (incluidos los que pasan las páginas vía `jsonLd`).
+const stripCtx = (n: Record<string, unknown>) => {
+  const copia = { ...n };
+  delete copia['@context'];
+  return copia;
+};
+const grafo = {
+  '@context': 'https://schema.org',
+  '@graph': [organizacionLd, webSiteLd, ...jsonLd].map(stripCtx),
+};
 ---
 
 <!doctype html>
@@ -131,13 +144,13 @@ const structuredData = [organizacionLd, webSiteLd, ...jsonLd];
     {ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}
     {ogImageUrl && ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
 
-    {
-      structuredData.map((data) => (
-        <script type="application/ld+json" is:inline set:html={toSafeJson(data)} />
-      ))
-    }
+    <script type="application/ld+json" is:inline set:html={toSafeJson(grafo)} />
   </head>
-  <body>
-    <slot />
+  <body class="flex min-h-screen flex-col bg-white">
+    <Nav />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
   </body>
 </html>
