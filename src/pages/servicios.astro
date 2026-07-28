@@ -1,0 +1,111 @@
+---
+import Layout from '@/layouts/main.astro';
+import GrillaLogos from '@/components/astro/GrillaLogos.astro';
+import Boton from '@/components/astro/Boton.astro';
+import { getCollection, render } from 'astro:content';
+import { site } from '@/data/site';
+
+const entries = (await getCollection('servicios')).sort((a, b) => a.data.orden - b.data.orden);
+const servicios = await Promise.all(
+  entries.map(async (s) => ({ data: s.data, Content: (await render(s)).Content })),
+);
+
+const modalidades = [
+  {
+    titulo: 'Llave en mano',
+    texto:
+      'Precio único acordado, pliego de especificaciones técnicas detallado y certeza del tiempo de ejecución, costo y calidad final. Es la opción más tranquila: vos decidís, nosotros gestionamos todo.',
+    ideal: 'Ideal para clientes que quieren despreocuparse del proceso y recibir la obra terminada.',
+  },
+  {
+    titulo: 'Solo mano de obra',
+    texto:
+      'Nos ocupamos de la dirección y ejecución de la obra proveyendo todos los gremios necesarios. Vos gestionás la compra de materiales contando con nuestro asesoramiento y los descuentos que nuestros proveedores nos otorgan.',
+    ideal: 'Ideal para clientes que quieren mayor control de los materiales y ya tienen experiencia en obra.',
+  },
+];
+
+const serviciosLd = entries.map((s) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  name: s.data.nombre,
+  serviceType: s.data.nombre,
+  description: s.data.tagline,
+  provider: { '@id': `${site.url}/#organizacion` },
+  areaServed: site.areaServed,
+}));
+---
+
+<Layout
+  title="Servicios de construcción | NEST Zona Norte y CABA"
+  description="Construcción llave en mano, refacciones, proyectos corporativos y dirección de obra. NEST cubre todo el proceso de principio a fin en Zona Norte y CABA."
+  jsonLd={serviciosLd}
+>
+  <section class="bg-navy py-16 text-white md:py-20">
+    <div class="mx-auto max-w-6xl px-6">
+      <h1 class="text-hero font-light">Servicios de construcción</h1>
+      <p class="mt-4 max-w-2xl leading-relaxed text-navy-100">
+        Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-6xl space-y-12 px-6">
+      {
+        servicios.map((s) => (
+          <div class="grid gap-6 border-t-4 border-arena pt-8 md:grid-cols-[2fr_1fr]">
+            <div>
+              <h2 class="text-h2 font-medium text-navy">{s.data.nombre}</h2>
+              <p class="mt-2 text-h3 font-light text-navy-600">{s.data.tagline}</p>
+              <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
+                <s.Content />
+              </div>
+            </div>
+            <ul class="space-y-2 text-sm text-navy">
+              {s.data.incluye.map((i) => (
+                <li class="flex gap-2">
+                  <span aria-hidden="true" class="text-arena-700">+</span>
+                  <span>{i}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* Clientes corporativos (tabla reubicada de la ex-página corporativa, §5.3 / p.14) */}
+  <section class="bg-navy py-16 text-center text-white md:py-20">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-h2 font-medium">Empresas que confiaron en NEST</h2>
+      <GrillaLogos class="mt-10" />
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-h2 font-medium text-navy">Modalidades de contratación</h2>
+      <p class="mt-2 text-navy-600">Cómo preferís trabajar con nosotros.</p>
+      <div class="mt-10 grid gap-8 md:grid-cols-2">
+        {
+          modalidades.map((m) => (
+            <div class="bg-navy-50 p-8">
+              <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">{m.titulo}</h3>
+              <p class="mt-4 leading-relaxed text-navy">{m.texto}</p>
+              <p class="mt-4 text-sm italic text-navy-600">{m.ideal}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-navy py-16 text-center text-white md:py-20">
+    <div class="mx-auto max-w-3xl px-6">
+      <h2 class="text-h2 font-medium">Consulta tu proyecto sin compromiso</h2>
+      <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
+    </div>
+  </section>
+</Layout>

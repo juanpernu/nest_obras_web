@@ -1,0 +1,80 @@
+---
+import Layout from '@/layouts/main.astro';
+import TarjetaObra from '@/components/astro/TarjetaObra.astro';
+import { getCollection } from 'astro:content';
+
+const obras = (await getCollection('obras')).sort((a, b) => a.data.orden - b.data.orden);
+
+// Filtros data-driven: solo los tipos presentes (evita un filtro vacío).
+const filtroLabels: Record<string, string> = {
+  vivienda: 'Viviendas',
+  corporativo: 'Corporativo',
+  refaccion: 'Refacciones',
+  gastronomia: 'Gastronomía',
+};
+const tiposPresentes = [...new Set(obras.map((o) => o.data.tipo))].sort();
+
+const labelBase =
+  'flex min-h-[44px] cursor-pointer items-center border border-navy-200 px-4 py-2 text-sm uppercase tracking-[0.06em] text-navy transition-colors hover:border-navy';
+
+// Título/meta/intro: provisional — reemplazar por la redacción del PDF p.10 (§5.4).
+---
+
+<Layout
+  title="Obras | NEST Constructora en Zona Norte y CABA"
+  description="Viviendas premium, refacciones y proyectos corporativos de NEST en Nordelta, San Isidro, Escobar, Pilar, Tigre y CABA."
+>
+  <section class="bg-navy py-16 text-white md:py-20">
+    <div class="mx-auto max-w-6xl px-6">
+      <h1 class="text-hero font-light">Obras</h1>
+      <p class="mt-4 max-w-2xl leading-relaxed text-navy-100">
+        Viviendas premium, refacciones y proyectos corporativos en Zona Norte del Gran Buenos Aires
+        y CABA.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-12 md:py-16">
+    <div class="mx-auto max-w-6xl px-6">
+      <fieldset class="mb-10 flex flex-wrap gap-2">
+        <legend class="sr-only">Filtrar obras por tipo</legend>
+        <input type="radio" name="filtro" id="f-todos" class="sr-only" checked />
+        <label for="f-todos" class={labelBase}>Todos</label>
+        {
+          tiposPresentes.map((t) => (
+            <Fragment>
+              <input type="radio" name="filtro" id={`f-${t}`} class="sr-only" />
+              <label for={`f-${t}`} class={labelBase}>
+                {filtroLabels[t]}
+              </label>
+            </Fragment>
+          ))
+        }
+      </fieldset>
+
+      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {obras.map((o) => <li data-tipo={o.data.tipo}><TarjetaObra obra={o} /></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <style is:global>
+    /* Filtro sin JavaScript: radios + :has() (§4.4). El label activo se resalta
+       con el hermano :checked adyacente (no query params, no islas). */
+    input[name='filtro']:checked + label {
+      background-color: var(--color-navy);
+      border-color: var(--color-navy);
+      color: #fff;
+    }
+    input[name='filtro']:focus-visible + label {
+      outline: 2px solid var(--color-navy);
+      outline-offset: 2px;
+    }
+    body:has(#f-vivienda:checked) li[data-tipo]:not([data-tipo='vivienda']),
+    body:has(#f-corporativo:checked) li[data-tipo]:not([data-tipo='corporativo']),
+    body:has(#f-refaccion:checked) li[data-tipo]:not([data-tipo='refaccion']),
+    body:has(#f-gastronomia:checked) li[data-tipo]:not([data-tipo='gastronomia']) {
+      display: none;
+    }
+  </style>
+</Layout>

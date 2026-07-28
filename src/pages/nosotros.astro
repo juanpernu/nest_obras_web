@@ -1,0 +1,129 @@
+---
+import Layout from '@/layouts/main.astro';
+import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
+import Boton from '@/components/astro/Boton.astro';
+import { getCollection, render } from 'astro:content';
+import { site } from '@/data/site';
+
+const equipoEntries = (await getCollection('equipo')).sort((a, b) => a.data.orden - b.data.orden);
+const equipo = await Promise.all(
+  equipoEntries.map(async (m) => ({ data: m.data, Content: (await render(m)).Content })),
+);
+
+const proceso = [
+  { n: '01', titulo: 'Primera consulta', texto: 'Nos contás tu proyecto. Sin costo, sin compromiso. Te respondemos en el día.' },
+  { n: '02', titulo: 'Relevamiento y propuesta', texto: 'Visitamos el terreno o la obra y elaboramos una propuesta detallada con plazos y presupuesto.' },
+  { n: '03', titulo: 'Proyecto y documentación', texto: 'Diseñamos, generamos los planos y gestionamos los permisos municipales.' },
+  { n: '04', titulo: 'Ejecución de obra', texto: 'Construimos con control diario de avance, materiales y presupuesto. Reportes periódicos.' },
+  { n: '05', titulo: 'Entrega y postventa', texto: 'Entregamos la obra terminada y te acompañamos en el período post-entrega.' },
+];
+
+const valores = [
+  { titulo: 'Transparencia', texto: 'Sabés en todo momento en qué estado está tu obra y tu presupuesto. Sin sorpresas.' },
+  { titulo: 'Cumplimiento', texto: 'Los plazos son compromisos, no estimaciones. Lo que prometemos, lo entregamos.' },
+  { titulo: 'Calidad', texto: 'Cada detalle importa. No hacemos obra terminada, hacemos obra bien terminada.' },
+];
+
+const personasLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Arq. Morena Alegre',
+    jobTitle: 'Arquitecta',
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Universidad Austral (IAE)' },
+    worksFor: { '@id': `${site.url}/#organizacion` },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Ing. Carlos Alegre',
+    jobTitle: 'Ingeniero Civil',
+    alumniOf: { '@type': 'Organization', name: 'Benito Roggio' },
+    worksFor: { '@id': `${site.url}/#organizacion` },
+  },
+];
+---
+
+<Layout
+  title="Quiénes somos | NEST Constructora Zona Norte y CABA"
+  description="Conocé al equipo de NEST: Arq. Morena Alegre (MBA IAE, ex WeWork y Google) e Ing. Carlos Alegre (ex Benito Roggio). +30 años construyendo en Zona Norte y CABA."
+  jsonLd={personasLd}
+>
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-3xl px-6">
+      <h1 class="text-h1 font-medium text-navy">Más de 30 años construyendo lo que prometemos</h1>
+      <p class="mt-6 leading-relaxed text-navy">
+        NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor
+        técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más
+        de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura
+        para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos
+        promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
+      </p>
+    </div>
+  </section>
+
+  <section class="bg-navy py-14">
+    <div class="mx-auto max-w-6xl px-6"><BarraEstadisticas /></div>
+  </section>
+
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-h2 font-medium text-navy">Las personas que están detrás de tu obra</h2>
+      <div class="mt-10 grid gap-10 md:grid-cols-2">
+        {
+          equipo.map((m) => (
+            <div class="border-t-4 border-arena pt-6">
+              <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
+              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-600">{m.data.rol}</p>
+              <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
+                <m.Content />
+              </div>
+              <p class="mt-4 text-sm uppercase tracking-[0.06em] text-navy-600">
+                {m.data.credenciales.join(' · ')}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-navy-50 py-16 md:py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="text-h2 font-medium text-navy">Cómo trabajamos, paso a paso</h2>
+      <ol class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          proceso.map((p) => (
+            <li>
+              <span class="text-stat font-light text-arena-600">{p.n}</span>
+              <h3 class="mt-2 text-h3 font-medium text-navy">{p.titulo}</h3>
+              <p class="mt-2 leading-relaxed text-navy">{p.texto}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="grid gap-8 md:grid-cols-3">
+        {
+          valores.map((v) => (
+            <div class="border-t-4 border-arena pt-6">
+              <h3 class="text-h3 font-medium text-navy">{v.titulo}</h3>
+              <p class="mt-3 leading-relaxed text-navy">{v.texto}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-navy py-16 text-center text-white md:py-20">
+    <div class="mx-auto max-w-3xl px-6">
+      <h2 class="text-h2 font-medium">Contá con NEST para tu proyecto</h2>
+      <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
+    </div>
+  </section>
+</Layout>

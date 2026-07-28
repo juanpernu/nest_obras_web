@@ -1,0 +1,21 @@
+---
+/**
+ * Ficha de proyecto como <dl> (§6.4). La usa la página de caso de obra.
+ */
+interface Props {
+  ficha: { clave: string; valor: string }[];
+  class?: string;
+}
+const { ficha, class: className } = Astro.props as Props;
+---
+
+<dl class:list={['divide-y divide-navy-200 border-y border-navy-200', className]}>
+  {
+    ficha.map((f) => (
+      <div class="flex justify-between gap-6 py-3">
+        <dt class="text-sm uppercase tracking-[0.06em] text-navy-600">{f.clave}</dt>
+        <dd class="text-right font-medium text-navy">{f.valor}</dd>
+      </div>
+    ))
+  }
+</dl>

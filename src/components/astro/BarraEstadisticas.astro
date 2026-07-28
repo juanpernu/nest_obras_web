@@ -1,0 +1,24 @@
+---
+/**
+ * Barra de estadísticas (§5.1 Sección 2). Texto, no imágenes (§6.4). Peso 300 a
+ * gran tamaño: dato editorial, no cartel (identidad §2.4).
+ */
+import { estadisticas } from '@/data/estadisticas';
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props as Props;
+---
+
+<dl class:list={['grid grid-cols-2 gap-8 sm:grid-cols-4', className]}>
+  {
+    estadisticas.map((e) => (
+      <div class="text-center">
+        <dt class="sr-only">{e.etiqueta}</dt>
+        <dd class="text-stat font-light text-arena">{e.valor}</dd>
+        <p class="mt-2 text-sm uppercase tracking-[0.08em] text-navy-200">{e.etiqueta}</p>
+      </div>
+    ))
+  }
+</dl>

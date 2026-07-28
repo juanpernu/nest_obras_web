@@ -1,0 +1,43 @@
+---
+/**
+ * Footer con NAP (§6.7) desde site.ts. Links externos con rel="noopener noreferrer"
+ * (code review PR #1). La dirección física se agrega cuando esté (§11).
+ */
+import { site, whatsappUrl } from '@/data/site';
+
+const year = new Date().getFullYear();
+const links = [
+  { href: '/nosotros', label: 'Nosotros' },
+  { href: '/servicios', label: 'Servicios' },
+  { href: '/obras', label: 'Obras' },
+  { href: '/contacto', label: 'Contacto' },
+];
+const item = 'flex min-h-[44px] items-center transition-colors hover:text-arena';
+---
+
+<footer class="bg-navy text-white">
+  <div class="mx-auto max-w-6xl px-6 py-14">
+    <div class="grid gap-10 md:grid-cols-3">
+      <div>
+        <p class="text-xl font-medium uppercase tracking-[0.2em]">NEST</p>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-navy-200">{site.descripcion}</p>
+      </div>
+
+      <nav class="flex flex-col text-sm uppercase tracking-[0.06em]" aria-label="Pie de página">
+        {links.map((l) => <a href={l.href} class={item}>{l.label}</a>)}
+      </nav>
+
+      <div class="flex flex-col text-sm text-navy-100">
+        <a href={`mailto:${site.email}`} class={item}>{site.email}</a>
+        <a href={whatsappUrl} class={item}>WhatsApp {site.whatsapp.display}</a>
+        <a href={site.instagram} target="_blank" rel="noopener noreferrer" class={item}>
+          Instagram @nest.obras
+        </a>
+      </div>
+    </div>
+
+    <p class="mt-12 border-t border-navy-800 pt-6 text-xs text-navy-400">
+      © {year} {site.nombre}. Todos los derechos reservados.
+    </p>
+  </div>
+</footer>

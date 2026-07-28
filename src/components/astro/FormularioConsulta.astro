@@ -1,0 +1,68 @@
+---
+/**
+ * Formulario de consulta (§5.1 Sección 9, §8.2). <form> real que postea a
+ * /api/consulta (endpoint on-demand, Fase 5). Funciona sin JS. Inputs con
+ * font-size ≥16px para no disparar zoom en iOS (§7.3); honeypot antispam (§8.1);
+ * <select> nativo (§3.4). Estilado para fondo claro (bordes navy, nunca arena §1.2).
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props as Props;
+
+const label = 'block text-sm font-medium uppercase tracking-[0.06em] text-navy';
+const field =
+  'mt-2 block w-full min-h-[44px] border border-navy-300 bg-white px-3 py-2 text-base text-navy placeholder:text-navy-500 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
+---
+
+<form method="POST" action="/api/consulta" class:list={['space-y-5', className]}>
+  {/* Honeypot: los bots lo completan; humanos no lo ven. */}
+  <div class="hidden" aria-hidden="true">
+    <label>No completar<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  <div>
+    <label for="nombre" class={label}>Nombre completo *</label>
+    <input id="nombre" name="nombre" type="text" autocomplete="name" required class={field} />
+  </div>
+
+  <div>
+    <label for="contacto" class={label}>WhatsApp o email *</label>
+    <input
+      id="contacto"
+      name="contacto"
+      type="text"
+      autocomplete="tel"
+      required
+      class={field}
+      placeholder="Para poder responderte"
+    />
+  </div>
+
+  <div>
+    <label for="tipo" class={label}>Tipo de proyecto *</label>
+    <select id="tipo" name="tipo" required class={field}>
+      <option value="">Elegí una opción</option>
+      <option>Vivienda nueva</option>
+      <option>Refacción</option>
+      <option>Proyecto corporativo</option>
+      <option>Otro</option>
+    </select>
+  </div>
+
+  <div>
+    <label for="mensaje" class={label}>Describí tu proyecto (opcional)</label>
+    <textarea
+      id="mensaje"
+      name="mensaje"
+      rows="4"
+      class={field}
+      placeholder="Zona, m², etapa…"></textarea>
+  </div>
+
+  <button
+    type="submit"
+    class="inline-flex min-h-[44px] items-center justify-center bg-arena px-6 py-3 text-base font-medium uppercase tracking-[0.02em] text-navy transition-colors hover:bg-arena-600"
+    >Enviar consulta</button
+  >
+</form>

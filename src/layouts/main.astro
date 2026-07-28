@@ -11,6 +11,8 @@ import '@/styles/global.css';
 import { site } from '@/data/site';
 // Preload solo el peso del hero/<h1> (300, latin) — el resto compite con el LCP (identidad §2.1).
 import heroFont from '@fontsource/roboto-condensed/files/roboto-condensed-latin-300-normal.woff2?url';
+import Nav from '@/components/astro/Nav.astro';
+import Footer from '@/components/astro/Footer.astro';
 
 interface Props {
   title?: string;
@@ -137,7 +139,11 @@ const structuredData = [organizacionLd, webSiteLd, ...jsonLd];
       ))
     }
   </head>
-  <body>
-    <slot />
+  <body class="flex min-h-screen flex-col bg-white">
+    <Nav />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
   </body>
 </html>

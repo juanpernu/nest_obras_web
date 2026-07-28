@@ -1,0 +1,23 @@
+---
+/**
+ * Botón/CTA como <a>. Mayúsculas por CSS (identidad §2.2), tap target ≥44px (§7.3),
+ * sin radios (§3.3). Variantes según el fondo: arena+navy = 7.91 (AAA), navy sobre
+ * blanco = 13.46; el arena NUNCA como texto sobre blanco (§1.2).
+ */
+interface Props {
+  href: string;
+  variante?: 'primario' | 'secundario' | 'sobreNavy';
+  class?: string;
+}
+const { href, variante = 'primario', class: className } = Astro.props as Props;
+
+const base =
+  'inline-flex items-center justify-center min-h-[44px] px-6 py-3 text-base font-medium uppercase tracking-[0.02em] transition-colors';
+const variantes = {
+  primario: 'bg-arena text-navy hover:bg-arena-600', // fondo claro u oscuro
+  secundario: 'border border-navy text-navy hover:bg-navy hover:text-white',
+  sobreNavy: 'border border-arena text-arena hover:bg-arena hover:text-navy',
+};
+---
+
+<a href={href} class:list={[base, variantes[variante], className]}><slot /></a>
