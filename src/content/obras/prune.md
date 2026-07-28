@@ -6,7 +6,7 @@ tipo: corporativo
 anio: 2023
 orden: 1
 portada: ../../assets/obras/prune-portada.jpg
-portadaAlt: "Local de PRUNE terminado por NEST, obra de retail corporativo"
+portadaAlt: "Imagen provisoria — Local de PRUNE terminado por NEST, obra de retail corporativo"
 destacadaEnHome: true
 paginaPropia: true
 slug: prune
@@ -32,21 +32,21 @@ ficha:
     valor: "CABA, GBA e interior del país"
 galeria:
   - src: ../../assets/obras/prune-01.jpg
-    alt: "Sucursal PRUNE construida por NEST — vista general del local"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — vista general del local"
   - src: ../../assets/obras/prune-02.jpg
-    alt: "Sucursal PRUNE construida por NEST — terminaciones interiores"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — terminaciones interiores"
   - src: ../../assets/obras/prune-03.jpg
-    alt: "Sucursal PRUNE construida por NEST — vidriera y frente"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — vidriera y frente"
   - src: ../../assets/obras/prune-04.jpg
-    alt: "Sucursal PRUNE construida por NEST — sector de atención"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — sector de atención"
   - src: ../../assets/obras/prune-05.jpg
-    alt: "Sucursal PRUNE construida por NEST — mobiliario de marca"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — mobiliario de marca"
   - src: ../../assets/obras/prune-06.jpg
-    alt: "Sucursal PRUNE construida por NEST — iluminación y cielorraso"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — iluminación y cielorraso"
   - src: ../../assets/obras/prune-07.jpg
-    alt: "Sucursal PRUNE construida por NEST — depósito y trastienda"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — depósito y trastienda"
   - src: ../../assets/obras/prune-08.jpg
-    alt: "Sucursal PRUNE construida por NEST — detalle de terminación"
+    alt: "Imagen provisoria — Sucursal PRUNE construida por NEST — detalle de terminación"
 ---
 
 <!-- COPY DEL CASO PROVISIONAL — reemplazar la prosa por la redacción exacta del

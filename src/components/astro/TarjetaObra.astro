@@ -10,8 +10,11 @@ import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   obra: CollectionEntry<'obras'>;
+  /** `sizes` según el layout real donde se usa la tarjeta (§7.4). Default: grilla de 3. */
+  sizes?: string;
 }
-const { obra } = Astro.props as Props;
+const { obra, sizes = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw' } =
+  Astro.props as Props;
 const d = obra.data;
 
 const href = d.paginaPropia && d.slug ? `/obras/${d.slug}` : d.destacadaEnHome ? '/obras' : null;
@@ -31,13 +34,13 @@ const tipoLabel: Record<string, string> = {
       <FotoObra
         src={d.portada}
         alt={d.portadaAlt}
-        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        sizes={sizes}
         class={`h-full w-full object-cover transition-transform duration-500 ${href ? 'group-hover:scale-[1.03]' : ''}`}
       />
     </div>
     <div class="mt-4">
       <h3 class="text-h3 font-medium text-navy">{d.nombre}</h3>
-      <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-600">
+      <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
         {tipoLabel[d.tipo]} · {d.zona}
       </p>
     </div>

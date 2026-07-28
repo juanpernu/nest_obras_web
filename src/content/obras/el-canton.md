@@ -5,7 +5,7 @@ localidad: Escobar
 tipo: vivienda
 orden: 2
 portada: ../../assets/obras/el-canton-portada.jpg
-portadaAlt: "Vivienda premium en El Canton Golf construida por NEST"
+portadaAlt: "Imagen provisoria — Vivienda premium en El Canton Golf construida por NEST"
 destacadaEnHome: true
 paginaPropia: false
 ---

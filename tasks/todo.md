@@ -154,6 +154,22 @@ Orden: `/` → `/nosotros` → `/servicios` → `/obras` → template `/obras/[i
 
 ---
 
+## Code review PR #2 (Fase 2-4) — implementado
+Ratios WCAG recalculados (la estimación del doc de identidad estaba mal; el doc pedía recalcular):
+- [x] **Contraste de texto**: `text-navy-600` (3.98, falla AA) → `text-navy-700` (5.37 ✅) en 16 lugares.
+- [x] **Arena sobre fondo claro** (regla §1.2): números de paso `text-arena-600` (1.92) y bullet `text-arena-700` (2.66) → `text-navy-700`.
+- [x] **Bordes no-texto**: inputs `navy-300` (1.84) y filtros `navy-200` (1.48) → `navy-600` (3.98 ✅).
+- [x] `BarraEstadisticas`: eliminada la duplicación de label para lectores de pantalla (un solo `<dt>`).
+- [x] `/nosotros`: agregado `<h2>Nuestros valores</h2>` (jerarquía §6.4).
+- [x] `FormularioConsulta`: quitados placeholders de bajo contraste (hint al label) y `autocomplete="tel"` engañoso.
+- [x] JSON-LD consolidado en un solo `@graph` (los `@id` resuelven en el mismo doc).
+- [x] `TarjetaObra`: `sizes` como prop (la Home 2-col pasa su propio valor).
+- [x] `alt` de placeholders prefijados "Imagen provisoria" (honestidad para lectores de pantalla).
+- [x] `src/content/testimonios/.gitkeep` (dir trackeado; el aviso de "colección vacía" es esperado — §4.5 la quiere vacía).
+- [x] **§11**: WhatsApp `5491155269160` y email `info@nestobras.com.ar` **confirmados reales** (los pasó el usuario) → dejan de estar pendientes.
+
+---
+
 ## Verificación end-to-end
 
 1. `pnpm build && pnpm preview` → `scripts/verificar-html.sh` sin "FALTA" (salvo rojas-esperadas).

@@ -74,11 +74,11 @@ const personasLd = [
           equipo.map((m) => (
             <div class="border-t-4 border-arena pt-6">
               <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
-              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-600">{m.data.rol}</p>
+              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">{m.data.rol}</p>
               <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
                 <m.Content />
               </div>
-              <p class="mt-4 text-sm uppercase tracking-[0.06em] text-navy-600">
+              <p class="mt-4 text-sm uppercase tracking-[0.06em] text-navy-700">
                 {m.data.credenciales.join(' · ')}
               </p>
             </div>
@@ -95,7 +95,7 @@ const personasLd = [
         {
           proceso.map((p) => (
             <li>
-              <span class="text-stat font-light text-arena-600">{p.n}</span>
+              <span class="text-stat font-light text-navy-700">{p.n}</span>
               <h3 class="mt-2 text-h3 font-medium text-navy">{p.titulo}</h3>
               <p class="mt-2 leading-relaxed text-navy">{p.texto}</p>
             </li>
@@ -107,7 +107,8 @@ const personasLd = [
 
   <section class="py-16 md:py-24">
     <div class="mx-auto max-w-6xl px-6">
-      <div class="grid gap-8 md:grid-cols-3">
+      <h2 class="text-h2 font-medium text-navy">Nuestros valores</h2>
+      <div class="mt-10 grid gap-8 md:grid-cols-3">
         {
           valores.map((v) => (
             <div class="border-t-4 border-arena pt-6">

@@ -12,7 +12,7 @@ const { class: className } = Astro.props as Props;
 
 const label = 'block text-sm font-medium uppercase tracking-[0.06em] text-navy';
 const field =
-  'mt-2 block w-full min-h-[44px] border border-navy-300 bg-white px-3 py-2 text-base text-navy placeholder:text-navy-500 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
+  'mt-2 block w-full min-h-[44px] border border-navy-600 bg-white px-3 py-2 text-base text-navy focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
 ---
 
 <form method="POST" action="/api/consulta" class:list={['space-y-5', className]}>
@@ -28,15 +28,7 @@ const field =
 
   <div>
     <label for="contacto" class={label}>WhatsApp o email *</label>
-    <input
-      id="contacto"
-      name="contacto"
-      type="text"
-      autocomplete="tel"
-      required
-      class={field}
-      placeholder="Para poder responderte"
-    />
+    <input id="contacto" name="contacto" type="text" required class={field} />
   </div>
 
   <div>
@@ -51,13 +43,8 @@ const field =
   </div>
 
   <div>
-    <label for="mensaje" class={label}>Describí tu proyecto (opcional)</label>
-    <textarea
-      id="mensaje"
-      name="mensaje"
-      rows="4"
-      class={field}
-      placeholder="Zona, m², etapa…"></textarea>
+    <label for="mensaje" class={label}>Describí tu proyecto — zona, m², etapa (opcional)</label>
+    <textarea id="mensaje" name="mensaje" rows="4" class={field}></textarea>
   </div>
 
   <button

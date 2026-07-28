@@ -57,7 +57,7 @@ const serviciosLd = entries.map((s) => ({
           <div class="grid gap-6 border-t-4 border-arena pt-8 md:grid-cols-[2fr_1fr]">
             <div>
               <h2 class="text-h2 font-medium text-navy">{s.data.nombre}</h2>
-              <p class="mt-2 text-h3 font-light text-navy-600">{s.data.tagline}</p>
+              <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
               <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
                 <s.Content />
               </div>
@@ -65,7 +65,7 @@ const serviciosLd = entries.map((s) => ({
             <ul class="space-y-2 text-sm text-navy">
               {s.data.incluye.map((i) => (
                 <li class="flex gap-2">
-                  <span aria-hidden="true" class="text-arena-700">+</span>
+                  <span aria-hidden="true" class="text-navy-700">+</span>
                   <span>{i}</span>
                 </li>
               ))}
@@ -87,14 +87,14 @@ const serviciosLd = entries.map((s) => ({
   <section class="py-16 md:py-24">
     <div class="mx-auto max-w-6xl px-6">
       <h2 class="text-h2 font-medium text-navy">Modalidades de contratación</h2>
-      <p class="mt-2 text-navy-600">Cómo preferís trabajar con nosotros.</p>
+      <p class="mt-2 text-navy-700">Cómo preferís trabajar con nosotros.</p>
       <div class="mt-10 grid gap-8 md:grid-cols-2">
         {
           modalidades.map((m) => (
             <div class="bg-navy-50 p-8">
               <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">{m.titulo}</h3>
               <p class="mt-4 leading-relaxed text-navy">{m.texto}</p>
-              <p class="mt-4 text-sm italic text-navy-600">{m.ideal}</p>
+              <p class="mt-4 text-sm italic text-navy-700">{m.ideal}</p>
             </div>
           ))
         }

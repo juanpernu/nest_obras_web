@@ -5,7 +5,7 @@ localidad: Tigre
 tipo: vivienda
 orden: 5
 portada: ../../assets/obras/nordelta-portada.jpg
-portadaAlt: "Vivienda premium en Nordelta construida por NEST"
+portadaAlt: "Imagen provisoria — Vivienda premium en Nordelta construida por NEST"
 destacadaEnHome: false
 paginaPropia: false
 ---
