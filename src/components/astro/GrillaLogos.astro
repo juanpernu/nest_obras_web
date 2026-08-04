@@ -1,21 +1,67 @@
 ---
 /**
- * Clientes corporativos como TEXTO (§6.5): cada nombre es un elemento propio, no
- * una imagen única. Fallback texto-solo mientras no haya assets de logo.
+ * Clientes corporativos como logos, en cinta de scroll infinito.
+ * El set se duplica para el loop; la mitad duplicada queda oculta a lectores
+ * de pantalla (aria-hidden) para no repetir contenido accesible.
  */
-import { clientes } from '@/data/clientes';
-
 interface Props {
   class?: string;
 }
 const { class: className } = Astro.props as Props;
+
+const logos = Array.from({ length: 10 }, (_, i) => {
+  const n = String(i + 1).padStart(2, '0');
+  return { src: `/logos/logo_${n}.svg`, alt: `Logo de cliente corporativo de NEST (${n})` };
+});
+logos.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
 ---
 
-<ul class:list={['flex flex-wrap items-center justify-center gap-x-10 gap-y-6', className]}>
-  {
-    /* Sin color propio: hereda del contexto (navy sobre blanco, blanco sobre navy). */
-    clientes.map((c) => (
-      <li class="text-lg font-medium uppercase tracking-[0.08em]">{c.nombre}</li>
-    ))
+<div class:list={['logos-marquee relative overflow-hidden', className]}>
+  <ul class="marquee-track flex w-max items-center gap-16">
+    {
+      [...logos, ...logos].map((logo, i) => (
+        <li class="flex shrink-0 items-center" aria-hidden={i >= logos.length}>
+          <img
+            src={logo.src}
+            alt={i >= logos.length ? '' : logo.alt}
+            loading="lazy"
+            decoding="async"
+            class="h-16 w-auto grayscale"
+          />
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .logos-marquee {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
   }
-</ul>
+
+  .marquee-track {
+    animation: logos-scroll 30s linear infinite;
+    opacity: 0.5;
+    transition: opacity 0.3s ease-out;
+  }
+
+  .logos-marquee:hover .marquee-track {
+    opacity: 1;
+  }
+
+  @keyframes logos-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+</style>
