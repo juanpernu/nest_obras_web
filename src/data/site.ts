@@ -56,7 +56,9 @@ export const site: SiteConfig = {
     calle: 'Paraná 26',
     localidad: 'Ciudad Autónoma de Buenos Aires',
     provincia: 'Ciudad Autónoma de Buenos Aires',
-    codigoPostal: '1017',
+    // CPA completo (formato AR desde 1998), no el CP viejo de 4 dígitos: el
+    // Perfil de Negocio de Google exige el NAP idéntico carácter por carácter (§6.7).
+    codigoPostal: 'C1017AAE',
     pais: 'AR',
     display: 'Paraná 26, Ciudad de Buenos Aires',
   },

@@ -151,7 +151,7 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 | Dato | Desbloquea | Estado |
 |---|---|---|
-| **Dirección física** (NAP) | `address` en el JSON-LD `GeneralContractor`, footer, Perfil de Negocio de Google | ✅ Resuelto 2026-08-04: Paraná 26, CABA, CP 1017 — cargado en `site.ts`, emitido en el `PostalAddress` y visible en footer y bloque de contacto |
+| **Dirección física** (NAP) | `address` en el JSON-LD `GeneralContractor`, footer, Perfil de Negocio de Google | ✅ Resuelto 2026-08-04: Paraná 26, CABA, CPA **C1017AAE** — cargado en `site.ts`, emitido en el `PostalAddress` y visible en footer y bloque de contacto |
 | **Ficha de El Canton** (m², plazo, año, estilo) | publicar `/obras/el-canton` (`paginaPropia: true`) | Falta |
 | **Fotos reales de PRUNE** (≥8) | reemplazar placeholders del caso | Falta |
 | **Testimonios reales** | reemplazar los **placeholders publicados** (§2.3) | Falta (~semana 3) — 🔴 mientras tanto hay 2 reseñas inventadas en el aire |
