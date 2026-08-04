@@ -78,6 +78,10 @@
 
   /* Geometría (EXTRAÍDO §3.3): sin radios, sin sombras, sin degradados. */
   --radius: 0;
+
+  /* Excepción al radio cero, solo para la acción primaria (decisión de diseño
+   * del 03/08/2026). Tarjetas, campos y variantes secundarias siguen en 0. */
+  --radius-boton: 4px;
 }
 
 /*
