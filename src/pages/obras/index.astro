@@ -11,6 +11,7 @@ const filtroLabels: Record<string, string> = {
   corporativo: 'Corporativo',
   refaccion: 'Refacciones',
   gastronomia: 'Gastronomía',
+  edificio: 'Edificios',
 };
 const tiposPresentes = [...new Set(obras.map((o) => o.data.tipo))].sort();
 
@@ -70,10 +71,14 @@ const labelBase =
       outline: 2px solid var(--color-navy);
       outline-offset: 2px;
     }
+    /* Una regla por tipo del enum de `obras`. Sobran las de los tipos sin obras
+       cargadas (el <input> ni se renderiza), pero el filtro queda listo para
+       cuando aparezcan. Agregar un tipo al schema ⇒ agregar su regla acá. */
     body:has(#f-vivienda:checked) li[data-tipo]:not([data-tipo='vivienda']),
     body:has(#f-corporativo:checked) li[data-tipo]:not([data-tipo='corporativo']),
     body:has(#f-refaccion:checked) li[data-tipo]:not([data-tipo='refaccion']),
-    body:has(#f-gastronomia:checked) li[data-tipo]:not([data-tipo='gastronomia']) {
+    body:has(#f-gastronomia:checked) li[data-tipo]:not([data-tipo='gastronomia']),
+    body:has(#f-edificio:checked) li[data-tipo]:not([data-tipo='edificio']) {
       display: none;
     }
   </style>

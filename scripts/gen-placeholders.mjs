@@ -40,9 +40,10 @@ await mkdir(OBRAS, { recursive: true });
 
 const obras = [
   ['prune', 'PRUNE', 'RETAIL CORPORATIVO'],
-  ['el-canton', 'EL CANTON GOLF', 'VIVIENDA · ESCOBAR'],
+  ['el-canton', 'EL CANTÓN GOLF', 'VIVIENDA · ESCOBAR'],
   ['google-wework', 'GOOGLE / WEWORK', 'CORPORATIVO · CABA'],
-  ['fabric-sushi', 'FABRIC SUSHI', 'GASTRONOMÍA · CABA'],
+  ['fabric-sushi', 'FABRIC SUSHI', 'CORPORATIVO · BUENOS AIRES'],
+  ['tacuari-1050', 'TACUARÍ 1050', 'EDIFICIO · CABA'],
   ['nordelta', 'NORDELTA', 'VIVIENDA · TIGRE'],
   ['san-isidro', 'SAN ISIDRO', 'VIVIENDA'],
   ['uade', 'UADE', 'CORPORATIVO · CABA'],

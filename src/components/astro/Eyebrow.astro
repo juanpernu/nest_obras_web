@@ -1,0 +1,31 @@
+---
+/**
+ * Eyebrow: título chico en mayúsculas, siempre inmediatamente arriba de un <h2>
+ * (o del <h1> del hero). Va como <span>, NO como heading, para no romper la
+ * jerarquía H1 → H2 → H3 (§6.2).
+ *
+ * Peso 500 y no 700: la identidad carga Roboto Condensed solo en 300/400/500
+ * (§2.1). Pedir 700 dispara bold sintético — el navegador engorda el trazo por
+ * su cuenta y el resultado desentona con el resto del sitio. A 11px en
+ * mayúsculas con 0.18em de tracking, el 500 ya lee como acento.
+ *
+ * Color: arena-800 sobre fondo claro (la arena de marca da 1.70 sobre blanco y
+ * falla WCAG, §1.2) y arena de marca sobre navy, donde el contraste sí da.
+ */
+interface Props {
+  /** true cuando el eyebrow va sobre el fondo navy (hero, bloque de contacto). */
+  sobreNavy?: boolean;
+  class?: string;
+}
+const { sobreNavy = false, class: className } = Astro.props as Props;
+---
+
+<span
+  class:list={[
+    'block text-[0.6875rem] font-medium uppercase leading-none tracking-[0.18em]',
+    sobreNavy ? 'text-arena' : 'text-arena-800',
+    className,
+  ]}
+>
+  <slot />
+</span>

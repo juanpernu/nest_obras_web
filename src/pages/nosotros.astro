@@ -24,13 +24,18 @@ const valores = [
   { titulo: 'Calidad', texto: 'Cada detalle importa. No hacemos obra terminada, hacemos obra bien terminada.' },
 ];
 
+// `alumniOf` son casas de estudio, no empleadores: Benito Roggio es donde Carlos
+// trabajó (eso ya lo cuenta la bio), su formación es Ingeniería Civil en la UBA.
 const personasLd = [
   {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: 'Arq. Morena Alegre',
     jobTitle: 'Arquitecta',
-    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Universidad Austral (IAE)' },
+    alumniOf: [
+      { '@type': 'CollegeOrUniversity', name: 'Universidad Austral (IAE)' },
+      { '@type': 'CollegeOrUniversity', name: 'Universidad de Buenos Aires' },
+    ],
     worksFor: { '@id': `${site.url}/#organizacion` },
   },
   {
@@ -38,7 +43,7 @@ const personasLd = [
     '@type': 'Person',
     name: 'Ing. Carlos Alegre',
     jobTitle: 'Ingeniero Civil',
-    alumniOf: { '@type': 'Organization', name: 'Benito Roggio' },
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Universidad de Buenos Aires' },
     worksFor: { '@id': `${site.url}/#organizacion` },
   },
 ];
@@ -46,7 +51,7 @@ const personasLd = [
 
 <Layout
   title="Quiénes somos | NEST Constructora Zona Norte y CABA"
-  description="Conocé al equipo de NEST: Arq. Morena Alegre (MBA IAE, ex WeWork y Google) e Ing. Carlos Alegre (ex Benito Roggio). +30 años construyendo en Zona Norte y CABA."
+  description="Conocé al equipo de NEST: Arq. Morena Alegre (MBA IAE, ex WeWork) e Ing. Carlos Alegre (Ing. Civil UBA, ex Benito Roggio). +30 años en Zona Norte y CABA."
   jsonLd={personasLd}
 >
   <section class="py-16 md:py-24">
@@ -74,13 +79,25 @@ const personasLd = [
           equipo.map((m) => (
             <div class="border-t-4 border-arena pt-6">
               <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
-              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">{m.data.rol}</p>
+              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
+                {m.data.rolDetalle ?? m.data.rol}
+              </p>
               <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
                 <m.Content />
               </div>
-              <p class="mt-4 text-sm uppercase tracking-[0.06em] text-navy-700">
-                {m.data.credenciales.join(' · ')}
-              </p>
+              {/* Acá las credenciales van en lista vertical, no en una línea con `·`
+                  como en el preview de la Home: son los nombres completos y en una
+                  sola línea se leen como un bloque indistinto. */}
+              <ul class="mt-5 space-y-1.5 text-sm text-navy-700">
+                {(m.data.credencialesDetalle ?? m.data.credenciales).map((c) => (
+                  <li class="flex gap-2.5">
+                    <span aria-hidden="true" class="text-arena-800">
+                      —
+                    </span>
+                    <span>{c}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))
         }
