@@ -1,0 +1,52 @@
+---
+/**
+ * Tarjeta de testimonio (§5.1 Sección 7). El texto es el cuerpo del .md, así que
+ * la página hace el `render()` y pasa el componente `Contenido`.
+ *
+ * Todo lo variable —texto, nombre, iniciales, zona— sale de la colección: cambiar
+ * un testimonio es editar el .md, nunca este layout.
+ */
+import type { CollectionEntry } from 'astro:content';
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+
+interface Props {
+  testimonio: CollectionEntry<'testimonios'>;
+  /** Cuerpo del .md ya renderizado por la página. */
+  Contenido: AstroComponentFactory;
+}
+const { testimonio, Contenido } = Astro.props as Props;
+const d = testimonio.data;
+
+// Iniciales del avatar: explícitas si las cargaron, si no las dos primeras del
+// nombre ("Juan R." → "JR"). `filter(Boolean)` descarta espacios dobles.
+const iniciales =
+  d.iniciales ??
+  d.nombre
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((palabra) => palabra[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+---
+
+<figure class="flex h-full flex-col border-t-4 border-arena bg-white p-6 md:p-8">
+  {/* Comilla decorativa: aria-hidden porque <blockquote> ya comunica la cita. */}
+  <span aria-hidden="true" class="block text-5xl leading-none text-arena-600">&ldquo;</span>
+
+  <blockquote class="mt-4 flex-1 leading-relaxed text-navy [&_p]:mt-0">
+    <Contenido />
+  </blockquote>
+
+  <figcaption class="mt-6 flex items-center gap-4">
+    <span
+      aria-hidden="true"
+      class="flex h-11 w-11 shrink-0 items-center justify-center bg-navy text-sm font-medium tracking-[0.06em] text-white"
+      >{iniciales}</span
+    >
+    <span class="min-w-0">
+      <span class="block font-medium text-navy">{d.nombre}</span>
+      <span class="block text-sm uppercase tracking-[0.06em] text-navy-700">{d.zona}</span>
+    </span>
+  </figcaption>
+</figure>

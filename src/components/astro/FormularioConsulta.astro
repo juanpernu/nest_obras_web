@@ -1,10 +1,24 @@
 ---
 /**
- * Formulario de consulta (§5.1 Sección 9, §8.2). <form> real que postea a
- * /api/consulta (endpoint on-demand, Fase 5). Funciona sin JS. Inputs con
- * font-size ≥16px para no disparar zoom en iOS (§7.3); honeypot antispam (§8.1);
- * <select> nativo (§3.4). Estilado para fondo claro (bordes navy, nunca arena §1.2).
+ * Formulario de consulta (§5.1 Sección 9, §8.2).
+ *
+ * Mejora progresiva, no WhatsApp puro: el <form> postea de verdad a
+ * /api/consulta (endpoint on-demand, Fase 5) y encima de eso un script vanilla
+ * intercepta el submit y abre WhatsApp con el mensaje ya armado. La razón de no
+ * resolver solo con un deep link es que una conversión que vive únicamente en
+ * wa.me queda fuera del alcance de crawlers y agentes (especificaciones-tecnicas
+ * §8.2); y el día que el endpoint exista, el formulario ya funciona sin JS.
+ *
+ * El script es JS plano en un <script> de Astro, no una isla: sigue habiendo
+ * cero directivas client:* (§7.1). Pesa bastante menos que el presupuesto de
+ * 5 KB de JS por ruta.
+ *
+ * Inputs con font-size ≥16px para no disparar zoom en iOS (§7.3); honeypot
+ * antispam (§8.1); <select> nativo (§3.4). Estilado para fondo claro (bordes
+ * navy, nunca arena §1.2).
  */
+import { site } from '@/data/site';
+
 interface Props {
   class?: string;
 }
@@ -12,10 +26,25 @@ const { class: className } = Astro.props as Props;
 
 const label = 'block text-sm font-medium uppercase tracking-[0.06em] text-navy';
 const field =
-  'mt-2 block w-full min-h-[44px] border border-navy-600 bg-white px-3 py-2 text-base text-navy focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
+  // El placeholder va en navy-700 (5.48:1) y no en un gris más claro: navy-500 da
+  // 3.00:1 sobre blanco y Lighthouse audita el contraste del placeholder (a11y 100).
+  'mt-2 block w-full min-h-[44px] border border-navy-600 bg-white px-3 py-2 text-base text-navy placeholder:text-navy-700 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
+
+const tiposDeProyecto = [
+  'Vivienda nueva',
+  'Refacción o ampliación',
+  'Proyecto corporativo o retail',
+  'Aún no lo tengo claro',
+];
 ---
 
-<form method="POST" action="/api/consulta" class:list={['space-y-5', className]}>
+<form
+  method="POST"
+  action="/api/consulta"
+  data-consulta
+  data-whatsapp={site.whatsapp.numero}
+  class:list={['space-y-5', className]}
+>
   {/* Honeypot: los bots lo completan; humanos no lo ven. */}
   <div class="hidden" aria-hidden="true">
     <label>No completar<input type="text" name="_gotcha" tabindex="-1" autocomplete="off" /></label>
@@ -23,33 +52,105 @@ const field =
 
   <div>
     <label for="nombre" class={label}>Nombre completo *</label>
-    <input id="nombre" name="nombre" type="text" autocomplete="name" required class={field} />
+    <input
+      id="nombre"
+      name="nombre"
+      type="text"
+      autocomplete="name"
+      placeholder="Ej: María González"
+      required
+      class={field}
+    />
   </div>
 
   <div>
-    <label for="contacto" class={label}>WhatsApp o email *</label>
-    <input id="contacto" name="contacto" type="text" required class={field} />
+    <label for="whatsapp" class={label}>WhatsApp *</label>
+    <input
+      id="whatsapp"
+      name="whatsapp"
+      type="tel"
+      autocomplete="tel"
+      inputmode="tel"
+      placeholder="Ej: 11 5555-0000"
+      required
+      class={field}
+    />
   </div>
 
   <div>
     <label for="tipo" class={label}>Tipo de proyecto *</label>
     <select id="tipo" name="tipo" required class={field}>
-      <option value="">Elegí una opción</option>
-      <option>Vivienda nueva</option>
-      <option>Refacción</option>
-      <option>Proyecto corporativo</option>
-      <option>Otro</option>
+      <option value="">Seleccioná una opción</option>
+      {tiposDeProyecto.map((t) => <option value={t}>{t}</option>)}
     </select>
   </div>
 
   <div>
-    <label for="mensaje" class={label}>Describí tu proyecto — zona, m², etapa (opcional)</label>
-    <textarea id="mensaje" name="mensaje" rows="4" class={field}></textarea>
+    <label for="zona" class={label}>¿Dónde querés construir?</label>
+    <input
+      id="zona"
+      name="zona"
+      type="text"
+      placeholder="Ej: Nordelta, San Isidro, CABA..."
+      class={field}
+    />
   </div>
 
-  <button
-    type="submit"
-    class="inline-flex min-h-[44px] items-center justify-center bg-arena px-6 py-3 text-base font-medium uppercase tracking-[0.02em] text-navy transition-colors hover:bg-arena-600"
-    >Enviar consulta</button
-  >
+  <div>
+    <label for="mensaje" class={label}>Contanos tu proyecto (opcional)</label>
+    <textarea
+      id="mensaje"
+      name="mensaje"
+      rows="3"
+      placeholder="Ej: Quiero construir una casa de 300m² en Nordelta. Tengo el lote."
+      class={field}></textarea>
+  </div>
+
+  <div>
+    <button
+      type="submit"
+      class="flex min-h-[44px] w-full items-center justify-center bg-navy px-6 py-3 text-base font-medium uppercase tracking-[0.02em] text-white transition-colors hover:bg-navy-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+      >Enviar consulta por WhatsApp →</button
+    >
+    <p class="mt-3 text-center text-[10px] leading-relaxed text-navy-700">
+      Al hacer clic se abre WhatsApp con tu consulta pre-cargada
+    </p>
+  </div>
 </form>
+
+<script>
+  // Intercepta el submit y abre WhatsApp con el mensaje armado. Si este script
+  // no corre (JS deshabilitado, error de red), el navegador hace el POST normal
+  // a /api/consulta y no se pierde la consulta.
+  for (const form of document.querySelectorAll<HTMLFormElement>('form[data-consulta]')) {
+    form.addEventListener('submit', (evento) => {
+      const numero = form.dataset.whatsapp;
+      if (!numero) return; // sin número no hay deep link: que siga el POST.
+
+      const datos = new FormData(form);
+      const valor = (campo: string) => String(datos.get(campo) ?? '').trim();
+
+      // Honeypot relleno ⇒ es un bot. Se corta acá, sin POST y sin WhatsApp.
+      if (valor('_gotcha')) {
+        evento.preventDefault();
+        return;
+      }
+
+      const zona = valor('zona');
+      const descripcion = valor('mensaje');
+      const mensaje = [
+        `Hola NEST, soy ${valor('nombre')}.`,
+        `Quiero consultar por: ${valor('tipo')}${zona ? ` en ${zona}` : ''}.`,
+        descripcion,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+      evento.preventDefault();
+      // Nueva pestaña para no perder la página; si el navegador la bloquea,
+      // se navega en la actual antes que dejar el submit sin efecto.
+      if (!window.open(url, '_blank', 'noopener')) window.location.href = url;
+    });
+  }
+</script>

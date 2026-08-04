@@ -1,8 +1,9 @@
 ---
 import Layout from '@/layouts/main.astro';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
+import BloqueContacto from '@/components/astro/BloqueContacto.astro';
 import Boton from '@/components/astro/Boton.astro';
-import { whatsappUrl, site } from '@/data/site';
+import { whatsappUrl } from '@/data/site';
 
 // Bloques de confianza PROVISIONALES — reemplazar por el copy del PDF pp.15-17
 // (§5.6: separar título y párrafo, que en el PDF vienen pegados).
@@ -26,12 +27,13 @@ const bloques = [
         <FormularioConsulta />
 
         <div>
-          <div class="bg-navy-50 p-6">
+          {/* Mismo componente que la Home: el NAP visible sale de site.ts en los
+              dos lados, así no puede divergir del footer ni del JSON-LD (§6.7). */}
+          <BloqueContacto />
+
+          <div class="mt-8 bg-navy-50 p-6">
             <p class="text-sm uppercase tracking-[0.06em] text-navy-700">¿Preferís escribirnos?</p>
             <div class="mt-4"><Boton href={whatsappUrl} variante="secundario">Escribinos por WhatsApp</Boton></div>
-            <p class="mt-4 text-sm text-navy-700">
-              <a href={`mailto:${site.email}`} class="hover:text-navy">{site.email}</a>
-            </p>
           </div>
 
           <dl class="mt-8 space-y-6">

@@ -27,13 +27,14 @@ const item = 'flex min-h-[44px] items-center transition-colors hover:text-arena'
         {links.map((l) => <a href={l.href} class={item}>{l.label}</a>)}
       </nav>
 
-      <div class="flex flex-col text-sm text-navy-100">
+      <address class="flex flex-col text-sm not-italic text-navy-100">
         <a href={`mailto:${site.email}`} class={item}>{site.email}</a>
         <a href={whatsappUrl} class={item}>WhatsApp {site.whatsapp.display}</a>
         <a href={site.instagram} target="_blank" rel="noopener noreferrer" class={item}>
           Instagram @nest.obras
         </a>
-      </div>
+        {site.direccion && <p class="mt-3 leading-relaxed">{site.direccion.display}</p>}
+      </address>
     </div>
 
     <p class="mt-12 border-t border-navy-800 pt-6 text-xs text-navy-400">

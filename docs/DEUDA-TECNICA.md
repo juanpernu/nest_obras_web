@@ -129,16 +129,32 @@ El PDF fuente (`NEST_Contenido_Web_Completo.pdf`) **no es accesible desde el ent
 - **Home §6** — párrafo de trayectoria corporativa (p. 14) → `src/pages/index.astro` (Sección 6).
 - **`/servicios`** — tabla/redacción de los 8 clientes corporativos (p. 14).
 
+### 2.3 🔴 Testimonios placeholder EN PRODUCCIÓN (excepción a §6.3)
+
+`src/content/testimonios/juan-r.md` y `maria-l.md` son **inventados**: "Juan R. — San Isidro" y "María L. — Nordelta" no son clientes reales, y sus textos tampoco. Se publican en la Home por **decisión explícita del cliente (2026-08-04)**, pedida en `NEST_cambios_home.md` punto 6.
+
+Esto es una **excepción deliberada** a reglas que el propio proyecto documenta en cuatro lugares:
+- `PLAN-EJECUCION.md` §6.3 — "No publicar testimonios placeholder como si fueran reales."
+- `PLAN-EJECUCION.md` §5.1 Sección 7 — "No se renderiza hasta tener testimonios reales."
+- `PLAN-EJECUCION.md` §4.5 — "Si `testimonios` está vacía, la sección 7 no se renderiza."
+- `PLAN-EJECUCION.md` §12 checklist pre-launch — "Cero testimonios placeholder publicados como reales."
+
+**Riesgo:** son reseñas de clientes atribuidas a personas que no existen, en el sitio comercial de una constructora. En Argentina eso entra en publicidad engañosa (Ley 24.240 de Defensa del Consumidor, arts. 4 y 8). Además el sitio **no** emite `Review`/`AggregateRating` en el JSON-LD (§6.6), así que Google no los indexa como reseñas — pero un visitante sí los lee como tales.
+
+**Cómo revertir (30 segundos):** `rm src/content/testimonios/*.md` y rebuild. La sección desaparece sola, sin tocar código. Ojo: hay que borrar también `node_modules/.astro/data-store.json` — ver §5, el store no purga una colección que queda en cero.
+
+**Cómo reemplazar:** sobrescribir los dos `.md` con los textos reales (campos `nombre`, `zona`, `iniciales` + el texto en el cuerpo) y borrar el bloque de comentarios ⚠️ del frontmatter.
+
 ---
 
 ## 3. 🟠 Bloqueado por datos de terceros (§11)
 
 | Dato | Desbloquea | Estado |
 |---|---|---|
-| **Dirección física** (NAP) | `address` en el JSON-LD `GeneralContractor`, footer, Perfil de Negocio de Google | Falta (el JSON-LD hoy **omite** `address` a propósito) |
+| **Dirección física** (NAP) | `address` en el JSON-LD `GeneralContractor`, footer, Perfil de Negocio de Google | ✅ Resuelto 2026-08-04: Paraná 26, CABA, CP 1017 — cargado en `site.ts`, emitido en el `PostalAddress` y visible en footer y bloque de contacto |
 | **Ficha de El Canton** (m², plazo, año, estilo) | publicar `/obras/el-canton` (`paginaPropia: true`) | Falta |
 | **Fotos reales de PRUNE** (≥8) | reemplazar placeholders del caso | Falta |
-| **Testimonios reales** | Sección 7 de la Home (hoy no se renderiza, §6.3) | Falta (~semana 3) |
+| **Testimonios reales** | reemplazar los **placeholders publicados** (§2.3) | Falta (~semana 3) — 🔴 mientras tanto hay 2 reseñas inventadas en el aire |
 
 ---
 
@@ -159,7 +175,7 @@ El PDF fuente (`NEST_Contenido_Web_Completo.pdf`) **no es accesible desde el ent
 ## 5. 🟢 Deuda menor / decisiones tomadas / known issues
 
 - **Fallback tipográfico métrico (CLS)** — hoy stopgap `"Arial Narrow"` en el stack. El fallback métrico definitivo (`@font-face` con `size-adjust`/`ascent-override`) quedó diferido; ahora que el hero real existe (Fase 4) se puede medir CLS e implementarlo. `fontaine` no sirve (no inyecta en la CSS-var de Tailwind v4).
-- **Aviso de build "colección testimonios vacía"** — esperado: §4.5 la quiere vacía hasta tener testimonios. Benigno (build OK, `astro check` limpio). Se resuelve solo al cargar testimonios reales.
+- **El content store NO purga una colección que queda en cero** — al borrar el último `.md` de una colección, el glob loader avisa `No files found matching` pero las entradas ya sincronizadas **siguen renderizando**. `rm -rf .astro dist` no alcanza: el store persistente vive en **`node_modules/.astro/data-store.json`**. Verificado 2026-08-04 (dos testimonios de prueba sobrevivieron a tres builds limpios). Importa porque la caché de build de Vercel puede incluir `node_modules`: si algún día se despublican los testimonios, hay que borrar ese archivo o el deploy los republica.
 - **`PLAN-EJECUCION.md` dice "Astro 5"** (§2.5/§3) pero se usa **Astro 7** (decisión aprobada). Doc desactualizado — conviene anotar la versión real ahí.
 - **shadcn (§2.6) reemplazado por componentes Astro** por la identidad austera (radius 0, sin sombras). Decisión tomada; no revertir salvo pedido. Si se integra shadcn, el mapeo de tokens §3.2 está reservado como comentario en `global.css` (regla: arena nunca sobre blanco).
 - **TypeScript pineado a 6.x** — `astro check` (language server) no soporta el compilador nativo TS 7. Revisar cuando lo soporte.
@@ -178,6 +194,7 @@ El PDF fuente (`NEST_Contenido_Web_Completo.pdf`) **no es accesible desde el ent
 - [ ] Un solo `<h1>` + jerarquía sin saltos
 - [ ] 8 clientes como **texto** en la Home
 - [ ] Cero `[completar]` / cero placeholders publicados (fotos + copy reales)
+- [ ] **Testimonios reales cargados** — hoy hay 2 inventados en producción (§2.3). No lanzar sin reemplazarlos.
 - [ ] **Toda la acentuación correcta** (ningún "anos", "mas", "gestion" sin tilde)
 - [ ] `<form>` / `<label for>` / `<button type=submit>` reales · form envía sin JS
 - [ ] Canonical autorreferencial + ruta en `sitemap.xml`
