@@ -113,3 +113,42 @@
     text-rendering: optimizeLegibility;
   }
 }
+
+/* Keyframes del hero (decisión del 06/08/2026): la sombra/blur del header al
+ * scrollear y la línea que se dibuja bajo el h1 rompen a propósito el "sin
+ * sombras, sin degradados" de §3.3 — el cliente pidió avanzar con este
+ * lenguaje visual en varios componentes, empezando por Header y Hero. */
+@layer utilities {
+  @keyframes hero-rule {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* Doble chevron del indicador de scroll del hero: cada flecha "cae" y se
+   * apaga, la siguiente arranca con 0.3s de diferencia — da la sensación de
+   * una cascada continua en vez de un simple rebote. */
+  @keyframes chevron-caida {
+    0% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(2px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

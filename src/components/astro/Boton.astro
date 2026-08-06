@@ -4,12 +4,12 @@
  * Variantes según el fondo: arena+navy = 7.91 (AAA), navy sobre blanco = 13.46;
  * el arena NUNCA como texto sobre blanco (§1.2).
  *
- * Geometría por variante (decisiones del 03/08/2026):
+ * Geometría por variante (decisiones del 06/08/2026):
  * - primario: 4px de radio (`--radius-boton`), es la única excepción al radio cero.
- * - secundario: sin borde ni caja. El stroke navy se convierte en un subrayado que
- *   crece de izquierda a derecha en hover/foco. Sin padding horizontal para que el
- *   texto alinee con el párrafo que lo precede; el min-h de 44px sostiene el tap target.
- * - sobreNavy: sin cambios, sigue con borde arena y radio cero (§3.3).
+ * - secundario y sobreNavy: sin borde ni caja. El stroke se convierte en un
+ *   subrayado de 3px que crece de izquierda a derecha en hover/foco. Sin padding
+ *   horizontal para que el texto alinee con el párrafo que lo precede; el min-h
+ *   de 44px sostiene el tap target.
  *
  * El subrayado se dibuja con un gradiente en `currentColor` y se anima por
  * `background-size`, no por `width`: no dispara layout y no necesita pseudo-elemento
@@ -27,16 +27,16 @@ const base =
 const variantes = {
   primario: 'rounded-boton px-6 py-3 bg-arena text-navy transition-colors hover:bg-arena-600', // fondo claro u oscuro
   secundario: 'py-3 text-navy',
-  sobreNavy: 'border border-arena px-6 py-3 text-arena transition-colors hover:bg-arena hover:text-navy',
+  sobreNavy: 'py-3 text-arena',
 };
 
-// Subrayado animado: 0% → 100% del ancho del texto, 1px, en currentColor (navy).
+// Subrayado animado: 0% → 100% del ancho del texto, 3px, en currentColor.
 const subrayado =
-  'bg-[image:linear-gradient(currentColor,currentColor)] bg-[length:0%_1px] bg-[position:0_100%] bg-no-repeat pb-1 transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_1px] group-focus-visible:bg-[length:100%_1px] motion-reduce:transition-none';
+  'bg-[image:linear-gradient(currentColor,currentColor)] bg-[length:0%_3px] bg-[position:0_100%] bg-no-repeat pb-1 transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_3px] group-focus-visible:bg-[length:100%_3px] motion-reduce:transition-none';
 const internas = {
   primario: '',
   secundario: subrayado,
-  sobreNavy: '',
+  sobreNavy: subrayado,
 };
 ---
 
