@@ -2,33 +2,46 @@
 import Layout from '@/layouts/main.astro';
 import HeroVideo from '@/components/astro/HeroVideo.astro';
 import Boton from '@/components/astro/Boton.astro';
+import Eyebrow from '@/components/astro/Eyebrow.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
 import TarjetaObraHover from '@/components/astro/TarjetaObraHover.astro';
+import TarjetaTestimonio from '@/components/astro/TarjetaTestimonio.astro';
 import GrillaLogos from '@/components/astro/GrillaLogos.astro';
 import elCantonAerea from '@/assets/obras/el-canton-aerea.jpg';
-import pruneLocal from '@/assets/obras/prune-local.jpg';
 import tacuari1 from '../../assets/img/tacuari1.png';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
-import { getCollection } from 'astro:content';
+import BloqueContacto from '@/components/astro/BloqueContacto.astro';
+import { getCollection, render } from 'astro:content';
 import type { ImageMetadata } from 'astro';
-import { whatsappUrl } from '@/data/site';
 
 const destacadas = (await getCollection('obras', (o) => o.data.destacadaEnHome)).sort(
   (a, b) => a.data.orden - b.data.orden,
 );
 const equipo = (await getCollection('equipo')).sort((a, b) => a.data.orden - b.data.orden);
-const testimonios = await getCollection('testimonios'); // vacía → Sección 7 no se renderiza
 
-/* Imágenes de fondo propias de las 2 destacadas del Home (no son la `portada`
- * de la colección, que se sigue usando en /obras). */
+// El texto del testimonio es el cuerpo del .md, así que hay que renderizarlo acá.
+// La colección está vacía a propósito (§6.3): la Sección 7 no se renderiza hasta
+// que haya testimonios reales cargados.
+const testimoniosEntries = (await getCollection('testimonios')).sort(
+  (a, b) => a.data.orden - b.data.orden,
+);
+const testimonios = await Promise.all(
+  testimoniosEntries.map(async (t) => ({ entry: t, Contenido: (await render(t)).Content })),
+);
+
+/* Imágenes de fondo propias de algunas destacadas del Home: fotos horizontales
+ * que funcionan mejor en el recorte 4:3 de la tarjeta con hover que la `portada`
+ * de la colección (que se sigue usando en /obras). Es un override opcional —
+ * las obras que no estén acá caen en su propia `portada`, así que agregar una
+ * destacada en el contenido no rompe el build. */
 const fondoDestacada: Record<string, { imagen: ImageMetadata; alt: string }> = {
   'el-canton': {
     imagen: elCantonAerea,
     alt: 'Vista aérea del barrio El Cantón Golf, Escobar, donde NEST construyó una vivienda premium',
   },
-  prune: {
-    imagen: pruneLocal,
-    alt: 'Local de PRUNE terminado por NEST durante la expansión de 10 sucursales',
+  'tacuari-1050': {
+    imagen: tacuari1,
+    alt: 'Edificio Tacuarí 1050, obra de NEST en CABA',
   },
 };
 
@@ -37,27 +50,20 @@ const tipoLabel: Record<string, string> = {
   corporativo: 'Corporativo',
   refaccion: 'Refacción',
   gastronomia: 'Gastronomía',
+  edificio: 'Edificio',
 };
 
-const tarjetasDestacadas = [
-  ...destacadas.map((o) => ({
+const tarjetasDestacadas = destacadas.map((o) => {
+  const fondo = fondoDestacada[o.id];
+  return {
     nombre: o.data.nombre,
     tipoLabel: tipoLabel[o.data.tipo],
     zona: o.data.zona,
     href: o.data.paginaPropia && o.data.slug ? `/obras/${o.data.slug}` : '/obras',
-    imagen: fondoDestacada[o.id].imagen,
-    imagenAlt: fondoDestacada[o.id].alt,
-  })),
-  // Tarjeta de ejemplo — datos inventados a pedido, a modificar más adelante.
-  {
-    nombre: 'Edificio Tacuarí',
-    tipoLabel: 'Refacción',
-    zona: 'San Telmo, CABA',
-    href: '/obras',
-    imagen: tacuari1,
-    imagenAlt: 'Edificio Tacuarí, obra de refacción realizada por NEST en San Telmo, CABA',
-  },
-];
+    imagen: fondo?.imagen ?? o.data.portada,
+    imagenAlt: fondo?.alt ?? o.data.portadaAlt,
+  };
+});
 
 const serviciosHome = [
   {
@@ -74,6 +80,22 @@ const serviciosHome = [
     titulo: 'Dirección de Obra',
     texto:
       'Asesoramiento técnico, control de presupuesto y gestión integral. Nos hacemos cargo del proceso para que vos te concentres en lo que importa.',
+  },
+];
+
+const bloquesDeConfianza = [
+  {
+    titulo: 'Respuesta en el día',
+    texto:
+      'En horario hábil respondemos en menos de 24 horas. Sin bots, sin formularios interminables.',
+  },
+  {
+    titulo: 'Sin compromiso',
+    texto: 'La primera consulta es sin costo. Nos contás, nosotros escuchamos y te orientamos.',
+  },
+  {
+    titulo: 'Atención personalizada',
+    texto: 'Hablás directamente con uno de los socios, no con un vendedor.',
   },
 ];
 
@@ -94,6 +116,7 @@ const seo = {
     />
     <div class="absolute inset-0 -z-10 bg-black/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 text-white">
+      <Eyebrow sobreNavy class="mb-3">Constructora premium · Zona Norte y CABA</Eyebrow>
       <h1 class="max-w-3xl text-hero font-light">Tu obra en manos expertas, de principio a fin.</h1>
       <p class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100">
         30 años construyendo casas y proyectos que cumplen plazo, presupuesto y los más altos
@@ -116,7 +139,11 @@ const seo = {
   {/* Sección 3 — Intro */}
   <section class="py-16 md:py-24">
     <div class="mx-auto max-w-3xl px-6 text-center">
-      <p class="text-h3 font-light leading-relaxed text-navy">
+      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+      <h2 class="mx-auto max-w-[640px] text-h2 font-medium text-navy">
+        Más de 30 años construyendo lo que prometemos
+      </h2>
+      <p class="mx-auto mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
         NEST es una empresa constructora especializada en viviendas premium, refacciones y proyectos
         corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel con
         acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde el
@@ -128,7 +155,8 @@ const seo = {
   {/* Sección 4 — Servicios destacados (3) */}
   <section class="bg-navy-50 py-16 md:py-24">
     <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Lo que hacemos</h2>
+      <Eyebrow class="mb-2.5">Servicios</Eyebrow>
+      <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
       <div class="mt-10 grid gap-8 md:grid-cols-3">
         {
           serviciosHome.map((s) => (
@@ -146,7 +174,10 @@ const seo = {
   <section>
     <div class="mx-auto max-w-6xl px-6">
       <div class="flex items-end justify-between gap-4">
-        <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
+        <div>
+          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
+          <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
+        </div>
         <a
           href="/obras"
           class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-700 hover:text-navy"
@@ -186,9 +217,17 @@ const seo = {
   {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3) */}
   {
     testimonios.length > 0 && (
-      <section class="py-16 md:py-24">
+      <section class="bg-arena-200 py-16 md:py-24">
         <div class="mx-auto max-w-6xl px-6">
-          <h2 class="text-h2 font-medium text-navy">Lo que dicen nuestros clientes</h2>
+          <div class="text-center">
+            <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
+            <h2 class="text-h2 font-medium text-navy">La obra habla, pero el cliente confirma</h2>
+          </div>
+          <div class="mt-10 grid gap-8 md:grid-cols-2">
+            {testimonios.map((t) => (
+              <TarjetaTestimonio testimonio={t.entry} Contenido={t.Contenido} />
+            ))}
+          </div>
         </div>
       </section>
     )
@@ -197,6 +236,7 @@ const seo = {
   {/* Sección 8 — Equipo (preview) */}
   <section class="bg-navy-50 py-16 md:py-24">
     <div class="mx-auto max-w-6xl px-6">
+      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
       <h2 class="text-h2 font-medium text-navy">El equipo detrás de cada obra</h2>
       <div class="mt-10 grid gap-8 sm:grid-cols-2">
         {
@@ -221,13 +261,30 @@ const seo = {
   <section id="contacto" class="py-16 md:py-24">
     <div class="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2">
       <div>
+        <Eyebrow class="mb-2.5">Contacto</Eyebrow>
         <h2 class="text-h2 font-medium text-navy">Contanos tu proyecto</h2>
-        <p class="mt-3 text-navy-700">Respondemos en menos de 24 horas en días hábiles.</p>
-        <div class="mt-6">
-          <Boton href={whatsappUrl} variante="secundario">Escribinos por WhatsApp</Boton>
-        </div>
+        <p class="mt-3 text-navy-700">
+          Respondemos en menos de 24 horas en días hábiles. Sin compromiso.
+        </p>
+        <FormularioConsulta class="mt-8" />
       </div>
-      <FormularioConsulta />
+
+      {/* El padding-top alinea el arranque de esta columna con el primer campo del
+          formulario, que en la izquierda queda debajo del encabezado. Es alineación
+          visual, no una medida exacta: el alto del encabezado depende del texto. */}
+      <div class="md:pt-36">
+        <dl class="space-y-6">
+          {
+            bloquesDeConfianza.map((b) => (
+              <div class="border-t-4 border-arena bg-navy-50 p-6">
+                <dt class="font-medium uppercase tracking-[0.04em] text-navy">{b.titulo}</dt>
+                <dd class="mt-2 leading-relaxed text-navy-700">{b.texto}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        <BloqueContacto class="mt-8" />
+      </div>
     </div>
   </section>
 </Layout>

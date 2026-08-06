@@ -85,7 +85,8 @@ if (site.direccion) {
     streetAddress: site.direccion.calle,
     addressLocality: site.direccion.localidad,
     addressRegion: site.direccion.provincia,
-    postalCode: site.direccion.codigoPostal,
+    // `postalCode` solo si lo tenemos: un CP inventado ensucia el NAP y el local SEO.
+    ...(site.direccion.codigoPostal ? { postalCode: site.direccion.codigoPostal } : {}),
     addressCountry: site.direccion.pais,
   };
 }
