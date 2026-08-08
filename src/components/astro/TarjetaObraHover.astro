@@ -55,11 +55,10 @@ const optimizada = await getImage({
       />
     </div>
 
-    {/* Velo navy al 30% visible en reposo. En hover/foco cede al degradé. */}
-    <div aria-hidden="true" class="velo-plano"></div>
-    {/* Degradé navy/70 → transparente: deja ver la imagen arriba sin perder la
-     * legibilidad del texto, que vive abajo. Peor caso (imagen blanca) da
-     * 5.41:1 contra texto blanco. */}
+    {/* Degradé navy/70 → transparente, solo en hover/foco: deja ver la imagen
+     * arriba sin perder la legibilidad del texto, que vive abajo. Peor caso
+     * (imagen blanca) da 5.41:1 contra texto blanco. En reposo la foto se ve
+     * limpia — el velo plano del 30% se quitó el 07/08/2026. */}
     <div aria-hidden="true" class="velo-degrade"></div>
 
     <div class="texto">
@@ -97,19 +96,10 @@ const optimizada = await getImage({
     scale: 1.15;
   }
 
-  .velo-plano,
   .velo-degrade {
     position: absolute;
     inset: 0;
     z-index: 10;
-  }
-
-  .velo-plano {
-    background-color: color-mix(in srgb, var(--color-navy) 30%, transparent);
-    opacity: 1;
-  }
-
-  .velo-degrade {
     background-image: linear-gradient(
       to top,
       color-mix(in srgb, var(--color-navy) 70%, transparent),
@@ -127,11 +117,6 @@ const optimizada = await getImage({
     opacity: 0;
   }
 
-  .tarjeta:hover .velo-plano,
-  .tarjeta:focus-visible .velo-plano {
-    opacity: 0;
-  }
-
   .tarjeta:hover .velo-degrade,
   .tarjeta:focus-visible .velo-degrade,
   .tarjeta:hover .texto,
@@ -146,7 +131,6 @@ const optimizada = await getImage({
       transition: translate 200ms ease-out;
     }
 
-    .velo-plano,
     .velo-degrade {
       transition: opacity 300ms ease-out;
     }
@@ -172,14 +156,43 @@ const optimizada = await getImage({
   /* Sin hover (touch) el nombre de la obra jamás se revelaría: se muestra de
    * entrada, igual que hacía el <noscript> de la versión con JS. */
   @media (hover: none) {
-    .velo-plano {
-      opacity: 0;
-    }
-
     .velo-degrade,
     .texto {
       opacity: 1;
       translate: 0 0;
+    }
+  }
+
+  /* Expansión tipo galería (07/08/2026): la tarjeta apuntada crece y sus
+   * hermanas se encogen. Es CSS puro —dos reglas de igual especificidad, gana
+   * la última— así que no hace falta el framer-motion del ejemplo ni JS.
+   * `.obras-fila` vive en index.astro, de ahí el :global. */
+  article {
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    article {
+      flex: 1 1 0;
+    }
+  }
+
+  /* Solo con hover real, ancho suficiente y sin reduced-motion: en mobile la
+   * fila es una columna (crecer cambiaría alturas) y un salto de layout
+   * instantáneo sería peor que no expandir. */
+  @media (hover: hover) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+    article {
+      transition: flex-grow 500ms ease-in-out;
+    }
+
+    :global(.obras-fila:hover) article,
+    :global(.obras-fila:focus-within) article {
+      flex-grow: 0.5;
+    }
+
+    :global(.obras-fila) article:hover,
+    :global(.obras-fila) article:focus-within {
+      flex-grow: 2;
     }
   }
 </style>

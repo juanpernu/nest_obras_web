@@ -5,8 +5,10 @@ import Boton from '@/components/astro/Boton.astro';
 import Eyebrow from '@/components/astro/Eyebrow.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
 import TarjetaObraHover from '@/components/astro/TarjetaObraHover.astro';
-import TarjetaTestimonio from '@/components/astro/TarjetaTestimonio.astro';
+import CarruselTestimonios from '@/components/astro/CarruselTestimonios.astro';
 import GrillaLogos from '@/components/astro/GrillaLogos.astro';
+import GrillaServicios from '@/components/astro/GrillaServicios.astro';
+import type { Servicio } from '@/components/astro/GrillaServicios.astro';
 import elCantonAerea from '@/assets/obras/el-canton-aerea.jpg';
 import tacuari1 from '../../assets/img/tacuari1.png';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
@@ -65,21 +67,26 @@ const tarjetasDestacadas = destacadas.map((o) => {
   };
 });
 
-const serviciosHome = [
+/* `icono` se agregó con las tarjetas del proto (07/08/2026). Sin `href`: las
+ * tarjetas ya no llevan CTA propio (08/08/2026). */
+const serviciosHome: Servicio[] = [
   {
     titulo: 'Viviendas y Refacciones',
     texto:
       'Casas llave en mano, ampliaciones y refacciones en barrios cerrados y zonas premium. De principio a fin, con un solo responsable.',
+    icono: 'vivienda',
   },
   {
     titulo: 'Proyectos Corporativos',
     texto:
       'Oficinas, locales y desarrollos comerciales. Cumplimos plazos ajustados sin interrumpir tu operación. 10 sucursales PRUNE en 40 días.',
+    icono: 'corporativo',
   },
   {
     titulo: 'Dirección de Obra',
     texto:
       'Asesoramiento técnico, control de presupuesto y gestión integral. Nos hacemos cargo del proceso para que vos te concentres en lo que importa.',
+    icono: 'direccion',
   },
 ];
 
@@ -119,16 +126,19 @@ const seo = {
     />
     <div class="hero-overlay absolute inset-0 -z-10 bg-navy/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 text-white">
+      {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
+          necesario porque el tamaño base de Eyebrow también es un valor
+          arbitrario: sin él, cuál gana depende del orden del CSS generado. */}
       <Eyebrow
         sobreNavy
-        class="mb-3 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="mb-3 text-[0.8125rem]! opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
         >Constructora premium · Zona Norte y CABA</Eyebrow
       >
       <h1
         class="max-w-3xl text-hero font-medium opacity-0 delay-100 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
       >
         Tu obra en manos expertas <br class="hidden lg:block" />
-        <span class="whitespace-nowrap">de principio a fin.</span>
+        <span class="subrayado-hero inline-block whitespace-nowrap">de principio a fin.</span>
       </h1>
       <div
         class="mt-4 h-0.5 w-32 origin-left scale-x-0 bg-arena motion-safe:animate-[hero-rule_1s_0.4s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:scale-x-100"
@@ -188,17 +198,24 @@ const seo = {
 
   {/* Sección 3 — Intro */}
   <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-3xl px-6 text-center">
-      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-      <h2 class="mx-auto max-w-[640px] text-h2 font-medium text-navy">
-        Más de 30 años construyendo lo que prometemos
-      </h2>
-      <p class="mx-auto mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
-        NEST es una empresa constructora especializada en viviendas premium, refacciones y proyectos
-        corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel con
-        acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde el
-        primer trazo hasta la llave en la mano.
-      </p>
+    <div class="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
+      <div>
+        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+          Más de 30 años construyendo lo que prometemos
+        </h2>
+        <p class="mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
+          NEST es una empresa constructora especializada en viviendas premium, refacciones y
+          proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
+          con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
+          el primer trazo hasta la llave en la mano.
+        </p>
+      </div>
+
+      {/* ESPACIO RESERVADO PARA IMAGEN — placeholder a la espera del asset real.
+          Al reemplazarlo, usar <Image /> de astro:assets (no <img>) para que
+          entre en el pipeline de optimización, como el resto de las fotos. */}
+      <div class="aspect-[4/3] w-full bg-navy-50"></div>
     </div>
   </section>
 
@@ -207,35 +224,28 @@ const seo = {
     <div class="mx-auto max-w-6xl px-6">
       <Eyebrow class="mb-2.5">Servicios</Eyebrow>
       <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
-        {
-          serviciosHome.map((s) => (
-            <div class="border-t-4 border-arena bg-white p-6">
-              <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
-              <p class="mt-3 leading-relaxed text-navy">{s.texto}</p>
-            </div>
-          ))
-        }
-      </div>
+      <GrillaServicios class="mt-4" servicios={serviciosHome} />
     </div>
   </section>
 
   {/* Sección 5 — Obras destacadas (3) */}
-  <section>
+  <section class="bg-navy pt-14">
     <div class="mx-auto max-w-6xl px-6">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
-          <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
+          <Eyebrow sobreNavy class="mb-2.5">Portfolio</Eyebrow>
+          <h2 class="text-h2 font-medium text-white">Obras destacadas</h2>
         </div>
         <a
           href="/obras"
-          class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-700 hover:text-navy"
+          class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-100 hover:text-arena"
           >Ver todas</a
         >
       </div>
     </div>
-    <div class="mt-10 grid w-full gap-0 sm:grid-cols-3">
+    {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
+        grid de columnas fijas no permite (ver TarjetaObraHover). */}
+    <div class="obras-fila mt-10 flex w-full flex-col sm:flex-row">
       {
         tarjetasDestacadas.map((t) => (
           <TarjetaObraHover
@@ -267,17 +277,13 @@ const seo = {
   {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3) */}
   {
     testimonios.length > 0 && (
-      <section class="bg-arena-200 py-16 md:py-24">
+      <section class="overflow-hidden bg-arena-200 py-16 md:py-24">
         <div class="mx-auto max-w-6xl px-6">
           <div class="text-center">
             <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
             <h2 class="text-h2 font-medium text-navy">La obra habla, pero el cliente confirma</h2>
           </div>
-          <div class="mt-10 grid gap-8 md:grid-cols-2">
-            {testimonios.map((t) => (
-              <TarjetaTestimonio testimonio={t.entry} Contenido={t.Contenido} />
-            ))}
-          </div>
+          <CarruselTestimonios class="mt-12" testimonios={testimonios} />
         </div>
       </section>
     )
@@ -340,6 +346,36 @@ const seo = {
 </Layout>
 
 <style>
+  /* Subrayado que se dibuja bajo el cierre del <h1> (07/08/2026). Va en un
+   * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
+   * porque acá el trazo no responde a hover: se anima al cargar, reusando el
+   * keyframe `hero-rule` que ya dibuja la línea de abajo. El delay de 0.7s lo
+   * encadena después del reveal del h1 y de esa línea. */
+  .subrayado-hero {
+    position: relative;
+  }
+
+  .subrayado-hero::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    /* Debajo de los descendentes de "principio": la line-height del hero es
+     * 1.1, así que el trazo se apoya afuera de la caja del texto. */
+    bottom: -0.14em;
+    height: 3px;
+    background-color: var(--color-arena);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: hero-rule 1s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .subrayado-hero::after {
+      animation: none;
+      transform: scaleX(1);
+    }
+  }
+
   /* Máscara del isotipo en el overlay del hero (decisión del 06/08/2026,
    * replica el proto): dos capas de mask compuestas con "exclude" — la
    * primera es un degradé sólido que cubre todo el overlay, la segunda es el

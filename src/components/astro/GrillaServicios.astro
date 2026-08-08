@@ -1,0 +1,335 @@
+---
+/**
+ * Tarjetas de servicios (§5.1 Sección 4) — marco "blueprint" portado del proto
+ * Glass (decisión del 07/08/2026): las tarjetas quedan contorneadas por dos
+ * líneas horizontales y cuatro verticales, con una marca de registro en cada
+ * intersección. Los separadores son columnas reales de 1px en la grilla, no
+ * `gap`, y sobresalen 44px por arriba y por abajo de las horizontales.
+ *
+ * Cromática adaptada al local: el proto vive sobre navy oscuro con líneas y
+ * puntos en arena; acá el fondo es claro (navy-50), así que el trazo y las
+ * marcas son NAVY — la arena sobre fondo claro no pasa WCAG y el acento en
+ * claro es navy (§1.2). La arena queda para la píldora del ícono, donde es
+ * fondo y no trazo.
+ *
+ * Tipografía por tokens locales: el proto usa 22px/14px fijos y acá van
+ * `text-h3` y `text-sm`, que escalan con el resto del sitio.
+ *
+ * Todo es CSS: sin JS y sin `client:*` (§7.1).
+ */
+export interface Servicio {
+  titulo: string;
+  texto: string;
+  /** Cuál de los tres íconos del proto usar. */
+  icono: 'vivienda' | 'corporativo' | 'direccion';
+}
+
+interface Props {
+  servicios: Servicio[];
+  class?: string;
+}
+const { servicios, class: className } = Astro.props as Props;
+---
+
+<div class:list={['bp-frame', className]}>
+  {/* Marco: verticales de los extremos, horizontales con las extensiones que
+      se degradan hacia los bordes, y las 4 marcas de las esquinas. */}
+  <span class="bp-vline bp-vline--l" aria-hidden="true"></span>
+  <span class="bp-vline bp-vline--r" aria-hidden="true"></span>
+  <span class="bp-rule bp-rule--top" aria-hidden="true"></span>
+  <span class="bp-rule bp-rule--bottom" aria-hidden="true"></span>
+  <span class="bp-dot bp-dot--tl" aria-hidden="true"></span>
+  <span class="bp-dot bp-dot--tr" aria-hidden="true"></span>
+  <span class="bp-dot bp-dot--bl" aria-hidden="true"></span>
+  <span class="bp-dot bp-dot--br" aria-hidden="true"></span>
+
+  <div class="srv-grid">
+    {
+      servicios.map((s, i) => (
+        <>
+          {/* El trazo va en un <span> aparte: los puntos son pseudo-elementos
+              del divisor y la máscara del degradé también los borraría. */}
+          {i > 0 && (
+            <div class="srv-div" aria-hidden="true">
+              <span class="srv-div-linea" />
+            </div>
+          )}
+          <div class="srv-card">
+            <span class="srv-ico" aria-hidden="true">
+              {s.icono === 'vivienda' && (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 10.5 12 3l9 7.5" />
+                  <path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5" />
+                  <path d="M9.75 21v-6.25h4.5V21" />
+                </svg>
+              )}
+              {s.icono === 'corporativo' && (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3.5 21h17" />
+                  <path d="M5.5 21V6.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V21" />
+                  <path d="M13.5 21V11h4.5a1 1 0 0 1 1 1v9" />
+                  <path d="M8 9h3M8 12.5h3M8 16h3M16 14.5h1" />
+                </svg>
+              )}
+              {s.icono === 'direccion' && (
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
+                  <rect x="9" y="2.75" width="6" height="3.5" rx="1" />
+                  <path d="M8.75 11.5l1.5 1.5 3-3" />
+                  <path d="M14.75 16.25h1.5M8.75 16.25h3" />
+                </svg>
+              )}
+            </span>
+
+            <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
+            <p class="srv-desc text-sm leading-relaxed font-light text-navy-700">{s.texto}</p>
+          </div>
+        </>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .bp-frame {
+    /* Cuánto sobresalen las verticales por fuera de las horizontales. */
+    --bp-over: 44px;
+    /* Trazo dasheado con el mismo patrón que el reticulado de GrillaLogos (4px
+     * de línea, 4px de aire), pero en NAVY y no en arena (08/08/2026): esta
+     * sección va sobre navy-50 (#f2f5f7) y el arena-200 (#f0e6e0) es casi el
+     * mismo tono, así que las líneas no se leían. Va por
+     * repeating-linear-gradient y no por `border: dashed` porque el borde
+     * punteado del navegador no deja definir el largo del guión. */
+    --bp-dash-v: repeating-linear-gradient(
+      to bottom,
+      var(--color-navy) 0 4px,
+      transparent 4px 8px
+    );
+    --bp-dash-h: repeating-linear-gradient(to right, var(--color-navy) 0 4px, transparent 4px 8px);
+    /* Solo para bordes de superficie (píldora del ícono), no para el marco. */
+    --bp-borde: color-mix(in srgb, var(--color-navy) 16%, transparent);
+    /* Desvanecido de las puntas. Como el trazo ya usa el background para los
+     * guiones, el fundido va por máscara. */
+    --bp-fade-v: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
+
+    position: relative;
+    padding: var(--bp-over) 0;
+  }
+
+  /* Verticales de los extremos: se desvanecen en las dos puntas, ninguna
+   * línea corta en seco. */
+  .bp-vline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-image: var(--bp-dash-v);
+    -webkit-mask-image: var(--bp-fade-v);
+    mask-image: var(--bp-fade-v);
+  }
+  .bp-vline--l {
+    left: 0;
+  }
+  .bp-vline--r {
+    right: 0;
+  }
+
+  /* Horizontales; las extensiones salen del contenedor y se degradan hacia los
+   * bordes del viewport. */
+  .bp-rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-image: var(--bp-dash-h);
+  }
+  .bp-rule--top {
+    top: var(--bp-over);
+  }
+  .bp-rule--bottom {
+    bottom: var(--bp-over);
+  }
+  .bp-rule::before,
+  .bp-rule::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    height: 1px;
+    width: 50vw;
+  }
+  /* Las extensiones siguen dasheadas y se difuminan hacia el borde del
+   * viewport, igual que en GrillaLogos. */
+  .bp-rule::before {
+    right: 100%;
+    background-image: var(--bp-dash-h);
+    -webkit-mask-image: linear-gradient(to left, #000, transparent);
+    mask-image: linear-gradient(to left, #000, transparent);
+  }
+  .bp-rule::after {
+    left: 100%;
+    background-image: var(--bp-dash-h);
+    -webkit-mask-image: linear-gradient(to right, #000, transparent);
+    mask-image: linear-gradient(to right, #000, transparent);
+  }
+
+  /* Marcas de registro en las intersecciones. */
+  .bp-dot {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--color-navy);
+    z-index: 2;
+  }
+  .bp-dot--tl {
+    top: var(--bp-over);
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  .bp-dot--tr {
+    top: var(--bp-over);
+    left: 100%;
+    transform: translate(-50%, -50%);
+  }
+  .bp-dot--bl {
+    bottom: var(--bp-over);
+    left: 0;
+    transform: translate(-50%, 50%);
+  }
+  .bp-dot--br {
+    bottom: var(--bp-over);
+    left: 100%;
+    transform: translate(-50%, 50%);
+  }
+
+  .srv-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Los divisores sobresalen igual que las verticales del marco y llevan su
+   * marca en cada cruce. */
+  .srv-div {
+    display: none;
+    position: relative;
+    width: 1px;
+    margin: calc(var(--bp-over) * -1) 0;
+  }
+  .srv-div-linea {
+    position: absolute;
+    inset: 0;
+    background-image: var(--bp-dash-v);
+    -webkit-mask-image: var(--bp-fade-v);
+    mask-image: var(--bp-fade-v);
+  }
+  .srv-div::before,
+  .srv-div::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--color-navy);
+  }
+  .srv-div::before {
+    top: var(--bp-over);
+    transform: translate(-50%, -50%);
+  }
+  .srv-div::after {
+    bottom: var(--bp-over);
+    transform: translate(-50%, 50%);
+  }
+
+  .srv-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    padding: 1.25rem;
+    /* La superficie aparece solo en hover: en reposo la tarjeta es el fondo de
+     * la sección, delimitada nada más que por el marco. `background-color` y no
+     * el shorthand: éste resetearía el background-image con el que se dibuja el
+     * separador dasheado del apilado. */
+    background-color: transparent;
+    transition: background-color 0.3s;
+  }
+  .srv-card:hover {
+    background-color: #fff;
+  }
+
+  /* Apilado: sin divisores verticales, se separan con una línea horizontal
+   * dasheada, del mismo patrón que el resto del marco. */
+  .srv-card:not(:last-child) {
+    background-image: var(--bp-dash-h);
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    background-size: 100% 1px;
+  }
+
+  .srv-ico {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 auto;
+    border-radius: 9999px;
+    border: 1px solid var(--bp-borde);
+    background: var(--color-arena-200);
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.375rem;
+  }
+  .srv-ico svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .srv-desc {
+    margin-top: 1.125rem;
+  }
+
+  @media (min-width: 768px) {
+    .srv-card {
+      padding: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .srv-grid {
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+    }
+    .srv-div {
+      display: block;
+    }
+    .srv-card {
+      padding: 3rem;
+    }
+    /* En columnas, el separador lo hacen los divisores verticales. */
+    .srv-card:not(:last-child) {
+      background-image: none;
+    }
+  }
+</style>

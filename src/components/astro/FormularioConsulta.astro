@@ -25,10 +25,27 @@ interface Props {
 const { class: className } = Astro.props as Props;
 
 const label = 'block text-sm font-medium uppercase tracking-[0.06em] text-navy';
+
+/* Campos con el lenguaje de shadcn/ui (08/08/2026): radio suave, sombra
+ * mínima, y en foco el borde pasa al color de anillo más un ring de 3px al 50%
+ * — su firma visual, en vez del ring-1 anterior.
+ *
+ * Tres desvíos deliberados del componente original de shadcn, por criterios que
+ * este proyecto ya tiene documentados:
+ *
+ * 1. Borde en navy-600, no en el `--input` (#B3C1CD ≈ navy-300) del mapeo de
+ *    §3.2: ese tono da ~2.2:1 sobre blanco y el borde de un campo es un límite
+ *    de control, que WCAG 1.4.11 exige ≥3:1. navy-600 da 3.4:1.
+ * 2. `min-h-[44px]` en lugar del `h-9` (36px) de shadcn: tap target mínimo
+ *    (§7.3).
+ * 3. `text-base` fijo, sin el `md:text-sm` de shadcn: 16px es el umbral que
+ *    evita el zoom automático de iOS al enfocar un campo (§7.3).
+ *
+ * El placeholder va en navy-700 (5.48:1) y no en el `--muted-foreground` del
+ * mapeo: navy-500 da 3.00:1 y Lighthouse audita el contraste del placeholder
+ * (a11y 100). */
 const field =
-  // El placeholder va en navy-700 (5.48:1) y no en un gris más claro: navy-500 da
-  // 3.00:1 sobre blanco y Lighthouse audita el contraste del placeholder (a11y 100).
-  'mt-2 block w-full min-h-[44px] border border-navy-600 bg-white px-3 py-2 text-base text-navy placeholder:text-navy-700 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
+  'mt-2 flex min-h-[44px] w-full rounded-md border border-navy-600 bg-white px-3 py-2 text-base text-navy shadow-xs outline-none transition-[color,box-shadow] placeholder:text-navy-700 focus-visible:border-navy focus-visible:ring-[3px] focus-visible:ring-navy/50 disabled:cursor-not-allowed disabled:opacity-50';
 
 const tiposDeProyecto = [
   'Vivienda nueva',
