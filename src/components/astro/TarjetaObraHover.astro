@@ -1,0 +1,198 @@
+---
+/**
+ * Variante de TarjetaObra SOLO para las destacadas del Home (§5.1 Sección 5).
+ * El texto vive dentro del hover, por eso el título va en el HTML inicial igual
+ * (opacity 0, no display:none) y sirve de nombre accesible del link. /obras
+ * sigue usando TarjetaObra.astro sin cambios.
+ *
+ * Reemplaza al componente React `DirectionAwareHover` (framer-motion): el efecto
+ * ahora es CSS puro, sin `client:*` ni JS. Se pierde el cálculo de dirección por
+ * cuadrante del cursor —imposible sin JS— y queda la dirección `bottom` fija,
+ * que era ya la que el original usaba para el foco de teclado y la que apunta a
+ * donde vive el texto.
+ *
+ * `imagen` va por getImage() y no por <Picture>: necesitamos una sola URL final
+ * para el recorte 4:3 hecho en build.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  nombre: string;
+  tipoLabel: string;
+  zona: string;
+  href: string;
+  imagen: ImageMetadata;
+  imagenAlt: string;
+}
+
+const { nombre, tipoLabel, zona, href, imagen, imagenAlt } = Astro.props as Props;
+
+/* Recorte a 4:3 en build, no con object-cover: hay fotos verticales y servirlas
+ * enteras descartaba ~60% de los bytes descargados. 1216 = ancho de la tarjeta
+ * en desktop (608px) a 2x. */
+const optimizada = await getImage({
+  src: imagen,
+  format: 'webp',
+  width: 1216,
+  height: 912,
+  fit: 'cover',
+  position: 'center',
+  quality: 72,
+});
+---
+
+<article>
+  <a href={href} class="tarjeta aspect-[4/3] sm:aspect-auto sm:h-[600px]">
+    <div class="marco">
+      <img
+        src={optimizada.src}
+        alt={imagenAlt}
+        width="1200"
+        height="900"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+
+    {/* Degradé navy/70 → transparente, solo en hover/foco: deja ver la imagen
+     * arriba sin perder la legibilidad del texto, que vive abajo. Peor caso
+     * (imagen blanca) da 5.41:1 contra texto blanco. En reposo la foto se ve
+     * limpia — el velo plano del 30% se quitó el 07/08/2026. */}
+    <div aria-hidden="true" class="velo-degrade"></div>
+
+    <div class="texto">
+      <h3 class="text-h3 font-medium">{nombre}</h3>
+      <p class="mt-1 text-sm uppercase tracking-[0.06em]">{tipoLabel} · {zona}</p>
+    </div>
+  </a>
+</article>
+
+<style>
+  .tarjeta {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background-color: var(--color-navy);
+  }
+
+  .tarjeta:focus-visible {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 2px;
+  }
+
+  .marco {
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
+  /* scale(1.15) deja 15% de sobrante: el desplazamiento de 20px del hover nunca
+   * descubre el borde de la imagen. */
+  .marco img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    scale: 1.15;
+  }
+
+  .velo-degrade {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background-image: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-navy) 70%, transparent),
+      transparent
+    );
+    opacity: 0;
+  }
+
+  .texto {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 1.25rem;
+    z-index: 20;
+    color: #fff;
+    opacity: 0;
+  }
+
+  .tarjeta:hover .velo-degrade,
+  .tarjeta:focus-visible .velo-degrade,
+  .tarjeta:hover .texto,
+  .tarjeta:focus-visible .texto {
+    opacity: 1;
+  }
+
+  /* El fade informa el estado y va siempre; el desplazamiento es decorativo y
+   * solo corre si no se pidió menos movimiento. */
+  @media (prefers-reduced-motion: no-preference) {
+    .marco {
+      transition: translate 200ms ease-out;
+    }
+
+    .velo-degrade {
+      transition: opacity 300ms ease-out;
+    }
+
+    .texto {
+      translate: 0 0.5rem;
+      transition:
+        opacity 500ms ease-out,
+        translate 500ms ease-out;
+    }
+
+    .tarjeta:hover .marco,
+    .tarjeta:focus-visible .marco {
+      translate: 0 -20px;
+    }
+
+    .tarjeta:hover .texto,
+    .tarjeta:focus-visible .texto {
+      translate: 0 0;
+    }
+  }
+
+  /* Sin hover (touch) el nombre de la obra jamás se revelaría: se muestra de
+   * entrada, igual que hacía el <noscript> de la versión con JS. */
+  @media (hover: none) {
+    .velo-degrade,
+    .texto {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* Expansión tipo galería (07/08/2026): la tarjeta apuntada crece y sus
+   * hermanas se encogen. Es CSS puro —dos reglas de igual especificidad, gana
+   * la última— así que no hace falta el framer-motion del ejemplo ni JS.
+   * `.obras-fila` vive en index.astro, de ahí el :global. */
+  article {
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    article {
+      flex: 1 1 0;
+    }
+  }
+
+  /* Solo con hover real, ancho suficiente y sin reduced-motion: en mobile la
+   * fila es una columna (crecer cambiaría alturas) y un salto de layout
+   * instantáneo sería peor que no expandir. */
+  @media (hover: hover) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+    article {
+      transition: flex-grow 500ms ease-in-out;
+    }
+
+    :global(.obras-fila:hover) article,
+    :global(.obras-fila:focus-within) article {
+      flex-grow: 0.5;
+    }
+
+    :global(.obras-fila) article:hover,
+    :global(.obras-fila) article:focus-within {
+      flex-grow: 2;
+    }
+  }
+</style>

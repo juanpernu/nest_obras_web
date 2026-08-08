@@ -1,8 +1,19 @@
 ---
 /**
- * Botón/CTA como <a>. Mayúsculas por CSS (identidad §2.2), tap target ≥44px (§7.3),
- * sin radios (§3.3). Variantes según el fondo: arena+navy = 7.91 (AAA), navy sobre
- * blanco = 13.46; el arena NUNCA como texto sobre blanco (§1.2).
+ * Botón/CTA como <a>. Mayúsculas por CSS (identidad §2.2), tap target ≥44px (§7.3).
+ * Variantes según el fondo: arena+navy = 7.91 (AAA), navy sobre blanco = 13.46;
+ * el arena NUNCA como texto sobre blanco (§1.2).
+ *
+ * Geometría por variante (decisiones del 06/08/2026):
+ * - primario: 4px de radio (`--radius-boton`), es la única excepción al radio cero.
+ * - secundario y sobreNavy: sin borde ni caja. El stroke se convierte en un
+ *   subrayado de 3px que crece de izquierda a derecha en hover/foco. Sin padding
+ *   horizontal para que el texto alinee con el párrafo que lo precede; el min-h
+ *   de 44px sostiene el tap target.
+ *
+ * El subrayado se dibuja con un gradiente en `currentColor` y se anima por
+ * `background-size`, no por `width`: no dispara layout y no necesita pseudo-elemento
+ * ni JS. Va en un <span> interno para medir el texto y no el ancho de la caja.
  */
 interface Props {
   href: string;
@@ -12,12 +23,23 @@ interface Props {
 const { href, variante = 'primario', class: className } = Astro.props as Props;
 
 const base =
-  'inline-flex items-center justify-center min-h-[44px] px-6 py-3 text-base font-medium uppercase tracking-[0.02em] transition-colors';
+  'group inline-flex items-center justify-center min-h-[44px] text-base font-medium uppercase tracking-[0.02em]';
 const variantes = {
-  primario: 'bg-arena text-navy hover:bg-arena-600', // fondo claro u oscuro
-  secundario: 'border border-navy text-navy hover:bg-navy hover:text-white',
-  sobreNavy: 'border border-arena text-arena hover:bg-arena hover:text-navy',
+  primario: 'rounded-boton px-6 py-3 bg-arena text-navy transition-colors hover:bg-arena-600', // fondo claro u oscuro
+  secundario: 'py-3 text-navy',
+  sobreNavy: 'py-3 text-arena',
+};
+
+// Subrayado animado: 0% → 100% del ancho del texto, 3px, en currentColor.
+const subrayado =
+  'bg-[image:linear-gradient(currentColor,currentColor)] bg-[length:0%_3px] bg-[position:0_100%] bg-no-repeat pb-1 transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_3px] group-focus-visible:bg-[length:100%_3px] motion-reduce:transition-none';
+const internas = {
+  primario: '',
+  secundario: subrayado,
+  sobreNavy: subrayado,
 };
 ---
 
-<a href={href} class:list={[base, variantes[variante], className]}><slot /></a>
+<a href={href} class:list={[base, variantes[variante], className]}
+  ><span class:list={[internas[variante]]}><slot /></span></a
+>

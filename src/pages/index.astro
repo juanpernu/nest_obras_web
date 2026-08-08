@@ -4,12 +4,17 @@ import HeroVideo from '@/components/astro/HeroVideo.astro';
 import Boton from '@/components/astro/Boton.astro';
 import Eyebrow from '@/components/astro/Eyebrow.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
-import TarjetaObra from '@/components/astro/TarjetaObra.astro';
-import TarjetaTestimonio from '@/components/astro/TarjetaTestimonio.astro';
+import TarjetaObraHover from '@/components/astro/TarjetaObraHover.astro';
+import CarruselTestimonios from '@/components/astro/CarruselTestimonios.astro';
 import GrillaLogos from '@/components/astro/GrillaLogos.astro';
+import GrillaServicios from '@/components/astro/GrillaServicios.astro';
+import type { Servicio } from '@/components/astro/GrillaServicios.astro';
+import elCantonAerea from '@/assets/obras/el-canton-aerea.jpg';
+import tacuari1 from '../../assets/img/tacuari1.png';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
 import BloqueContacto from '@/components/astro/BloqueContacto.astro';
 import { getCollection, render } from 'astro:content';
+import type { ImageMetadata } from 'astro';
 
 const destacadas = (await getCollection('obras', (o) => o.data.destacadaEnHome)).sort(
   (a, b) => a.data.orden - b.data.orden,
@@ -26,21 +31,62 @@ const testimonios = await Promise.all(
   testimoniosEntries.map(async (t) => ({ entry: t, Contenido: (await render(t)).Content })),
 );
 
-const serviciosHome = [
+/* Imágenes de fondo propias de algunas destacadas del Home: fotos horizontales
+ * que funcionan mejor en el recorte 4:3 de la tarjeta con hover que la `portada`
+ * de la colección (que se sigue usando en /obras). Es un override opcional —
+ * las obras que no estén acá caen en su propia `portada`, así que agregar una
+ * destacada en el contenido no rompe el build. */
+const fondoDestacada: Record<string, { imagen: ImageMetadata; alt: string }> = {
+  'el-canton': {
+    imagen: elCantonAerea,
+    alt: 'Vista aérea del barrio El Cantón Golf, Escobar, donde NEST construyó una vivienda premium',
+  },
+  'tacuari-1050': {
+    imagen: tacuari1,
+    alt: 'Edificio Tacuarí 1050, obra de NEST en CABA',
+  },
+};
+
+const tipoLabel: Record<string, string> = {
+  vivienda: 'Vivienda',
+  corporativo: 'Corporativo',
+  refaccion: 'Refacción',
+  gastronomia: 'Gastronomía',
+  edificio: 'Edificio',
+};
+
+const tarjetasDestacadas = destacadas.map((o) => {
+  const fondo = fondoDestacada[o.id];
+  return {
+    nombre: o.data.nombre,
+    tipoLabel: tipoLabel[o.data.tipo],
+    zona: o.data.zona,
+    href: o.data.paginaPropia && o.data.slug ? `/obras/${o.data.slug}` : '/obras',
+    imagen: fondo?.imagen ?? o.data.portada,
+    imagenAlt: fondo?.alt ?? o.data.portadaAlt,
+  };
+});
+
+/* `icono` se agregó con las tarjetas del proto (07/08/2026). Sin `href`: las
+ * tarjetas ya no llevan CTA propio (08/08/2026). */
+const serviciosHome: Servicio[] = [
   {
     titulo: 'Viviendas y Refacciones',
     texto:
       'Casas llave en mano, ampliaciones y refacciones en barrios cerrados y zonas premium. De principio a fin, con un solo responsable.',
+    icono: 'vivienda',
   },
   {
     titulo: 'Proyectos Corporativos',
     texto:
       'Oficinas, locales y desarrollos comerciales. Cumplimos plazos ajustados sin interrumpir tu operación. 10 sucursales PRUNE en 40 días.',
+    icono: 'corporativo',
   },
   {
     titulo: 'Dirección de Obra',
     texto:
       'Asesoramiento técnico, control de presupuesto y gestión integral. Nos hacemos cargo del proceso para que vos te concentres en lo que importa.',
+    icono: 'direccion',
   },
 ];
 
@@ -68,30 +114,83 @@ const seo = {
 ---
 
 <Layout title={seo.title} description={seo.description}>
-  {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2). */}
-  <section class="relative isolate flex min-h-[78vh] items-center overflow-hidden bg-navy">
+  {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2).
+      El overlay es navy/50 (marca), no negro: es el mismo tono y opacidad que
+      el header en reposo (Nav.astro), para que ambos lean como una sola
+      superficie hasta que aparece el scroll. */}
+  <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-navy">
     <HeroVideo
-      srcDesktop="https://archivo.nestobras.com.ar/archivos/video_nest.mp4"
+      srcDesktop="/hero-video.mp4"
       poster="/hero-poster.jpg"
       class="absolute inset-0 -z-20 h-full w-full object-cover"
     />
-    <div class="absolute inset-0 -z-10 bg-black/50"></div>
+    <div class="hero-overlay absolute inset-0 -z-10 bg-navy/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 text-white">
-      <Eyebrow sobreNavy class="mb-3">Constructora premium · Zona Norte y CABA</Eyebrow>
-      <h1 class="max-w-3xl text-hero font-light">Tu obra en manos expertas, de principio a fin.</h1>
-      <p class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100">
+      {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
+          necesario porque el tamaño base de Eyebrow también es un valor
+          arbitrario: sin él, cuál gana depende del orden del CSS generado. */}
+      <Eyebrow
+        sobreNavy
+        class="mb-3 text-[0.8125rem]! opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        >Constructora premium · Zona Norte y CABA</Eyebrow
+      >
+      <h1
+        class="max-w-3xl text-hero font-medium opacity-0 delay-100 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+      >
+        Tu obra en manos expertas <br class="hidden lg:block" />
+        <span class="subrayado-hero inline-block whitespace-nowrap">de principio a fin.</span>
+      </h1>
+      <div
+        class="mt-4 h-0.5 w-32 origin-left scale-x-0 bg-arena motion-safe:animate-[hero-rule_1s_0.4s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:scale-x-100"
+        aria-hidden="true"
+      >
+      </div>
+      <p
+        class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100 opacity-0 delay-200 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+      >
         30 años construyendo casas y proyectos que cumplen plazo, presupuesto y los más altos
         estándares. Con un equipo que te acompaña desde el primer trazo.
       </p>
-      <div class="mt-8 flex flex-wrap gap-4">
+      <div
+        class="mt-8 flex flex-wrap gap-4 opacity-0 delay-300 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+      >
         <Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton>
         <Boton href="/obras" variante="sobreNavy">Ver obras</Boton>
       </div>
     </div>
+
+    <a
+      href="#stats"
+      aria-label="Desplazate para ver más"
+      class="group absolute inset-x-0 bottom-8 flex justify-center"
+    >
+      <span class="flex flex-col items-center justify-center gap-0.5 text-white transition-colors group-hover:text-arena">
+        {
+          [0, 1].map((i) => (
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              class="motion-safe:animate-[chevron-caida_1.6s_ease-in-out_infinite] motion-reduce:opacity-100"
+              style={{ animationDelay: `${i * 0.3}s` }}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          ))
+        }
+      </span>
+    </a>
   </section>
 
-  {/* Sección 2 — Estadísticas (banda navy) */}
-  <section class="bg-navy py-16 md:py-20">
+  {/* Sección 2 — Estadísticas (banda navy). id="stats" es el destino de la
+      flecha del hero. */}
+  <section id="stats" class="bg-navy py-16 md:py-20">
     <div class="mx-auto max-w-6xl px-6">
       <BarraEstadisticas />
     </div>
@@ -99,17 +198,24 @@ const seo = {
 
   {/* Sección 3 — Intro */}
   <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-3xl px-6 text-center">
-      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-      <h2 class="mx-auto max-w-[640px] text-h2 font-medium text-navy">
-        Más de 30 años construyendo lo que prometemos
-      </h2>
-      <p class="mx-auto mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
-        NEST es una empresa constructora especializada en viviendas premium, refacciones y proyectos
-        corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel con
-        acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde el
-        primer trazo hasta la llave en la mano.
-      </p>
+    <div class="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
+      <div>
+        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+          Más de 30 años construyendo lo que prometemos
+        </h2>
+        <p class="mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
+          NEST es una empresa constructora especializada en viviendas premium, refacciones y
+          proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
+          con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
+          el primer trazo hasta la llave en la mano.
+        </p>
+      </div>
+
+      {/* ESPACIO RESERVADO PARA IMAGEN — placeholder a la espera del asset real.
+          Al reemplazarlo, usar <Image /> de astro:assets (no <img>) para que
+          entre en el pipeline de optimización, como el resto de las fotos. */}
+      <div class="aspect-[4/3] w-full bg-navy-50"></div>
     </div>
   </section>
 
@@ -118,48 +224,50 @@ const seo = {
     <div class="mx-auto max-w-6xl px-6">
       <Eyebrow class="mb-2.5">Servicios</Eyebrow>
       <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
-        {
-          serviciosHome.map((s) => (
-            <div class="border-t-4 border-arena bg-white p-6">
-              <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
-              <p class="mt-3 leading-relaxed text-navy">{s.texto}</p>
-            </div>
-          ))
-        }
-      </div>
+      <GrillaServicios class="mt-4" servicios={serviciosHome} />
     </div>
   </section>
 
   {/* Sección 5 — Obras destacadas (3) */}
-  <section class="py-16 md:py-24">
+  <section class="bg-navy pt-14">
     <div class="mx-auto max-w-6xl px-6">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
-          <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
+          <Eyebrow sobreNavy class="mb-2.5">Portfolio</Eyebrow>
+          <h2 class="text-h2 font-medium text-white">Obras destacadas</h2>
         </div>
         <a
           href="/obras"
-          class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-700 hover:text-navy"
+          class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-100 hover:text-arena"
           >Ver todas</a
         >
       </div>
-      {/* 1 → 3 columnas sin escala intermedia: con 3 tarjetas, un tramo de 2 deja
-          una huérfana ocupando el ancho completo. */}
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
-        {destacadas.map((o) => <TarjetaObra obra={o} sizes="(min-width: 768px) 33vw, 100vw" />)}
-      </div>
+    </div>
+    {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
+        grid de columnas fijas no permite (ver TarjetaObraHover). */}
+    <div class="obras-fila mt-10 flex w-full flex-col sm:flex-row">
+      {
+        tarjetasDestacadas.map((t) => (
+          <TarjetaObraHover
+            nombre={t.nombre}
+            tipoLabel={t.tipoLabel}
+            zona={t.zona}
+            href={t.href}
+            imagen={t.imagen}
+            imagenAlt={t.imagenAlt}
+          />
+        ))
+      }
     </div>
   </section>
 
-  {/* Sección 6 — Clientes corporativos (banda navy) */}
-  <section class="bg-navy py-16 text-white md:py-24">
+  {/* Sección 6 — Clientes corporativos */}
+  <section class="bg-white py-16 md:py-24">
     <div class="mx-auto max-w-6xl px-6 text-center">
-      <h2 class="text-h2 font-medium">Empresas que confiaron en NEST</h2>
+      <h2 class="text-h2 font-medium text-navy">Empresas que confiaron en NEST</h2>
       <GrillaLogos class="mt-10" />
       {/* COPY PROVISIONAL — reemplazar por la redacción exacta del PDF p.14 (§5.1 Sección 6). */}
-      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-100">
+      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-700">
         Trabajamos para empresas que no dejan nada librado al azar. Si NEST pasó el filtro de una
         compañía como Google, tu casa está en las mejores manos.
       </p>
@@ -169,17 +277,13 @@ const seo = {
   {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3) */}
   {
     testimonios.length > 0 && (
-      <section class="bg-arena-200 py-16 md:py-24">
+      <section class="overflow-hidden bg-arena-200 py-16 md:py-24">
         <div class="mx-auto max-w-6xl px-6">
           <div class="text-center">
             <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
             <h2 class="text-h2 font-medium text-navy">La obra habla, pero el cliente confirma</h2>
           </div>
-          <div class="mt-10 grid gap-8 md:grid-cols-2">
-            {testimonios.map((t) => (
-              <TarjetaTestimonio testimonio={t.entry} Contenido={t.Contenido} />
-            ))}
-          </div>
+          <CarruselTestimonios class="mt-12" testimonios={testimonios} />
         </div>
       </section>
     )
@@ -240,3 +344,69 @@ const seo = {
     </div>
   </section>
 </Layout>
+
+<style>
+  /* Subrayado que se dibuja bajo el cierre del <h1> (07/08/2026). Va en un
+   * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
+   * porque acá el trazo no responde a hover: se anima al cargar, reusando el
+   * keyframe `hero-rule` que ya dibuja la línea de abajo. El delay de 0.7s lo
+   * encadena después del reveal del h1 y de esa línea. */
+  .subrayado-hero {
+    position: relative;
+  }
+
+  .subrayado-hero::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    /* Debajo de los descendentes de "principio": la line-height del hero es
+     * 1.1, así que el trazo se apoya afuera de la caja del texto. */
+    bottom: -0.14em;
+    height: 3px;
+    background-color: var(--color-arena);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: hero-rule 1s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .subrayado-hero::after {
+      animation: none;
+      transform: scaleX(1);
+    }
+  }
+
+  /* Máscara del isotipo en el overlay del hero (decisión del 06/08/2026,
+   * replica el proto): dos capas de mask compuestas con "exclude" — la
+   * primera es un degradé sólido que cubre todo el overlay, la segunda es el
+   * isotipo de NEST (mismos 3 paths de public/logo-nest.svg) posicionado a la
+   * derecha. Donde ambas capas se solapan (la silueta de la "N"), "exclude"
+   * las cancela: el overlay no pinta ahí y se ve el video a pleno dentro del
+   * isotipo. mask-composite no tiene shorthand en Tailwind, por eso va en un
+   * <style> scoped en vez de utilities. */
+  .hero-overlay {
+    --iso: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="180 215 745 815"><path fill="%23fff" d="M204.164 494.511C209.186 498.107 230.479 520.19 236.231 525.952L306.802 596.632L571.809 861.605L642.51 790.904V933.292C620.092 955.33 594.332 983.06 571.521 1003.72L204.164 632.966V494.511Z"/><path fill="%23fff" d="M896.61 536.809C897.59 540.188 897.25 571.013 897.25 577.143L897.17 678.634L847.409 728.177C819.159 726.665 788.537 723.688 760.185 721.472L557.15 705.736L475.5 624.086L403.014 551.6C452.349 554.401 505.191 559.491 554.66 563.345L846.936 586.262L896.61 536.809Z"/><path fill="%23fff" d="M458.861 239.706C538.564 317.219 619.614 400.418 698.459 479.256C682.544 478.716 662.419 476.611 646.23 475.343L547.054 467.665L458.832 378.634L458.861 239.706Z"/></svg>');
+
+    -webkit-mask-image: linear-gradient(#000, #000), var(--iso);
+    mask-image: linear-gradient(#000, #000), var(--iso);
+    -webkit-mask-position: 0 0, right max(6vw, calc(50% - 540px)) center;
+    mask-position: 0 0, right max(6vw, calc(50% - 540px)) center;
+    -webkit-mask-size: 100% 100%, auto 52%;
+    mask-size: 100% 100%, auto 52%;
+    -webkit-mask-repeat: no-repeat, no-repeat;
+    mask-repeat: no-repeat, no-repeat;
+    -webkit-mask-composite: xor; /* Safari/WebKit */
+    mask-composite: exclude; /* estándar */
+  }
+
+  /* La ventana del isotipo solo se ve en desktop (decisión del 06/08/2026):
+   * en mobile/tablet el hero es más angosto y la "N" recortada a la derecha
+   * queda encima del texto o casi invisible, así que directamente se apaga y
+   * el overlay vuelve a ser un tono plano de navy/50. */
+  @media (max-width: 1023px) {
+    .hero-overlay {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+</style>

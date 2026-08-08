@@ -1,21 +1,179 @@
 ---
 /**
- * Clientes corporativos como TEXTO (§6.5): cada nombre es un elemento propio, no
- * una imagen única. Fallback texto-solo mientras no haya assets de logo.
+ * Clientes corporativos como logos (§5.1 Sección 6). Marco "blueprint": el
+ * reticulado completo de la grilla dibujado con líneas finas —una por cada
+ * límite de columna y de fila, incluidos los exteriores— y un punto en cada
+ * intersección. Mismo lenguaje que el marco de Servicios del proto Glass
+ * (decisión del 07/08/2026). Líneas en arena-200, puntos en navy.
+ *
+ * Las líneas NO son continuas: se dibujan como segmentos que se cortan antes
+ * de cada cruce (GAP), así el punto queda separado del stroke y no parecen
+ * una sola pieza — es el detalle de la referencia del cliente. Por eso el
+ * marco es un overlay absoluto con segmentos posicionados por porcentaje, y no
+ * bordes por celda: un borde no puede interrumpirse en sus cruces.
+ *
+ * Se renderiza dos veces con distinta geometría (2 columnas en mobile, 4 en
+ * desktop) porque el reticulado cambia con el breakpoint: mismas celdas, otra
+ * cantidad de filas y columnas.
  */
-import { clientes } from '@/data/clientes';
-
 interface Props {
   class?: string;
 }
 const { class: className } = Astro.props as Props;
+
+/** Logos que no se muestran, por número de archivo (decisión del 07/08/2026).
+ * El asset sigue en /public/logos: se oculta, no se borra. */
+const ocultos = new Set(['08']);
+
+const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, '0'))
+  .filter((n) => !ocultos.has(n))
+  .map((n) => ({
+    src: `/logos/logo_${n}.svg`,
+    alt: `Logo de cliente corporativo de NEST (${n})`,
+  }));
+logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
+
+/* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
+ * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
+ * mide solo su padding, así que las filas dejaban de ser uniformes y el
+ * reticulado —que reparte porcentajes iguales— se desalineaba de los logos.
+ * Con las celdas justas, mobile da 5 filas exactas (10/2) y desktop 3 (⌈10/4⌉),
+ * y `auto-rows-fr` en la grilla garantiza que todas midan igual. */
+const celdas = logosReales;
+
+/** Aire entre la punta de cada segmento y el punto del cruce. */
+const GAP = '8px';
+
+/* Las dos extensiones que salen de la grilla se difuminan hacia el borde del
+ * viewport: arrancan opacas contra la grilla y llegan 100% transparentes justo
+ * al llegar al margen, en vez de cortarse en seco.
+ *
+ * El ancho es el margen exacto entre la grilla y el borde de la pantalla:
+ * `100%` es el ancho del contenedor (el overlay está adentro), así que
+ * (100vw - 100%) / 2 es lo que sobra de cada lado. Antes eran 50vw fijos y el
+ * degradé se completaba fuera de pantalla — se veía solo su tramo más opaco y
+ * el efecto no se notaba.
+ *
+ * El fundido va por `mask-image` y no por el color de la línea: el trazo ahora
+ * es dasheado (un repeating-linear-gradient, ver <style>), así que el canal de
+ * background ya está ocupado dibujando los guiones. */
+const MARGEN = 'calc((100vw - 100%) / 2)';
+
+const reticulados = [
+  { cols: 2, visibilidad: 'md:hidden' },
+  { cols: 4, visibilidad: 'hidden md:block' },
+].map(({ cols, visibilidad }) => {
+  const filas = Math.ceil(celdas.length / cols);
+  const anchoCol = 100 / cols;
+  const altoFila = 100 / filas;
+
+  return {
+    visibilidad,
+    /** Porcentajes de los límites de columna y de fila (0 … 100). */
+    x: Array.from({ length: cols + 1 }, (_, i) => i * anchoCol),
+    y: Array.from({ length: filas + 1 }, (_, i) => i * altoFila),
+    /** Un segmento vertical por cada tramo entre dos filas, en cada columna. */
+    segmentosV: Array.from({ length: cols + 1 }, (_, c) =>
+      Array.from({ length: filas }, (_, f) => ({
+        left: `${c * anchoCol}%`,
+        top: `calc(${f * altoFila}% + ${GAP})`,
+        height: `calc(${altoFila}% - ${GAP} * 2)`,
+      })),
+    ).flat(),
+    /** Ídem horizontal, más las dos extensiones que salen de la grilla. */
+    segmentosH: Array.from({ length: filas + 1 }, (_, f) => {
+      const top = `${f * altoFila}%`;
+      return [
+        {
+          estilo: { top, left: `calc(-1 * ${MARGEN})`, width: `calc(${MARGEN} - ${GAP})` },
+          clase: 'funde-izq',
+        },
+        ...Array.from({ length: cols }, (_, c) => ({
+          estilo: {
+            top,
+            left: `calc(${c * anchoCol}% + ${GAP})`,
+            width: `calc(${anchoCol}% - ${GAP} * 2)`,
+          },
+          clase: '',
+        })),
+        {
+          estilo: { top, left: `calc(100% + ${GAP})`, width: `calc(${MARGEN} - ${GAP})` },
+          clase: 'funde-der',
+        },
+      ];
+    }).flat(),
+  };
+});
 ---
 
-<ul class:list={['flex flex-wrap items-center justify-center gap-x-10 gap-y-6', className]}>
+<div class:list={['relative', className]}>
+  <div class="relative grid auto-rows-fr grid-cols-2 md:grid-cols-4">
+    {
+      celdas.map((logo) => (
+        <div class="flex items-center justify-center px-6 py-6">
+          <img
+            src={logo.src}
+            alt={logo.alt}
+            loading="lazy"
+            decoding="async"
+            class="h-12 w-auto max-w-[140px] object-contain grayscale transition-[filter] duration-300 hover:grayscale-0"
+          />
+        </div>
+      ))
+    }
+  </div>
+
   {
-    /* Sin color propio: hereda del contexto (navy sobre blanco, blanco sobre navy). */
-    clientes.map((c) => (
-      <li class="text-lg font-medium uppercase tracking-[0.08em]">{c.nombre}</li>
+    reticulados.map(({ visibilidad, x, y, segmentosV, segmentosH }) => (
+      <div class:list={['pointer-events-none absolute inset-0', visibilidad]} aria-hidden="true">
+        {segmentosV.map((s) => (
+          <span class="linea-v absolute w-px" style={s} />
+        ))}
+        {segmentosH.map((s) => (
+          <span class:list={['linea-h absolute h-px', s.clase]} style={s.estilo} />
+        ))}
+        {x.map((px) =>
+          y.map((py) => (
+            <span
+              class="absolute h-[3px] w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-navy"
+              style={{ left: `${px}%`, top: `${py}%` }}
+            />
+          )),
+        )}
+      </div>
     ))
   }
-</ul>
+</div>
+
+<style>
+  /* Trazo dasheado (decisión del 07/08/2026). Va por `repeating-linear-gradient`
+   * y no por `border: dashed`: el borde punteado del navegador no deja definir
+   * el largo del guión ni el del hueco, y en un elemento de 1px queda irregular
+   * según el zoom. Con el gradiente el patrón es explícito: 4px de línea, 4px
+   * de aire. */
+  .linea-h {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--color-arena-200) 0 4px,
+      transparent 4px 8px
+    );
+  }
+  .linea-v {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--color-arena-200) 0 4px,
+      transparent 4px 8px
+    );
+  }
+
+  /* El fundido de las extensiones se aplica sobre el trazo dasheado, así que va
+   * por máscara: el background ya lo usan los guiones. */
+  .funde-izq {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000);
+    mask-image: linear-gradient(to right, transparent, #000);
+  }
+  .funde-der {
+    -webkit-mask-image: linear-gradient(to left, transparent, #000);
+    mask-image: linear-gradient(to left, transparent, #000);
+  }
+</style>
