@@ -69,11 +69,23 @@ const optimizada = await getImage({
 </article>
 
 <style>
+  /* Margen entre tarjetas (09/08/2026): antes eran full-bleed, pegadas entre
+   * sí y contra los bordes de la fila. El margen va en `.tarjeta` y no en
+   * `article` porque `article` es el flex item que crece en hover — darle
+   * margen ahí restaría del cálculo de `flex-grow` y desalinearía el ancho
+   * real de la tarjeta expandida. */
+  /* `border-radius: 8px` rompe el radio cero de §3.3, ya decidido para varios
+   * componentes en esta rama (09/08/2026). El margen es el aire de la tarjeta
+   * contra los bordes de la fila y contra sus vecinas; el `gap` del
+   * contenedor (.obras-fila, en index.astro) suma 12px más solo entre
+   * tarjetas — son dos espaciados distintos, no se reemplazan entre sí. */
   .tarjeta {
     position: relative;
     display: block;
     overflow: hidden;
+    border-radius: 8px;
     background-color: var(--color-navy);
+    margin: 56px 45px;
   }
 
   .tarjeta:focus-visible {

@@ -115,20 +115,23 @@ const { servicios, class: className } = Astro.props as Props;
   .bp-frame {
     /* Cuánto sobresalen las verticales por fuera de las horizontales. */
     --bp-over: 44px;
-    /* Trazo dasheado con el mismo patrón que el reticulado de GrillaLogos (4px
-     * de línea, 4px de aire), pero en NAVY y no en arena (08/08/2026): esta
-     * sección va sobre navy-50 (#f2f5f7) y el arena-200 (#f0e6e0) es casi el
-     * mismo tono, así que las líneas no se leían. Va por
-     * repeating-linear-gradient y no por `border: dashed` porque el borde
-     * punteado del navegador no deja definir el largo del guión. */
+    /* Trazo dasheado en arena-200, igual que el reticulado de GrillaLogos:
+     * mismo patrón (4px de línea, 4px de aire) y misma croma, para que las dos
+     * secciones lean como el mismo sistema. Estuvo en navy mientras la sección
+     * era navy-50, donde el arena no contrastaba; con el fondo blanco vuelve a
+     * leerse (09/08/2026). Va por repeating-linear-gradient y no por
+     * `border: dashed` porque el borde punteado del navegador no deja definir
+     * el largo del guión. */
     --bp-dash-v: repeating-linear-gradient(
       to bottom,
-      var(--color-navy) 0 4px,
+      var(--color-arena-200) 0 4px,
       transparent 4px 8px
     );
-    --bp-dash-h: repeating-linear-gradient(to right, var(--color-navy) 0 4px, transparent 4px 8px);
-    /* Solo para bordes de superficie (píldora del ícono), no para el marco. */
-    --bp-borde: color-mix(in srgb, var(--color-navy) 16%, transparent);
+    --bp-dash-h: repeating-linear-gradient(
+      to right,
+      var(--color-arena-200) 0 4px,
+      transparent 4px 8px
+    );
     /* Desvanecido de las puntas. Como el trazo ya usa el background para los
      * guiones, el fundido va por máscara. */
     --bp-fade-v: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
@@ -170,13 +173,18 @@ const { servicios, class: className } = Astro.props as Props;
   .bp-rule--bottom {
     bottom: var(--bp-over);
   }
+  /* Ancho = el margen exacto entre el contenedor y el borde de la pantalla.
+   * `100%` es el ancho de .bp-rule, que abarca el contenedor. Antes eran 50vw
+   * fijos: se iban ~600px más allá del viewport y generaban scroll horizontal
+   * en toda la página, y encima el degradé se completaba fuera de pantalla, así
+   * que en pantalla el trazo se veía plano (09/08/2026). */
   .bp-rule::before,
   .bp-rule::after {
     content: '';
     position: absolute;
     top: 0;
     height: 1px;
-    width: 50vw;
+    width: calc((100vw - 100%) / 2);
   }
   /* Las extensiones siguen dasheadas y se difuminan hacia el borde del
    * viewport, igual que en GrillaLogos. */
@@ -289,12 +297,14 @@ const { servicios, class: className } = Astro.props as Props;
     background-size: 100% 1px;
   }
 
+  /* Cuadrado con radio del botón y trazo navy de 1px (09/08/2026): antes era
+   * una píldora. El fondo sigue en arena-200. */
   .srv-ico {
     width: 56px;
     height: 56px;
     flex: 0 0 auto;
-    border-radius: 9999px;
-    border: 1px solid var(--bp-borde);
+    border-radius: var(--radius-boton);
+    border: 1px solid var(--color-navy);
     background: var(--color-arena-200);
     color: var(--color-navy);
     display: flex;

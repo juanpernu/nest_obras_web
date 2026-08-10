@@ -114,6 +114,19 @@ const seo = {
 ---
 
 <Layout title={seo.title} description={seo.description}>
+  {/* Sin JS los bloques con `data-reveal` nunca recibirían la clase que los
+      hace visibles, así que acá se anula su estado inicial. Va con `is:inline`
+      para que Astro no lo procese ni le aplique el scope del componente: tiene
+      que pisar la regla scopeada del <style> de abajo, de ahí el !important. */}
+  <noscript>
+    <style is:inline>
+      [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    </style>
+  </noscript>
+
   {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2).
       El overlay es navy/50 (marca), no negro: es el mismo tono y opacidad que
       el header en reposo (Nav.astro), para que ambos lean como una sola
@@ -125,7 +138,7 @@ const seo = {
       class="absolute inset-0 -z-20 h-full w-full object-cover"
     />
     <div class="hero-overlay absolute inset-0 -z-10 bg-navy/50"></div>
-    <div class="mx-auto w-full max-w-6xl px-6 py-20 text-white">
+    <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
       {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
           necesario porque el tamaño base de Eyebrow también es un valor
           arbitrario: sin él, cuál gana depende del orden del CSS generado. */}
@@ -190,21 +203,21 @@ const seo = {
 
   {/* Sección 2 — Estadísticas (banda navy). id="stats" es el destino de la
       flecha del hero. */}
-  <section id="stats" class="bg-navy py-16 md:py-20">
-    <div class="mx-auto max-w-6xl px-6">
+  <section id="stats" class="bg-navy py-20 md:py-[120px]">
+    <div class="mx-auto max-w-6xl px-6" data-reveal>
       <BarraEstadisticas />
     </div>
   </section>
 
   {/* Sección 3 — Intro */}
-  <section class="py-16 md:py-24">
+  <section class="bg-navy py-20 md:py-[120px]">
     <div class="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
-      <div>
-        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-        <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+      <div data-reveal>
+        <Eyebrow sobreNavy class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="max-w-[640px] text-h2 font-medium text-white">
           Más de 30 años construyendo lo que prometemos
         </h2>
-        <p class="mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
+        <p class="mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy-100">
           NEST es una empresa constructora especializada en viviendas premium, refacciones y
           proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
           con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
@@ -215,37 +228,46 @@ const seo = {
       {/* ESPACIO RESERVADO PARA IMAGEN — placeholder a la espera del asset real.
           Al reemplazarlo, usar <Image /> de astro:assets (no <img>) para que
           entre en el pipeline de optimización, como el resto de las fotos. */}
-      <div class="aspect-[4/3] w-full bg-navy-50"></div>
+      <div class="aspect-[4/3] w-full bg-navy-950" data-reveal></div>
     </div>
   </section>
 
-  {/* Sección 4 — Servicios destacados (3) */}
-  <section class="bg-navy-50 py-16 md:py-24">
+  {/* Sección 4 — Servicios destacados (3). `overflow-x-clip` porque el marco
+      sangra hasta el borde de la pantalla: `100vw` cuenta el ancho de la barra
+      de scroll y el contenedor no, así que sin recortar sobra un par de píxeles
+      y aparece scroll horizontal. `clip` y no `hidden` para no crear un
+      contenedor de scroll. */}
+  <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6">
-      <Eyebrow class="mb-2.5">Servicios</Eyebrow>
-      <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
-      <GrillaServicios class="mt-4" servicios={serviciosHome} />
+      {/* Eyebrow y h2 comparten wrapper: `data-reveal` va en elementos del
+          markup de esta página, y Eyebrow es un componente que solo acepta
+          `class`. Entran juntos como un bloque de encabezado. */}
+      <div data-reveal>
+        <Eyebrow class="mb-2.5">Servicios</Eyebrow>
+        <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
+      </div>
+      <div data-reveal>
+        <GrillaServicios class="mt-4" servicios={serviciosHome} />
+      </div>
     </div>
   </section>
 
   {/* Sección 5 — Obras destacadas (3) */}
-  <section class="bg-navy pt-14">
+  <section class="bg-navy pt-20 md:pt-[120px]">
     <div class="mx-auto max-w-6xl px-6">
-      <div class="flex items-end justify-between gap-4">
+      <div class="flex items-end justify-between gap-4" data-reveal>
         <div>
           <Eyebrow sobreNavy class="mb-2.5">Portfolio</Eyebrow>
           <h2 class="text-h2 font-medium text-white">Obras destacadas</h2>
         </div>
-        <a
-          href="/obras"
-          class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-100 hover:text-arena"
-          >Ver todas</a
-        >
+        {/* `sobreNavy` es la variante secundaria para fondo oscuro: sin caja y
+            con el subrayado de 3px que crece en hover/foco. */}
+        <Boton href="/obras" variante="sobreNavy" class="whitespace-nowrap">Ver todas</Boton>
       </div>
     </div>
     {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
         grid de columnas fijas no permite (ver TarjetaObraHover). */}
-    <div class="obras-fila mt-10 flex w-full flex-col sm:flex-row">
+    <div class="obras-fila mt-10 flex w-full flex-col gap-3 sm:flex-row" data-reveal>
       {
         tarjetasDestacadas.map((t) => (
           <TarjetaObraHover
@@ -261,13 +283,16 @@ const seo = {
     </div>
   </section>
 
-  {/* Sección 6 — Clientes corporativos */}
-  <section class="bg-white py-16 md:py-24">
+  {/* Sección 6 — Clientes corporativos. `overflow-x-clip` por el mismo motivo
+      que la Sección 4: el reticulado sangra hasta el borde del viewport. */}
+  <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6 text-center">
-      <h2 class="text-h2 font-medium text-navy">Empresas que confiaron en NEST</h2>
-      <GrillaLogos class="mt-10" />
+      <h2 class="text-h2 font-medium text-navy" data-reveal>Empresas que confiaron en NEST</h2>
+      <div data-reveal>
+        <GrillaLogos class="mt-10" />
+      </div>
       {/* COPY PROVISIONAL — reemplazar por la redacción exacta del PDF p.14 (§5.1 Sección 6). */}
-      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-700">
+      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-700" data-reveal>
         Trabajamos para empresas que no dejan nada librado al azar. Si NEST pasó el filtro de una
         compañía como Google, tu casa está en las mejores manos.
       </p>
@@ -277,46 +302,51 @@ const seo = {
   {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3) */}
   {
     testimonios.length > 0 && (
-      <section class="overflow-hidden bg-arena-200 py-16 md:py-24">
+      <section class="overflow-hidden bg-arena-200 py-20 md:py-[120px]">
         <div class="mx-auto max-w-6xl px-6">
-          <div class="text-center">
+          <div class="text-center" data-reveal>
             <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
             <h2 class="text-h2 font-medium text-navy">La obra habla, pero el cliente confirma</h2>
           </div>
-          <CarruselTestimonios class="mt-12" testimonios={testimonios} />
+          <div data-reveal>
+            <CarruselTestimonios class="mt-12" testimonios={testimonios} />
+          </div>
         </div>
       </section>
     )
   }
 
   {/* Sección 8 — Equipo (preview) */}
-  <section class="bg-navy-50 py-16 md:py-24">
+  <section class="bg-navy py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6">
-      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-      <h2 class="text-h2 font-medium text-navy">El equipo detrás de cada obra</h2>
-      <div class="mt-10 grid gap-8 sm:grid-cols-2">
+      <div data-reveal>
+        <Eyebrow sobreNavy class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="text-h2 font-medium text-white">El equipo detrás de cada obra</h2>
+      </div>
+      <div class="mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
         {
           equipo.map((m) => (
             <div>
-              <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
-              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">{m.data.rol}</p>
-              <p class="mt-2 text-sm text-navy-700">{m.data.credenciales.join(' · ')}</p>
+              <h3 class="text-h3 font-medium text-white">{m.data.nombre}</h3>
+              {/* navy-200 y no navy-700: sobre navy el 700 no se lee. Es el
+                  mismo tono que las etiquetas de la barra de estadísticas. */}
+              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-200">{m.data.rol}</p>
+              <p class="mt-2 text-sm text-navy-200">{m.data.credenciales.join(' · ')}</p>
             </div>
           ))
         }
       </div>
-      <a
-        href="/nosotros"
-        class="mt-8 inline-flex min-h-[44px] items-center text-sm uppercase tracking-[0.06em] text-navy hover:text-arena"
-        >Ver todo el equipo →</a
-      >
+      {/* El `data-reveal` va en un wrapper: Boton solo acepta `class`. */}
+      <div class="mt-8" data-reveal>
+        <Boton href="/nosotros" variante="sobreNavy">Ver todo el equipo →</Boton>
+      </div>
     </div>
   </section>
 
   {/* Sección 9 — Formulario */}
-  <section id="contacto" class="py-16 md:py-24">
+  <section id="contacto" class="py-20 md:py-[120px]">
     <div class="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2">
-      <div>
+      <div data-reveal>
         <Eyebrow class="mb-2.5">Contacto</Eyebrow>
         <h2 class="text-h2 font-medium text-navy">Contanos tu proyecto</h2>
         <p class="mt-3 text-navy-700">
@@ -328,7 +358,7 @@ const seo = {
       {/* El padding-top alinea el arranque de esta columna con el primer campo del
           formulario, que en la izquierda queda debajo del encabezado. Es alineación
           visual, no una medida exacta: el alto del encabezado depende del texto. */}
-      <div class="md:pt-36">
+      <div class="md:pt-36" data-reveal>
         <dl class="space-y-6">
           {
             bloquesDeConfianza.map((b) => (
@@ -345,7 +375,73 @@ const seo = {
   </section>
 </Layout>
 
+<script>
+  /* Entrada escalonada de los bloques de cada sección (09/08/2026), el patrón
+   * `.reveal` del proto. El escalonado no se escribe a mano: cada elemento
+   * recibe un delay según su posición DENTRO de su sección, así agregar o
+   * mover bloques no obliga a renumerar nada.
+   *
+   * El footer queda afuera por construcción: vive en el layout, no en esta
+   * página, y `data-reveal` solo se marca acá.
+   */
+  const elementos = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+  const mostrarTodo = () => elementos.forEach((el) => el.classList.add('visible'));
+
+  if (elementos.length) {
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !('IntersectionObserver' in window)
+    ) {
+      mostrarTodo();
+    } else {
+      for (const seccion of document.querySelectorAll('section')) {
+        seccion
+          .querySelectorAll<HTMLElement>('[data-reveal]')
+          .forEach((el, i) => (el.style.transitionDelay = `${i * 90}ms`));
+      }
+
+      const observador = new IntersectionObserver(
+        (entradas) => {
+          for (const entrada of entradas) {
+            if (!entrada.isIntersecting) continue;
+            entrada.target.classList.add('visible');
+            observador.unobserve(entrada.target);
+          }
+        },
+        // El margen inferior negativo evita que algo "entre" cuando apenas
+        // asoma un píxel al borde de la ventana.
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+      );
+      elementos.forEach((el) => observador.observe(el));
+    }
+  }
+</script>
+
 <style>
+  /* Estado inicial de la entrada escalonada. Si el JS no corre, el <noscript>
+   * de arriba lo neutraliza y todo queda visible. */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-reveal].visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
   /* Subrayado que se dibuja bajo el cierre del <h1> (07/08/2026). Va en un
    * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
    * porque acá el trazo no responde a hover: se anima al cargar, reusando el
