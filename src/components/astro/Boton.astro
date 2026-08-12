@@ -4,8 +4,15 @@
  * Variantes según el fondo: arena+navy = 7.91 (AAA), navy sobre blanco = 13.46;
  * el arena NUNCA como texto sobre blanco (§1.2).
  *
- * Geometría por variante (decisiones del 06/08/2026):
- * - primario: 4px de radio (`--radius-boton`), es la única excepción al radio cero.
+ * Geometría por variante (decisiones del 06/08/2026, primario rediseñado el
+ * 10/08/2026):
+ * - primario: 4px de radio (`--radius-boton`), es la única excepción al radio
+ *   cero. Glass sobre navy (10/08/2026): antes era arena sólido; ahora es
+ *   transparente con blur y solo un stroke arena de 2px, texto blanco, y en
+ *   hover se invierte a arena sólido + texto navy (7.91:1, AAA — mismo ratio
+ *   documentado arriba). Al llevar texto blanco en reposo, ESTANDARIZADO para
+ *   usarse solo sobre fondo navy — no sobre navy-50 ni blanco, donde el texto
+ *   blanco no pasaría contraste.
  * - secundario y sobreNavy: sin borde ni caja. El stroke se convierte en un
  *   subrayado de 3px que crece de izquierda a derecha en hover/foco. Sin padding
  *   horizontal para que el texto alinee con el párrafo que lo precede; el min-h
@@ -25,7 +32,8 @@ const { href, variante = 'primario', class: className } = Astro.props as Props;
 const base =
   'group inline-flex items-center justify-center min-h-[44px] text-base font-medium uppercase tracking-[0.02em]';
 const variantes = {
-  primario: 'rounded-boton px-6 py-3 bg-arena text-navy transition-colors hover:bg-arena-600', // fondo claro u oscuro
+  primario:
+    'rounded-boton border border-arena bg-white/10 px-2 py-2 text-white backdrop-blur-2xl transition-colors hover:bg-arena hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena',
   secundario: 'py-3 text-navy',
   sobreNavy: 'py-3 text-arena',
 };

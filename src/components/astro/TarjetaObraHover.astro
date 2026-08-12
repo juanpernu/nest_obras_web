@@ -75,17 +75,17 @@ const optimizada = await getImage({
    * margen ahí restaría del cálculo de `flex-grow` y desalinearía el ancho
    * real de la tarjeta expandida. */
   /* `border-radius: 8px` rompe el radio cero de §3.3, ya decidido para varios
-   * componentes en esta rama (09/08/2026). El margen es el aire de la tarjeta
-   * contra los bordes de la fila y contra sus vecinas; el `gap` del
-   * contenedor (.obras-fila, en index.astro) suma 12px más solo entre
-   * tarjetas — son dos espaciados distintos, no se reemplazan entre sí. */
+   * componentes en esta rama (09/08/2026). Margen solo vertical (10/08/2026,
+   * se quitó el horizontal): el `gap` del contenedor (.obras-fila, en
+   * index.astro) ya da los 12px entre tarjetas, y sin margen-x llegan al
+   * borde de la fila. */
   .tarjeta {
     position: relative;
     display: block;
     overflow: hidden;
     border-radius: 8px;
     background-color: var(--color-navy);
-    margin: 56px 45px;
+    margin: 56px 0;
   }
 
   .tarjeta:focus-visible {

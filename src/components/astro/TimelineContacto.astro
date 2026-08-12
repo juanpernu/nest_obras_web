@@ -1,0 +1,196 @@
+---
+/**
+ * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente).
+ * Timeline de 3 atributos con nodos sobre una línea vertical de referencia,
+ * que interrumpen las líneas horizontales dasheadas al superponerse (z-index),
+ * seguido de un separador y los datos de contacto con ícono.
+ *
+ * Las líneas dasheadas van por `repeating-linear-gradient` (no `border: dashed`,
+ * que no permite definir el largo del guión) enmascaradas para tener más
+ * presencia al centro y desvanecerse en los dos extremos — mismo recurso que
+ * el reticulado de GrillaLogos y el marco de GrillaServicios, aplicado acá
+ * puertas adentro de la columna en vez de sangrando fuera de ella.
+ *
+ * El NAP (teléfono, email, dirección) sale de site.ts, nunca hardcodeado, para
+ * ser idéntico carácter por carácter en todos lados (§6.7).
+ */
+import { site, telUrl } from '@/data/site';
+
+interface Atributo {
+  titulo: string;
+  texto: string;
+}
+
+interface Props {
+  atributos: Atributo[];
+  class?: string;
+}
+const { atributos, class: className } = Astro.props as Props;
+
+/* Indent horizontal de la línea vertical y de los nodos; el contenido de cada
+ * fila arranca después, para no montarse encima. */
+const INDENT = '1.75rem';
+---
+
+<div class:list={[className]}>
+  <div class="tl-rail relative">
+    {/* Línea vertical de referencia: corre por detrás de todo el bloque de
+        atributos, de punta a punta. */}
+    <span class="tl-vertical absolute inset-y-0" style={{ left: INDENT }} aria-hidden="true"></span>
+
+    {
+      atributos.map((a) => (
+        <div class="tl-fila relative" style={{ paddingLeft: `calc(${INDENT} + 1.25rem)` }}>
+          {/* Horizontal en el borde superior de la fila, con su nodo. */}
+          <span class="tl-linea absolute inset-x-0 top-0" aria-hidden="true" />
+          <span
+            class="tl-nodo absolute top-0 z-10 -translate-x-1/2 -translate-y-1/2"
+            style={{ left: INDENT }}
+            aria-hidden="true"
+          />
+          <div class="py-5">
+            <h3 class="font-medium text-navy">{a.titulo}</h3>
+            <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
+          </div>
+        </div>
+      ))
+    }
+
+    {/* Línea de cierre del timeline: separa los atributos de los datos de
+        contacto. Sin nodo — es puramente un separador. */}
+    <span class="tl-linea absolute inset-x-0 bottom-0" aria-hidden="true" />
+  </div>
+
+  <p class="mt-8 text-sm font-medium uppercase tracking-[0.06em] text-navy-700">
+    También nos podés contactar por:
+  </p>
+  <address class="mt-4 flex flex-col gap-5 not-italic">
+    <a href={telUrl} class="tl-dato flex items-center gap-3 text-navy">
+      <span class="tl-icono" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 4.5 6a2 2 0 0 1 2-2Z" />
+        </svg>
+      </span>
+      <span class="text-sm">{site.whatsapp.display}</span>
+    </a>
+    <a href={`mailto:${site.email}`} class="tl-dato flex items-center gap-3 text-navy">
+      <span class="tl-icono" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="m3.5 6.5 8.5 6 8.5-6" />
+        </svg>
+      </span>
+      <span class="text-sm">{site.email}</span>
+    </a>
+    {
+      site.direccion && (
+        <div class="flex items-center gap-3 text-navy">
+          <span class="tl-icono" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21Z" />
+              <circle cx="12" cy="9.5" r="2.25" />
+            </svg>
+          </span>
+          <span class="text-sm">{site.direccion.display}</span>
+        </div>
+      )
+    }
+  </address>
+</div>
+
+<style>
+  /* Dasheada, no sólida (10/08/2026): mismo tratamiento que las horizontales
+   * —repeating-linear-gradient, con más presencia al centro y fundido en las
+   * dos puntas— para que las líneas del timeline sean consistentes entre sí,
+   * como pide la spec ("tratamiento de las líneas"). */
+  .tl-vertical {
+    width: 1px;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-navy) 32%, transparent) 0 4px,
+      transparent 4px 8px
+    );
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  }
+
+  /* En arena (10/08/2026): antes navy, igual que la vertical. Va en la marca
+   * arena base y no en arena-200 —la usada en GrillaLogos/GrillaServicios—
+   * porque ahí compiten contra fondos navy-50/blanco de la misma familia
+   * clara, y arena-200 ya demostró leerse casi invisible en ese contexto; acá
+   * el fondo es blanco puro, así que necesita el tono más saturado para
+   * seguir siendo decorativo pero visible. Decorativo, no texto: no aplica
+   * la regla de "arena nunca sobre blanco" de §1.2 (esa es sobre contraste de
+   * lectura, no sobre líneas). */
+  .tl-linea {
+    height: 1px;
+    background-image: repeating-linear-gradient(to right, var(--color-arena) 0 4px, transparent 4px 8px);
+    /* Más presencia al centro, se desvanece en los dos extremos — no
+     * termina en seco. */
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
+  }
+
+  /* De 9px a 4px (10/08/2026, segunda vuelta: seguía leyéndose grande incluso
+   * a 6px). El mismo tamaño que las marcas de registro del marco de
+   * GrillaServicios y del reticulado de GrillaLogos (3-4px) — la familia de
+   * puntos "chicos" del sitio, no la de badges (6px). */
+  .tl-nodo {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--color-navy);
+  }
+
+  /* Contenedor arena para los íconos de contacto, mismo lenguaje que la
+   * píldora de ícono de GrillaServicios (borde navy + fondo arena-200). Más
+   * chico porque acá conviven en una fila junto al texto, no como bloque
+   * destacado. */
+  .tl-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    border-radius: var(--radius-boton);
+    border: 1px solid var(--color-navy);
+    background-color: var(--color-arena-200);
+    color: var(--color-navy);
+  }
+  .tl-icono svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .tl-dato {
+    transition: color 0.2s;
+  }
+  .tl-dato:hover .tl-icono {
+    border-color: var(--color-navy-700);
+  }
+  .tl-dato:hover {
+    color: var(--color-arena-800);
+  }
+</style>
