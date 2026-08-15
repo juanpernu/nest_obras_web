@@ -155,8 +155,6 @@ const grafo = {
     {ogImageUrl && ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
 
     <script type="application/ld+json" is:inline set:html={toSafeJson(grafo)} />
-
-    <Analytics evento={evento} />
   </head>
   <body class="flex min-h-screen flex-col bg-white">
     <Nav />
@@ -164,5 +162,12 @@ const grafo = {
       <slot />
     </main>
     <Footer />
+
+    {/* Va al final del <body>, no en el <head>: Astro inyecta el <link> del CSS
+        al final del <head>, así que un script inline ahí queda por delante del
+        stylesheet que pinta el <h1> (el LCP). Acá no compite con nada, y sigue
+        corriendo mucho antes del `load`, que es cuando se piden los scripts
+        reales — el orden que Consent Mode exige se respeta igual. */}
+    <Analytics evento={evento} />
   </body>
 </html>

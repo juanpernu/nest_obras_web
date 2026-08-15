@@ -164,6 +164,7 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 - [ ] `scripts/verificar-html.sh` completo y parametrizado (§12) + guarda de acentuación + guarda de "video no se descarga en mobile".
 - [ ] **CI** (`.github/workflows/`): `astro check`, `verificar-html.sh`, **`verificar-tracking.sh`**, **Lighthouse CI mobile** (perf ≥95 / a11y =100), grep `client:`, grep `llms.txt`, **check de tamaño de bundle JS < 5 KB/ruta** (eximir el script de Turnstile). Definir `$BASE_URL` = preview de Vercel.
+  - ⚠️ **El gate de Lighthouse es la excepción: NO sirve contra un preview.** El tracking solo se activa en el hostname de producción, así que en un `*.vercel.app` el snippet ni se renderiza y Lighthouse devuelve un 100 que no mide nada de los 160 KB de terceros. Ese gate tiene que correr contra `nestobras.com.ar` post-deploy (PageSpeed Insights o LHCI apuntado a producción), mirando **TBT** en particular (§7.1).
 - [ ] **Search Console** configurado + sitemap enviado (antes del lanzamiento, §6.11).
 - [ ] **Bing Webmaster Tools** + sitemap (alimenta Copilot — del skill `seo-geo`).
 - [ ] **Perfil de Negocio de Google** con NAP idéntico carácter por carácter (§6.7) — bloqueado por la dirección física.
@@ -209,8 +210,12 @@ componente se trackea agregando `data-evento="…"` al HTML, sin escribir JS.
 ### 6.2 Trabajo futuro
 
 - **Conversions API de Meta** — atado a Fase 5: necesita `/api/consulta`, que todavía
-  no existe. El pixel ya emite un `eventID` por conversión, así que el día que el
-  endpoint exista alcanza con mandar el mismo `eventID` server-side para deduplicar.
+  no existe. El pixel ya emite un `eventID` por conversión, pero **hoy ese id se genera
+  y se consume en la misma línea, dentro de una IIFE cerrada**: no queda accesible para
+  nadie más. Deduplicar contra CAPI no es solo "mandar lo mismo del lado del servidor",
+  hace falta plomería: exponer el id (p. ej. escribirlo en un `<input type="hidden">`
+  del formulario antes del POST) para que el endpoint reciba exactamente el mismo valor
+  que usó el pixel. Presupuestar ese trabajo, no darlo por hecho.
 - **Banner de consentimiento** — hoy no hay, por decisión (tráfico AR, Ley 25.326 no
   lo exige). La estructura de Consent Mode v2 ya está: enchufar un banner es agregar
   el `gtag('consent','update', …)`, no rehacer nada.

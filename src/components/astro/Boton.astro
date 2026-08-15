@@ -12,7 +12,7 @@ interface Props {
    * Los `data-*` (en particular `data-evento*`) se pasan tal cual al <a>, para
    * que una página pueda instrumentar un CTA sin tocar este componente.
    */
-  [dato: `data-${string}`]: unknown;
+  [dato: `data-${string}`]: string | undefined;
 }
 const { href, variante = 'primario', class: className, ...rest } = Astro.props as Props;
 

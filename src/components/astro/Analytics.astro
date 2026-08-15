@@ -21,8 +21,15 @@
  *
  * CONSENTIMIENTO. GA4 usa Consent Mode v2 con `region`, que Google resuelve
  * server-side: es exacto. Meta NO tiene equivalente por región, así que se usa
- * una heurística por timezone. Es imperfecta a propósito y está dicho abajo en
- * el código: falla si un usuario argentino tiene el reloj en Madrid.
+ * una heurística por timezone, y falla en las DOS direcciones:
+ *   - Falso positivo: un usuario argentino con el reloj en Madrid queda revocado.
+ *   - Falso negativo (el que importa): un visitante REAL de la UE cuyo timezone no
+ *     empieza con `Europe/` no queda revocado. Pasa con relojes corporativos en
+ *     `Etc/UTC`, con los territorios de ultramar franceses (`America/Guadeloupe`,
+ *     `Indian/Reunion` — legalmente UE, y GA4 sí los cubre por código de país) y
+ *     con Svalbard (`Arctic/Longyearbyen`).
+ * Está declarado como aproximación en /privacidad, no como garantía. Si alguna vez
+ * hay campañas apuntando a Europa, esto deja de alcanzar y hace falta un banner.
  *
  * SIN <noscript> DEL PIXEL. El snippet de Meta incluye un <img> de fallback para
  * navegadores sin JS. Se omite deliberadamente: dispararía un PageView saltándose
@@ -163,7 +170,12 @@ const vars = {
         function manejar(ev) {
           var t = ev.target;
           var el = t && t.closest ? t.closest('[data-evento]') : null;
-          if (el) emitir(el.dataset.evento, paramsDe(el));
+          if (!el) return;
+          // Un <form> se mide SOLO por 'submit'. Sin esto, closest() resuelve al
+          // <form> desde cualquier input de adentro y un click en "Nombre" ya
+          // contaría un Lead; además el click en el botón sumaría un segundo.
+          if (ev.type === 'click' && el.tagName === 'FORM') return;
+          emitir(el.dataset.evento, paramsDe(el));
         }
 
         document.addEventListener('click', manejar);

@@ -2,6 +2,11 @@
 # Chequeos de la capa de tracking sobre dist/ (correr tras `pnpm build`).
 # Ver src/components/astro/Analytics.astro y docs/PLAN-EJECUCION.md §7.1.
 #
+# ALCANCE: esto NO ejecuta JavaScript. Verifica marcado estático y la presencia
+# de invariantes del script inline; no prueba comportamiento. Un bug de lógica
+# que no borre ninguna de las cadenas de abajo pasa en verde. Para comportamiento
+# hacen falta GA4 DebugView / Meta Pixel Helper contra el deploy real.
+#
 # El check 3 es el importante: verificar-perf.sh solo mide /_astro/*.js, así que
 # un <script src> de terceros metido en el HTML pasaría el presupuesto de JS sin
 # que nadie se entere y se comería el Lighthouse. Acá se corta.
@@ -60,7 +65,30 @@ for f in $html_files; do
   fi
 done
 
+# 4. Invariantes del script inline que un refactor puede romper en silencio sin
+#    tocar ningún atributo ni agregar ningún <script src>.
+invariante() {
+  descripcion="$1"; patron="$2"
+  grep -q "$patron" dist/index.html \
+    || { echo "FALLA: ${descripcion} — no aparece /${patron}/ en el snippet"; fail=1; }
+}
+
+# Consent Mode v2: el default va ANTES de que cargue gtag.js (requisito de Google).
+# Si desaparece cualquiera de los dos bloques, el sitio mide sin consentimiento.
+invariante "falta el consent default global"        "'consent', 'default'"
+invariante "falta el bloque de consent por región"  "region: regiones"
+invariante "faltan los 4 parámetros de Consent v2"  "ad_personalization"
+invariante "falta la denegación para EEA/UK"        "analytics_storage: 'denied'"
+
+# Un <form> se mide SOLO por 'submit'. Sin esta guarda, closest() resuelve al
+# <form> desde cualquier input y un click en un campo cuenta un Lead falso.
+invariante "falta la guarda que evita Leads falsos por click dentro del <form>" \
+  "el.tagName === 'FORM'"
+
+# 'play' no burbujea: si alguien saca la fase de captura, deja de medirse.
+invariante "el listener de 'play' perdió la fase de captura" "'play', manejar, true"
+
 if [ "$fail" -eq 0 ]; then
-  echo "OK: tracking instrumentado y sin scripts de terceros en el HTML."
+  echo "OK: tracking instrumentado, invariantes presentes y sin terceros en el HTML."
 fi
 exit "$fail"

@@ -744,6 +744,20 @@ solo bajo estas tres condiciones, que no son negociables:
 3. **Lighthouse mobile sigue siendo ≥ 95** (§12). Si esto se rompe, se revisa la
    excepción, no el número.
 
+**Qué protege esto y qué no — sin optimismo.** La carga diferida garantiza
+**LCP y FCP**: nada de terceros se ejecuta antes del `load`. **No garantiza el
+TBT**, que es el 30% del score de Lighthouse. Lighthouse mide TBT desde el FCP
+hasta que la página queda quieta (~5 s sin long tasks), y en un sitio estático sin
+trabajo pendiente el `requestIdleCallback` dispara casi apenas se libera el hilo:
+lo más probable es que el parseo de los 160 KB caiga **dentro** de esa ventana y
+cuente. No hay forma de saberlo sin medir contra el dominio real.
+
+**Consecuencia para el CI (§12):** el gate de Lighthouse **no puede correr contra
+un preview de Vercel**. El tracking está limitado al hostname de producción, así
+que en un `*.vercel.app` el snippet no se renderiza y Lighthouse devolvería un 100
+que no dice nada. Tiene que correr contra `nestobras.com.ar` post-deploy, o el
+gate es decorativo.
+
 Implementación: `src/components/astro/Analytics.astro`.
 
 ### 7.2 Video del hero

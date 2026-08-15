@@ -109,9 +109,17 @@ const p = 'mt-3 leading-relaxed text-navy-700';
           </dl>
           <p class={p}>
             Estas herramientas se cargan después de que la página terminó de mostrarse, para no
-            afectar la velocidad del sitio. Si tu navegador reporta que estás en el Espacio Económico
-            Europeo o el Reino Unido, la medición se restringe automáticamente y no se almacenan
-            cookies publicitarias.
+            afectar la velocidad del sitio.
+          </p>
+          <p class={p}>
+            <strong class="font-medium text-navy">Restricción por región.</strong> Si estás en el
+            Espacio Económico Europeo, el Reino Unido o Suiza, la medición se restringe
+            automáticamente y no se almacenan cookies publicitarias. En Google Analytics esa
+            detección la hace Google en sus servidores. En el caso de Meta Pixel, en cambio, la
+            detección se hace en tu navegador a partir de su zona horaria: es una aproximación y
+            puede fallar, por ejemplo si tu equipo tiene el reloj configurado en otra región. Si
+            estás en alguno de esos territorios y querés asegurarte de que no se te mida, usá
+            cualquiera de los métodos de la sección siguiente.
           </p>
         </section>
 
