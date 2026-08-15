@@ -1,0 +1,183 @@
+---
+/**
+ * ⚠️ BORRADOR — VALIDAR CON NEST Y/O SU ABOGADO ANTES DEL LAUNCH ⚠️
+ *
+ * Redactado por el equipo de desarrollo, no por un estudio jurídico. Cubre lo
+ * que Google y Meta exigen divulgar para poder usar sus herramientas (GA4 y
+ * Meta Pixel nombrados explícitamente, qué se recolecta y para qué) y las
+ * fórmulas estándar de la Ley 25.326 argentina. Es un piso, no un dictamen.
+ *
+ * Va INDEXABLE a propósito: Google quiere poder alcanzar la política de
+ * privacidad del sitio, así que acá no corresponde `noindex`.
+ *
+ * Los datos de contacto salen de site.ts, como el resto del NAP (§6.7).
+ */
+import Layout from '@/layouts/main.astro';
+import { site } from '@/data/site';
+import { GA4_ID, META_PIXEL_ID } from '@/data/analytics';
+
+const actualizado = 'agosto de 2026';
+
+const h2 = 'text-h3 font-medium uppercase tracking-[0.04em] text-navy';
+const p = 'mt-3 leading-relaxed text-navy-700';
+---
+
+<Layout
+  title="Política de privacidad | NEST"
+  description="Cómo Nest Obras recolecta, usa y protege los datos de quienes visitan el sitio y envían una consulta."
+>
+  <section class="py-16 md:py-24">
+    <div class="mx-auto max-w-3xl px-6">
+      <h1 class="text-h1 font-medium text-navy">Política de privacidad</h1>
+      <p class="mt-3 text-sm uppercase tracking-[0.06em] text-navy-700">
+        Última actualización: {actualizado}
+      </p>
+
+      <div class="mt-12 space-y-10">
+        <section>
+          <h2 class={h2}>Quién es responsable de tus datos</h2>
+          <p class={p}>
+            {site.nombre} es responsable del tratamiento de los datos personales que se recolectan
+            a través de {site.url}. Podés contactarnos en{' '}
+            <a href={`mailto:${site.email}`} class="underline hover:text-navy" data-evento="email_click" data-evento-lugar="privacidad">{site.email}</a>
+            {site.direccion && <> o en {site.direccion.display}</>}.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Qué datos recolectamos</h2>
+          <p class={p}>
+            <strong class="font-medium text-navy">Los que nos das vos.</strong> Cuando completás el
+            formulario de consulta nos dejás tu nombre, tu número de WhatsApp, el tipo de proyecto y,
+            si querés, la zona y una descripción. Los usamos únicamente para responderte y para dar
+            seguimiento a tu consulta.
+          </p>
+          <p class={p}>
+            <strong class="font-medium text-navy">Los que se generan al navegar.</strong> Datos
+            técnicos y de uso: páginas que visitás, tiempo de permanencia, tipo de dispositivo y
+            navegador, y de qué sitio llegaste. No incluyen tu nombre ni tu documento.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Herramientas de terceros que usamos</h2>
+          <p class={p}>
+            El sitio usa herramientas de medición de terceros que instalan cookies o identificadores
+            similares en tu navegador:
+          </p>
+          <dl class="mt-5 space-y-5">
+            {
+              GA4_ID && (
+                <div class="border-t border-navy-200 pt-4">
+                  <dt class="font-medium uppercase tracking-[0.04em] text-navy">Google Analytics 4</dt>
+                  <dd class="mt-1 leading-relaxed text-navy-700">
+                    Provisto por Google. Nos permite entender cómo se usa el sitio de forma agregada:
+                    cuántas personas lo visitan, qué páginas leen y qué secciones les interesan. Su
+                    tratamiento se rige por la{' '}
+                    <a
+                      href="https://policies.google.com/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline hover:text-navy"
+                    >
+                      política de privacidad de Google
+                    </a>.
+                  </dd>
+                </div>
+              )
+            }
+            {
+              META_PIXEL_ID && (
+                <div class="border-t border-navy-200 pt-4">
+                  <dt class="font-medium uppercase tracking-[0.04em] text-navy">Meta Pixel</dt>
+                  <dd class="mt-1 leading-relaxed text-navy-700">
+                    Provisto por Meta (Facebook e Instagram). Nos permite medir el resultado de
+                    nuestras campañas publicitarias y mostrar avisos a personas con intereses
+                    similares a los de quienes ya nos consultaron. Su tratamiento se rige por la{' '}
+                    <a
+                      href="https://www.facebook.com/privacy/policy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline hover:text-navy"
+                    >
+                      política de privacidad de Meta
+                    </a>.
+                  </dd>
+                </div>
+              )
+            }
+          </dl>
+          <p class={p}>
+            Estas herramientas se cargan después de que la página terminó de mostrarse, para no
+            afectar la velocidad del sitio. Si tu navegador reporta que estás en el Espacio Económico
+            Europeo o el Reino Unido, la medición se restringe automáticamente y no se almacenan
+            cookies publicitarias.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Cómo evitar la medición</h2>
+          <p class={p}>
+            Podés bloquear o eliminar las cookies desde la configuración de tu navegador, usar el
+            modo incógnito, o instalar el{' '}
+            <a
+              href="https://tools.google.com/dlpage/gaoptout"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline hover:text-navy"
+            >
+              complemento de inhabilitación de Google Analytics
+            </a>. Bloquearlas no afecta el funcionamiento del sitio ni tu posibilidad de
+            contactarnos.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Con quién compartimos los datos</h2>
+          <p class={p}>
+            No vendemos ni cedemos tus datos personales. Solo los comparten los proveedores que
+            necesitamos para operar: los servicios de medición mencionados arriba y los proveedores
+            de infraestructura, correo y almacenamiento con los que gestionamos las consultas. Cada
+            uno trata los datos únicamente para prestarnos ese servicio.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Cuánto tiempo los conservamos</h2>
+          <p class={p}>
+            Las consultas se conservan mientras dure la relación comercial y por el plazo que exija
+            la normativa aplicable. Los datos de medición se conservan según los plazos de retención
+            configurados en cada herramienta. Podés pedir la eliminación de tus datos cuando quieras.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Tus derechos</h2>
+          <p class={p}>
+            Podés acceder, rectificar, actualizar y suprimir tus datos personales escribiéndonos a{' '}
+            <a href={`mailto:${site.email}`} class="underline hover:text-navy" data-evento="email_click" data-evento-lugar="privacidad">{site.email}</a>.
+          </p>
+          <p class={p}>
+            El titular de los datos personales tiene la facultad de ejercer el derecho de acceso a
+            los mismos en forma gratuita a intervalos no inferiores a seis meses, salvo que se
+            acredite un interés legítimo al efecto, conforme lo establecido en el artículo 14, inciso
+            3 de la Ley Nº 25.326.
+          </p>
+          <p class={p}>
+            La Agencia de Acceso a la Información Pública, órgano de control de la Ley Nº 25.326,
+            tiene la atribución de atender las denuncias y reclamos que se interpongan con relación
+            al incumplimiento de las normas sobre protección de datos personales.
+          </p>
+        </section>
+
+        <section>
+          <h2 class={h2}>Cambios en esta política</h2>
+          <p class={p}>
+            Si modificamos esta política, actualizamos la fecha del encabezado. Te recomendamos
+            revisarla cada tanto.
+          </p>
+        </section>
+      </div>
+    </div>
+  </section>
+</Layout>

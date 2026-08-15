@@ -1,0 +1,177 @@
+---
+/**
+ * GA4 + Meta Pixel. Se monta UNA vez en el <head> de main.astro, así que todas
+ * las páginas quedan trackeadas por construcción y cualquier página nueva lo
+ * hereda sin acordarse de nada.
+ *
+ * POR QUÉ LA CARGA ES DIFERIDA (§7.1). El presupuesto del sitio es < 5 KB de JS
+ * por ruta y Lighthouse mobile ≥ 95. gtag.js (~90 KB) y fbevents.js (~70 KB) no
+ * entran en eso. Pero los dos SDKs están diseñados para encolar: `dataLayer` y
+ * `fbq.queue` acumulan llamadas y la librería las drena cuando llega. Entonces
+ * acá va inline solo el encolador (4,7 KB crudo / 1,8 KB gzip) y los reales se descargan
+ * después del `load`, ante lo que ocurra primero entre idle y primera
+ * interacción. El camino crítico queda con 0 KB de terceros.
+ *
+ * LIMITACIÓN ACEPTADA: un rebote instantáneo, antes del `load`, no se mide. Es
+ * el precio de no poner 160 KB delante del LCP.
+ *
+ * ORDEN OBLIGATORIO: `gtag('consent','default')` va ANTES de que cargue gtag.js
+ * (doc oficial de Google). Encaja solo con este esquema, porque el default es
+ * inline y el tag es diferido.
+ *
+ * CONSENTIMIENTO. GA4 usa Consent Mode v2 con `region`, que Google resuelve
+ * server-side: es exacto. Meta NO tiene equivalente por región, así que se usa
+ * una heurística por timezone. Es imperfecta a propósito y está dicho abajo en
+ * el código: falla si un usuario argentino tiene el reloj en Madrid.
+ *
+ * SIN <noscript> DEL PIXEL. El snippet de Meta incluye un <img> de fallback para
+ * navegadores sin JS. Se omite deliberadamente: dispararía un PageView saltándose
+ * toda la lógica de consentimiento de arriba, que es justamente el punto del
+ * diseño. GA4 tampoco mide sin JS, así que además sería asimétrico.
+ *
+ * Los componentes NO importan nada de acá: se instrumentan con `data-evento`.
+ */
+import {
+  EVENTOS,
+  GA4_ID,
+  META_PIXEL_ID,
+  HOST_PRODUCCION,
+  REGIONES_CONSENTIMIENTO_DENEGADO,
+  type EventoDePagina,
+} from '@/data/analytics';
+
+interface Props {
+  /** Evento que la página dispara al cargar (no hay click que lo origine). */
+  evento?: EventoDePagina;
+}
+const { evento } = Astro.props as Props;
+
+// Sin ningún ID configurado no se renderiza nada: el sitio queda idéntico a hoy.
+const activo = Boolean(GA4_ID || META_PIXEL_ID);
+
+// Al runtime va el mapa mínimo, como tuplas [ga4, meta]: `conversion` es
+// documentación para la UI de GA4 y no hace nada en el cliente.
+const mapas = Object.fromEntries(
+  Object.entries(EVENTOS).map(([clave, m]) => [clave, [m.ga4, m.meta]]),
+);
+
+// `define:vars` implica `is:inline`: el cuerpo del <script> es JS plano, no TS,
+// y Astro no lo procesa ni lo bundlea. Por eso no aparece en /_astro y no toca
+// el presupuesto que mide scripts/verificar-perf.sh.
+const vars = {
+  gaId: GA4_ID,
+  pixelId: META_PIXEL_ID,
+  hostProd: HOST_PRODUCCION,
+  mapas,
+  regiones: REGIONES_CONSENTIMIENTO_DENEGADO,
+  eventoPagina: evento ?? null,
+};
+---
+
+{
+  activo && (
+    <script is:inline define:vars={vars}>
+      (function () {
+        var debug = /[?&]nest_debug=1/.test(location.search);
+        if (location.hostname !== hostProd && !debug) return;
+
+        function gtag() { window.dataLayer.push(arguments); }
+
+        if (!debug) {
+          window.dataLayer = window.dataLayer || [];
+
+          gtag('consent', 'default', {
+            ad_storage: 'granted', ad_user_data: 'granted',
+            ad_personalization: 'granted', analytics_storage: 'granted'
+          });
+          gtag('consent', 'default', {
+            region: regiones, wait_for_update: 500,
+            ad_storage: 'denied', ad_user_data: 'denied',
+            ad_personalization: 'denied', analytics_storage: 'denied'
+          });
+
+          if (gaId) { gtag('js', new Date()); gtag('config', gaId); }
+
+          if (!window.fbq) {
+            var n = window.fbq = function () {
+              n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+            };
+            if (!window._fbq) window._fbq = n;
+            n.push = n; n.loaded = true; n.version = '2.0'; n.queue = [];
+          }
+
+          if (pixelId) {
+            try {
+              var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+              if (/^Europe\//.test(tz) || /^Atlantic\/(Reykjavik|Canary|Madeira|Azores)/.test(tz) || tz === 'Asia/Nicosia') {
+                fbq('consent', 'revoke');
+              }
+            } catch (e) {}
+            fbq('init', pixelId);
+            fbq('track', 'PageView');
+          }
+
+          var pedido = false;
+          function alCargar(fn) {
+            if (document.readyState === 'complete') fn();
+            else addEventListener('load', fn, { once: true });
+          }
+          function inyectar(src) {
+            var s = document.createElement('script');
+            s.async = true; s.src = src;
+            document.head.appendChild(s);
+          }
+          function cargar() {
+            if (gaId) inyectar('https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId));
+            if (pixelId) inyectar('https://connect.facebook.net/en_US/fbevents.js');
+          }
+          function pedir() { if (!pedido) { pedido = true; alCargar(cargar); } }
+
+          alCargar(function () {
+            (window.requestIdleCallback || function (cb) { setTimeout(cb, 2000); })(pedir, { timeout: 2000 });
+          });
+          ['pointerdown', 'keydown', 'scroll'].forEach(function (t) {
+            addEventListener(t, pedir, { once: true, passive: true, capture: true });
+          });
+        }
+
+        function idEvento() {
+          try { return crypto.randomUUID(); } catch (e) {}
+          return 'nest-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+        }
+
+        function emitir(nombre, params) {
+          var m = mapas[nombre];
+          if (!m) { if (debug) console.warn('[nest] data-evento sin mapeo:', nombre); return; }
+          if (debug) { console.log('[nest]', nombre, m[0], m[1] || '-', params); return; }
+          if (gaId) gtag('event', m[0], params);
+          if (pixelId && m[1]) fbq('track', m[1], params, { eventID: idEvento() });
+        }
+
+        function paramsDe(el) {
+          var p = {};
+          for (var k in el.dataset) {
+            if (k.length > 6 && k.slice(0, 6) === 'evento') {
+              var nombre = (k.charAt(6).toLowerCase() + k.slice(7))
+                .replace(/[A-Z]/g, function (c) { return '_' + c.toLowerCase(); });
+              p[nombre] = el.dataset[k];
+            }
+          }
+          return p;
+        }
+
+        function manejar(ev) {
+          var t = ev.target;
+          var el = t && t.closest ? t.closest('[data-evento]') : null;
+          if (el) emitir(el.dataset.evento, paramsDe(el));
+        }
+
+        document.addEventListener('click', manejar);
+        document.addEventListener('submit', manejar);
+        document.addEventListener('play', manejar, true);
+
+        if (eventoPagina) emitir(eventoPagina.nombre, eventoPagina.params || {});
+      })();
+    </script>
+  )
+}

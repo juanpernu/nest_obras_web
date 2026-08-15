@@ -13,6 +13,8 @@ import { site } from '@/data/site';
 import heroFont from '@fontsource/roboto-condensed/files/roboto-condensed-latin-300-normal.woff2?url';
 import Nav from '@/components/astro/Nav.astro';
 import Footer from '@/components/astro/Footer.astro';
+import Analytics from '@/components/astro/Analytics.astro';
+import type { EventoDePagina } from '@/data/analytics';
 
 interface Props {
   title?: string;
@@ -25,6 +27,12 @@ interface Props {
   noindex?: boolean;
   /** Structured data específico de la página, se agrega al global. */
   jsonLd?: Record<string, unknown>[];
+  /**
+   * Evento de analítica que la página dispara al cargar (una vista de obra o de
+   * servicio, que no nacen de un click). Los eventos de interacción NO van acá:
+   * se instrumentan con `data-evento` en el elemento (ver Analytics.astro).
+   */
+  evento?: EventoDePagina;
 }
 
 // Cast explícito: el binding implícito de `Props` a `Astro.props` no es fiable
@@ -36,6 +44,7 @@ const {
   ogImageAlt,
   noindex = false,
   jsonLd = [],
+  evento,
 } = Astro.props as Props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -146,6 +155,8 @@ const grafo = {
     {ogImageUrl && ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
 
     <script type="application/ld+json" is:inline set:html={toSafeJson(grafo)} />
+
+    <Analytics evento={evento} />
   </head>
   <body class="flex min-h-screen flex-col bg-white">
     <Nav />

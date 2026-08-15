@@ -722,11 +722,29 @@ El público llega mayoritariamente desde el teléfono y el CTA principal es un W
 | Recurso | Presupuesto en mobile |
 |---|---|
 | JS de framework | **0 KB** — garantizado por la decisión §2.7 |
-| JS total | < 5 KB, solo scripts inline |
+| JS propio | < 5 KB, solo scripts inline |
+| JS de analítica de terceros | **Exento del presupuesto**, con condiciones (abajo) |
 | CSS | < 20 KB comprimido |
 | Poster del hero | < 120 KB |
 | LCP en 4G | < 2,0 s |
 | CLS | < 0,05 |
+
+**Excepción para la analítica de terceros.** GA4 (`gtag.js`, ~90 KB) y Meta Pixel
+(`fbevents.js`, ~70 KB) no entran en los 5 KB y el negocio los necesita igual. Se
+los exime del presupuesto —igual que a Turnstile (`DEUDA-TECNICA.md` §1.3)— pero
+solo bajo estas tres condiciones, que no son negociables:
+
+1. **Nada de terceros en el camino crítico.** En el HTML va únicamente el
+   encolador inline (4,7 KB en crudo, **1,8 KB gzip**, medido). Los scripts reales se inyectan en runtime
+   después del `load`, ante lo que ocurra primero entre `requestIdleCallback` y
+   la primera interacción.
+2. **Ningún `<script src>` de terceros servido desde el HTML.** Es lo que
+   verifica `scripts/verificar-tracking.sh`, porque `verificar-perf.sh` solo mide
+   `/_astro/*.js` y no vería el problema.
+3. **Lighthouse mobile sigue siendo ≥ 95** (§12). Si esto se rompe, se revisa la
+   excepción, no el número.
+
+Implementación: `src/components/astro/Analytics.astro`.
 
 ### 7.2 Video del hero
 Es el mayor riesgo de rendimiento del sitio. **En viewports menores a 768 px no se carga el video**: solo el poster optimizado. La decisión se toma con `<source media="...">` o no renderizando el elemento — **nunca cargándolo y ocultándolo con CSS**, que descarga igual.
@@ -808,8 +826,24 @@ Funciona sin JavaScript y sin framework. Los atributos nativos (`required`, `typ
 | `TURNSTILE_SECRET_KEY` | No |
 | `PUBLIC_TURNSTILE_SITE_KEY` | Sí |
 | `PUBLIC_WHATSAPP` | Sí |
+| `PUBLIC_GA4_ID` | Sí |
+| `PUBLIC_META_PIXEL_ID` | Sí |
 
 Solo las que llevan prefijo `PUBLIC_` llegan al navegador.
+
+**Con `output: 'static'` las `PUBLIC_*` se hornean EN BUILD.** Cargar o cambiar una
+variable en Vercel no alcanza: hay que redeployar para que llegue al HTML. Vale en
+particular para `PUBLIC_META_PIXEL_ID`, que hoy está vacía a la espera del ID.
+
+Valores para `.env` local (el archivo está en `.gitignore`):
+
+```
+PUBLIC_GA4_ID=G-TNT3V28PR5
+PUBLIC_META_PIXEL_ID=
+```
+
+Si falta el ID de una plataforma, esa plataforma no se inicializa y no se descarga
+su script. Con las dos vacías, `Analytics.astro` no renderiza nada.
 
 ---
 
@@ -912,7 +946,20 @@ Solo cuando lleguen los datos de §11: publicar `/obras/el-canton`, activar la s
 | Dirección física para el NAP | JSON-LD, footer, Perfil de Negocio | NEST |
 | Colores exactos de marca | Preset de shadcn | Del PDF |
 
-**Decisiones abiertas que no bloquean:** analítica (propuesta: Vercel Web Analytics, sin scripts de terceros) y tipografías (el PDF no las especifica; self-hosted, no Google Fonts, para no agregar una conexión externa al camino crítico).
+**Analítica: decisión cerrada.** Se implementó **GA4 + Meta Pixel**, no Vercel Web
+Analytics: NEST necesita medir el tráfico *y* poder correr campañas con audiencias
+de remarketing, y lo segundo no se resuelve sin el pixel. Van con carga diferida
+bajo la excepción de §7.1 y Consent Mode v2 sin banner. Ver
+`src/components/astro/Analytics.astro` y `src/data/analytics.ts`.
+
+| Dato | Bloquea | Quién lo trae |
+|---|---|---|
+| ID del Meta Pixel (`PUBLIC_META_PIXEL_ID`) | La medición de campañas de Meta | NEST — requiere acceso a business.facebook.com |
+| Marcar las conversiones en la UI de GA4 | Que los leads figuren como conversión | NEST o acceso a la propiedad |
+| Validación legal de `/privacidad` | Publicar en producción | NEST |
+
+**Decisión abierta que no bloquea:** tipografías (el PDF no las especifica;
+self-hosted, no Google Fonts, para no agregar una conexión externa al camino crítico).
 
 ---
 
@@ -946,6 +993,7 @@ Ninguna página se considera terminada sin esto:
 | Lighthouse CI mobile | Performance < 95 o Accessibility < 100 |
 | Grep de `client:` | Aparece cualquier directiva de hidratación |
 | Tamaño del bundle JS | Supera 5 KB en cualquier ruta |
+| `verificar-tracking.sh` | Falta el snippet en alguna página, falta un `data-evento` esperado, o hay un `<script src>` de terceros en el HTML |
 | Grep de `llms.txt` | Existe el archivo |
 
 ```bash

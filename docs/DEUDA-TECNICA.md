@@ -14,6 +14,7 @@ La **Fase 5 (formulario funcionando)** es el bloque de trabajo más grande y est
 - **Fase 2** — contenido: `content.config.ts` (Zod + `superRefine`), 10 obras, 4 servicios, 2 equipo.
 - **Fase 3** — 11 componentes Astro (0 `client:*`).
 - **Fase 4** — 6 páginas: `/`, `/nosotros`, `/servicios`, `/obras`, `/obras/prune`, `/contacto`.
+- **Tracking** — GA4 (`G-TNT3V28PR5`) + Meta Pixel con carga diferida y Consent Mode v2, instrumentación declarativa por `data-evento`, y `/privacidad`. Ver §6.
 - **Verde:** `pnpm build`, `astro check` 0/0/0, 0 KB JS de framework, CSS ~5 KB gz, contraste AA/AAA, un `<h1>` por página.
 - **Code reviews** de PR #1 y #2 aplicados (seguridad JSON-LD, accesibilidad/contraste, perf).
 
@@ -155,13 +156,14 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 | **Ficha de El Canton** (m², plazo, año, estilo) | publicar `/obras/el-canton` (`paginaPropia: true`) | Falta |
 | **Fotos reales de PRUNE** (≥8) | reemplazar placeholders del caso | Falta |
 | **Testimonios reales** | reemplazar los **placeholders publicados** (§2.3) | Falta (~semana 3) — 🔴 mientras tanto hay 2 reseñas inventadas en el aire |
+| **ID del Meta Pixel** | la medición de campañas de Meta (§6) | Falta — requiere acceso a `business.facebook.com` |
 
 ---
 
 ## 4. 🟡 Fase 6 — GEO, CI y deploy (pendiente)
 
 - [ ] `scripts/verificar-html.sh` completo y parametrizado (§12) + guarda de acentuación + guarda de "video no se descarga en mobile".
-- [ ] **CI** (`.github/workflows/`): `astro check`, `verificar-html.sh`, **Lighthouse CI mobile** (perf ≥95 / a11y =100), grep `client:`, grep `llms.txt`, **check de tamaño de bundle JS < 5 KB/ruta** (eximir el script de Turnstile). Definir `$BASE_URL` = preview de Vercel.
+- [ ] **CI** (`.github/workflows/`): `astro check`, `verificar-html.sh`, **`verificar-tracking.sh`**, **Lighthouse CI mobile** (perf ≥95 / a11y =100), grep `client:`, grep `llms.txt`, **check de tamaño de bundle JS < 5 KB/ruta** (eximir el script de Turnstile). Definir `$BASE_URL` = preview de Vercel.
 - [ ] **Search Console** configurado + sitemap enviado (antes del lanzamiento, §6.11).
 - [ ] **Bing Webmaster Tools** + sitemap (alimenta Copilot — del skill `seo-geo`).
 - [ ] **Perfil de Negocio de Google** con NAP idéntico carácter por carácter (§6.7) — bloqueado por la dirección física.
@@ -187,7 +189,53 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 ---
 
-## 6. Checklist innegociable pre-launch (§12)
+## 6. 🟠 Tracking — pendientes y decisiones tomadas
+
+Implementado en `src/components/astro/Analytics.astro` (script inline diferido) y
+`src/data/analytics.ts` (catálogo de eventos). Instrumentación **declarativa**: un
+componente se trackea agregando `data-evento="…"` al HTML, sin escribir JS.
+
+### 6.1 Pendiente de NEST
+
+| Ítem | Bloquea | Nota |
+|---|---|---|
+| `PUBLIC_GA4_ID=G-TNT3V28PR5` en Vercel (producción) | Que el sitio deployado mida algo | Con `output: 'static'` hay que **redeployar** tras cargarla |
+| **ID del Meta Pixel** → `PUBLIC_META_PIXEL_ID` | Toda la medición de Meta | Requiere acceso a `business.facebook.com`. Vacío = el pixel no se inicializa y no rompe nada |
+| Marcar conversiones en la UI de GA4 | Que los leads figuren como conversión | `whatsapp_click`, `generate_lead`, `tel_click`. Administrar → Eventos → "Marcar como evento clave". **No se puede hacer desde el código** |
+| Prender **Enhanced Measurement** en GA4 | Scroll y engagement | Es un toggle de la propiedad, no código. Por eso no hay eventos de scroll en el catálogo |
+| **Validación legal de `/privacidad`** | 🔴 Publicar en producción | La página es un **borrador** redactado por desarrollo, no por un abogado |
+| Confirmar hostname de producción | El gate de entorno | Hoy `nestobras.com.ar`, derivado de `site.url` |
+
+### 6.2 Trabajo futuro
+
+- **Conversions API de Meta** — atado a Fase 5: necesita `/api/consulta`, que todavía
+  no existe. El pixel ya emite un `eventID` por conversión, así que el día que el
+  endpoint exista alcanza con mandar el mismo `eventID` server-side para deduplicar.
+- **Banner de consentimiento** — hoy no hay, por decisión (tráfico AR, Ley 25.326 no
+  lo exige). La estructura de Consent Mode v2 ya está: enchufar un banner es agregar
+  el `gtag('consent','update', …)`, no rehacer nada.
+
+### 6.3 Decisiones tomadas (no revertir sin motivo)
+
+- **Carga diferida, no `async` en el head.** Ver la excepción de §7.1 del plan y sus
+  tres condiciones. Un rebote instantáneo, antes del `load`, no se mide: es el precio
+  aceptado de no poner 160 KB delante del LCP.
+- **El video del hero NO se trackea.** Es `autoplay muted aria-hidden`: el evento
+  `play` se dispara solo al cargar la página, así que medirlo daría una métrica que
+  parece engagement pero es un pageview de desktop disfrazado. Está explicado en
+  `HeroVideo.astro`; el mapeo `video_play` queda listo para un video con controles.
+- **Sin `<noscript>` del pixel.** El `<img>` de fallback de Meta dispararía un
+  PageView salteándose toda la lógica de consentimiento. GA4 tampoco mide sin JS.
+- **Consent de Meta por heurística de timezone.** Meta no tiene defaults por región
+  como Google. Es imperfecta a propósito: falla si un usuario argentino tiene el reloj
+  en Europa. GA4 sí usa `region`, que Google resuelve server-side y es exacto.
+- **Nombres propios en GA4** para los eventos de dominio, salvo `generate_lead` y
+  `video_start` que son recomendados y encajan exactos. No se usan `view_item` /
+  `select_item`: sin un array `items` de ecommerce no alimentan ningún reporte.
+
+---
+
+## 7. Checklist innegociable pre-launch (§12)
 
 - [ ] `curl` sin JS devuelve todo el contenido de valor de cada página
 - [ ] Cero `client:*` · Cero `llms.txt` · Ninguna página por variante geográfica
@@ -200,3 +248,6 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 - [ ] Canonical autorreferencial + ruta en `sitemap.xml`
 - [ ] **Lighthouse mobile ≥ 95 perf / 100 a11y** · táctiles ≥ 44 px · video no se descarga en mobile
 - [ ] Deployment Protection off en prod · dominio + redirect 308
+- [ ] **`/privacidad` validada legalmente** — hoy es un borrador de desarrollo (§6.1)
+- [ ] `PUBLIC_GA4_ID` cargada en Vercel **y redeployada** · conversiones marcadas en GA4
+- [ ] `bash scripts/verificar-tracking.sh` en verde contra el build de producción
