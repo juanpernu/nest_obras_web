@@ -39,12 +39,27 @@ const labelBase =
     <div class="mx-auto max-w-6xl px-6">
       <fieldset class="mb-10 flex flex-wrap gap-2">
         <legend class="sr-only">Filtrar obras por tipo</legend>
-        <input type="radio" name="filtro" id="f-todos" class="sr-only" checked />
+        <input
+          type="radio"
+          name="filtro"
+          id="f-todos"
+          class="sr-only"
+          checked
+          data-evento="filtro_obras"
+          data-evento-filtro="todos"
+        />
         <label for="f-todos" class={labelBase}>Todos</label>
         {
           tiposPresentes.map((t) => (
             <Fragment>
-              <input type="radio" name="filtro" id={`f-${t}`} class="sr-only" />
+              <input
+                type="radio"
+                name="filtro"
+                id={`f-${t}`}
+                class="sr-only"
+                data-evento="filtro_obras"
+                data-evento-filtro={t}
+              />
               <label for={`f-${t}`} class={labelBase}>
                 {filtroLabels[t]}
               </label>

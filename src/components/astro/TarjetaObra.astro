@@ -30,7 +30,13 @@ const tipoLabel: Record<string, string> = {
 ---
 
 <article>
-  <Tag href={href} class:list={['block', href && 'group focus:outline-none']}>
+  <Tag
+    href={href}
+    data-evento={href ? 'obra_card_click' : undefined}
+    data-evento-obra={href ? d.nombre : undefined}
+    data-evento-tipo={href ? d.tipo : undefined}
+    class:list={['block', href && 'group focus:outline-none']}
+  >
     <div class="aspect-[4/3] overflow-hidden bg-navy">
       <FotoObra
         src={d.portada}

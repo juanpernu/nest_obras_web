@@ -5,6 +5,14 @@
  * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de
  * video, solo pinta el poster. Se resuelve en el media del <source>, no con CSS
  * (ocultar por CSS descarga igual). El LCP es el <h1>: `preload="none"` + poster.
+ *
+ * NO LLEVA `data-evento="video_play"` A PROPÓSITO. Es un video decorativo con
+ * `autoplay muted` y `aria-hidden`: el evento `play` se dispara solo al cargar la
+ * página, sin que nadie haya hecho nada. Medirlo daría una métrica que parece
+ * engagement pero en realidad es "visita de desktop sin reduced-motion", o sea un
+ * pageview disfrazado. El engagement real lo cubre Enhanced Measurement de GA4.
+ * El mapeo `video_play` existe en src/data/analytics.ts para un video con
+ * controles de verdad, que es donde el evento sí significa algo.
  */
 interface Props {
   srcDesktop: string;

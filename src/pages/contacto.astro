@@ -33,7 +33,16 @@ const bloques = [
 
           <div class="mt-8 bg-navy-50 p-6">
             <p class="text-sm uppercase tracking-[0.06em] text-navy-700">¿Preferís escribirnos?</p>
-            <div class="mt-4"><Boton href={whatsappUrl} variante="secundario">Escribinos por WhatsApp</Boton></div>
+            <div class="mt-4">
+              <Boton
+                href={whatsappUrl}
+                variante="secundario"
+                data-evento="whatsapp_click"
+                data-evento-lugar="contacto_cta"
+              >
+                Escribinos por WhatsApp
+              </Boton>
+            </div>
           </div>
 
           <dl class="mt-8 space-y-6">

@@ -150,7 +150,9 @@ Orden: `/` → `/nosotros` → `/servicios` → `/obras` → template `/obras/[i
 - [ ] `/obras/el-canton`: con ficha real → `paginaPropia:true`.
 - [ ] Testimonios reales → activar Sección 7 Home.
 - [ ] Tokens de marca (colores exactos) → editar `global.css` → re-Lighthouse a11y/contraste.
-- [ ] Analítica (§11): Vercel Web Analytics → reconciliar con budget < 5 KB.
+- [x] Analítica (§11): **GA4 + Meta Pixel**, no Vercel Web Analytics. Carga diferida
+      post-`load` bajo la excepción de §7.1; el JS propio sigue < 5 KB. Instrumentación
+      declarativa por `data-evento`. Falta el ID del pixel (`DEUDA-TECNICA.md` §6.1).
 
 ---
 
