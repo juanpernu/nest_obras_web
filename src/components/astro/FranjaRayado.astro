@@ -36,10 +36,9 @@ const { class: className } = Astro.props as Props;
     /* Mismo cálculo que --hoja-x (HojaTecnica) y --marco-x (MarcoSeccion): el
      * rayado arranca y termina justo sobre las dos guías verticales. */
     margin-inline: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
-    background-image: repeating-linear-gradient(
-      115deg,
-      transparent 0 8.5px,
-      var(--color-hatch) 8.5px 9.5px
-    );
+    /* El patrón se mudó a `--rayado` en global.css (15/08/2026), junto al
+     * `--color-hatch` que lo pinta: es un patrón del sistema, no de este
+     * componente. Ver el comentario de la variable. */
+    background-image: var(--rayado);
   }
 </style>

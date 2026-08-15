@@ -3,8 +3,9 @@
  * Barra de estadísticas (§5.1 Sección 2). Texto, no imágenes (§6.4). Peso 300 a
  * gran tamaño: dato editorial, no cartel (identidad §2.4).
  *
- * Animación de conteo (decisión del 06/08/2026): al entrar en viewport, cada
- * número cuenta desde 0 hasta su valor real. Progresiva: sin JS o con
+ * Animación de conteo (decisión del 06/08/2026): al entrar la barra en
+ * viewport, los números cuentan desde 0 hasta su valor real, todos a la vez
+ * (ver el detalle del disparador en el <script>). Progresiva: sin JS o con
  * prefers-reduced-motion queda el `e.valor` estático que ya está en el HTML
  * (§7.1, sin client:*). `parseValor` separa el prefijo/sufijo no numérico
  * (ej. "+") del número, para poder animar solo la parte numérica y reconstruir
@@ -33,7 +34,7 @@ const parseValor = (valor: string) => {
 };
 ---
 
-<dl class:list={['grid grid-cols-2 gap-8 sm:grid-cols-4', className]}>
+<dl data-contadores class:list={['grid grid-cols-2 gap-8 sm:grid-cols-4', className]}>
   {
     estadisticas.map((e) => {
       const parsed = parseValor(e.valor);
@@ -85,19 +86,38 @@ const parseValor = (valor: string) => {
     requestAnimationFrame(paso);
   };
 
-  const contadores = document.querySelectorAll<HTMLElement>('[data-contador]');
-  if (contadores.length) {
+  /* El disparador observa la BARRA ENTERA, no cada número por separado
+   * (15/08/2026). Antes cada `<dd>` tenía su propio observer con
+   * `threshold: 0.4`, y eso tenía dos problemas: en mobile la grilla es de 2
+   * columnas, así que la segunda fila arrancaba a contar en otro momento que la
+   * primera —dos animaciones desfasadas donde el diseño pide una—, y el 0.4
+   * exigía que el número estuviera 40% dentro de la ventana, con lo cual en un
+   * scroll rápido la cuenta empezaba ya pasada la mitad del recorrido.
+   *
+   * Ahora: un observer por barra, `threshold: 0` y `rootMargin` con -10% abajo.
+   * Dispara apenas el bloque cruza el borde inferior de la ventana (menos ese
+   * 10% de guarda, para que no cuente por asomar un píxel) y los cuatro números
+   * arrancan juntos. `once` corta cualquier re-disparo.
+   *
+   * Si no hay IntersectionObserver no se anima nada y quedan los valores
+   * estáticos que ya vienen en el HTML — que es el comportamiento correcto
+   * (§7.1): el dato está, la animación es el adorno. */
+  for (const barra of document.querySelectorAll<HTMLElement>('[data-contadores]')) {
+    const contadores = Array.from(barra.querySelectorAll<HTMLElement>('[data-contador]'));
+    if (!contadores.length || !('IntersectionObserver' in window)) continue;
+
+    let disparada = false;
     const observer = new IntersectionObserver(
       (entradas) => {
         for (const entrada of entradas) {
-          if (entrada.isIntersecting) {
-            animar(entrada.target as HTMLElement);
-            observer.unobserve(entrada.target);
-          }
+          if (!entrada.isIntersecting || disparada) continue;
+          disparada = true;
+          observer.disconnect();
+          contadores.forEach(animar);
         }
       },
-      { threshold: 0.4 },
+      { threshold: 0, rootMargin: '0px 0px -10% 0px' },
     );
-    contadores.forEach((el) => observer.observe(el));
+    observer.observe(barra);
   }
 </script>

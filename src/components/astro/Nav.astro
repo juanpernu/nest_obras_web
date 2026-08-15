@@ -28,13 +28,18 @@
  * (font-medium), no con color. Arena como acento de hover solo sobrevive en
  * el tramo inicial del Home, sobre el video oscuro, donde sí pasa contraste.
  *
- * Logo (14/08/2026): /logo-nest.svg tiene el wordmark en blanco, pensado para
- * el hero oscuro de Home; invisible sobre el header blanco del resto de las
- * páginas y sobre el glass blanco al scrollear en Home. Ahí usamos
- * /logo-nest-oscuro.svg (wordmark navy, isotipo arena-800). En Home, como el
- * header pasa de transparente a glass blanco, se superponen las dos variantes
- * y se alternan con el mismo `data-scrolled` que ya condiciona el resto del
- * header, vía `group-data-[scrolled=true]:opacity-*` — sin JS nuevo.
+ * Logo (14/08/2026): /logo-nest.svg va sobre el hero oscuro de Home; es
+ * invisible sobre el header blanco del resto de las páginas y sobre el glass
+ * blanco al scrollear en Home. Ahí usamos /logo-nest-oscuro.svg (wordmark
+ * navy, isotipo arena-800). En Home, como el header pasa de transparente a
+ * glass blanco, se superponen las dos variantes y se alternan con el mismo
+ * `data-scrolled` que ya condiciona el resto del header, vía
+ * `group-data-[scrolled=true]:opacity-*` — sin JS nuevo.
+ *
+ * (15/08/2026) /logo-nest.svg pasó a ser BLANCO ENTERO —wordmark e isotipo—:
+ * antes el isotipo iba en arena de marca (#D9C2B6) y el wordmark en blanco, y
+ * el logo se leía en dos tintas sobre el video. Pedido directo: una sola
+ * tinta. Ese mismo archivo es el que usa ahora el footer navy.
  */
 import Boton from '@/components/astro/Boton.astro';
 
@@ -119,13 +124,17 @@ const esHome = path === '/';
               punto, en Home y en el resto de las páginas por igual — así que
               siempre queda sobre el glass blanco, nunca sobre navy ni sobre el
               hero transparente. `primario` (glass sobre navy) ya no aplica acá.
-              +10% de escala: el variante base es px-2 py-2 text-base; se pisa
-              con !text-[1.1rem] !px-[0.55rem] !py-[0.55rem] solo en esta
-              instancia. */}
+              El tamaño de texto se pisa para igualarlo al de los links del
+              header (15/08/2026, pedido directo). Antes era `!text-[1.1rem]`,
+              un +10% sobre el `text-base` del variante, y el CTA leía
+              visiblemente más grande que "HOME / NOSOTROS / …". Ahora es el
+              mismo 0.9625rem de los links, escrito como valor arbitrario y no
+              como token porque el header entero está calibrado a esa escala. El
+              padding sigue pisado para que la caja no quede apretada. */}
           <Boton
             href="/contacto"
             variante="primarioClaro"
-            class="!px-[0.55rem] !py-[0.55rem] whitespace-nowrap !text-[1.1rem]"
+            class="!px-[0.55rem] !py-[0.55rem] whitespace-nowrap !text-[0.9625rem]"
             >Consultá tu proyecto</Boton
           >
         </div>

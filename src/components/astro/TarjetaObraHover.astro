@@ -129,14 +129,19 @@ const optimizada = await getImage({
 
   /* Velo plano (14/08/2026), no degradado: antes era un linear-gradient de
    * navy/70 a transparente — el cliente pidió sacar los degradados de toda la
-   * Home. El tono es el mismo que tenía el punto más oscuro del degradé
-   * original, así que el contraste contra el texto blanco no empeora (sigue
-   * dando 5.41:1 en el peor caso, foto blanca — ver comentario más abajo). */
+   * Home.
+   *
+   * NEGRO y no navy (15/08/2026, pedido directo): se mantiene la misma
+   * transparencia (70%), solo cambia la tinta. Es el mismo criterio que ya se
+   * había aplicado al overlay del hero (`bg-black/50`, 14/08/2026): un velo
+   * neutro sobre la foto en vez de un tinte de marca. El contraste contra el
+   * texto blanco mejora — negro al 70% sobre el peor caso (foto blanca) compone
+   * #4D4D4D y da 8.5:1, contra los 5.41:1 que daba el navy. */
   .velo-degrade {
     position: absolute;
     inset: 0;
     z-index: 10;
-    background-color: color-mix(in srgb, var(--color-navy) 70%, transparent);
+    background-color: rgb(0 0 0 / 0.7);
     opacity: 0;
   }
 

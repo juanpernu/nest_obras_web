@@ -265,29 +265,55 @@ const seo = {
       Fondo blanco (14/08/2026, unificación de fondos): antes era banda navy,
       con Eyebrow/h2/párrafo en sus variantes claras (sobreNavy, blanco,
       navy-100). Pasan a las variantes de fondo claro del resto del sitio. */}
+  {/* A ALTO COMPLETO (15/08/2026, pedido directo: "que este contenedor ocupe
+      todo el alto" + "que esta imagen ocupe el 50% de la derecha y todo el
+      alto"). En desktop la sección deja de medir lo que mide su contenido y
+      pasa a `min-h-dvh`: la grilla llena la ventana y la foto ocupa su mitad
+      derecha completa, de borde a borde vertical. Para que la mitad sea
+      exactamente el 50% el `gap-12` y el `px-6` se anulan en md y se mueven a
+      la columna de texto (`md:pl-6 md:pr-12`); así la foto llega justo hasta el
+      borde del contenedor, que es donde cae la guía derecha de HojaTecnica — el
+      recurso no se pisa, la imagen se apoya contra él.
+
+      En mobile no cambia nada: una columna, el 4:3 de siempre y el `px-6` del
+      contenedor, porque una foto de alto de ventana en pantalla angosta empuja
+      todo el texto fuera del primer scroll. */}
   <MarcoSeccion cierra>
-  <section class="bg-white py-20 md:py-[120px]">
-    <div class="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
-      <div data-reveal>
-        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-        <h2 class="max-w-[640px] text-h2 font-medium text-navy">
-          Más de 30 años construyendo lo que prometemos
-        </h2>
-        <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
-          NEST es una empresa constructora especializada en viviendas premium, refacciones y
-          proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
-          con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
-          el primer trazo hasta la llave en la mano.
-        </p>
+  <section class="bg-white">
+    <div class="mx-auto grid max-w-6xl gap-12 px-6 md:min-h-dvh md:grid-cols-2 md:gap-0 md:px-0">
+      <div class="flex items-center py-20 md:py-[120px] md:pr-12 md:pl-6" data-reveal>
+        <div>
+          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+          <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+            Más de 30 años construyendo lo que prometemos
+          </h2>
+          <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
+            NEST es una empresa constructora especializada en viviendas premium, refacciones y
+            proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer
+            nivel con acompañamiento personalizado para que tu obra sea una experiencia sin
+            sorpresas, desde el primer trazo hasta la llave en la mano.
+          </p>
+        </div>
       </div>
 
-      <div class="aspect-[4/3] w-full overflow-hidden rounded-boton" data-reveal>
+      {/* `absolute inset-0` y no `h-full`: en md el alto lo pone la fila de la
+          grilla, y una imagen en flujo con `h-full` dentro de un item que a su
+          vez se estira puede quedar midiendo su alto intrínseco en vez del de la
+          celda. Posicionada, siempre llena la celda.
+
+          `sizes` declara 70vw y no el 50vw real de la columna a propósito: el
+          recorte es `object-cover` sobre un contenedor mucho más alto que ancho
+          (≈576×1329 en desktop) contra una foto vertical de 1687×1906, así que
+          el ancho que hay que descargar lo manda el ALTO de la caja, no su
+          ancho — con 50vw el navegador elegía una variante que después se
+          escalaba ~1.2x y se veía blanda. */}
+      <div class="relative aspect-[4/3] w-full overflow-hidden md:aspect-auto" data-reveal>
         <Image
           src={quienesSomosImg}
           alt="Obra de NEST en desarrollo"
-          widths={[400, 640, 960]}
-          sizes="(min-width: 768px) 50vw, 100vw"
-          class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+          widths={[640, 960, 1280]}
+          sizes="(min-width: 768px) 70vw, 100vw"
+          class="absolute inset-0 h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
         />
       </div>
     </div>
@@ -480,16 +506,31 @@ const seo = {
         <TimelineContacto class="mt-10" atributos={bloquesDeConfianza} />
       </div>
 
-      {/* Card sólido (14/08/2026): sin la foto detrás, el glass (navy
-          translúcido + blur) no tenía nada fotográfico que dejar entrever —
-          quedaba un efecto de vidrio sobre blanco liso, sin justificación.
-          Pasa a navy sólido: mismo acento de color que distingue esta card
-          del resto de la sección (blanca), sin blur ni sombra (`shadow-lg`
-          también se saca acá — la identidad no admite sombras, §3.3).
-          `FormularioConsulta` sigue recibiendo `sobreNavy` porque el fondo
-          sigue siendo oscuro, solo que ahora sólido en vez de translúcido. */}
-      <div class="bg-navy p-6 md:p-10" data-reveal>
-        <FormularioConsulta sobreNavy />
+      {/* Card GLASS, con el mismo tratamiento que el header scrolleado
+          (15/08/2026, pedido directo: "que este componente tenga el mismo
+          background con estilos tipo glass — revisá los estilos del navbar
+          para replicarlos"). Los cuatro valores salen tal cual de Nav.astro:
+          `bg-white/70` + `backdrop-blur-md` + `border-navy-200` + la sombra
+          `0_12px_40px_rgba(0,0,0,0.1)`. Es la misma excepción a §3.3 (sin
+          sombras) que el header ya tenía abierta desde el 06/08/2026, no una
+          nueva.
+
+          Reemplaza al navy sólido del 14/08/2026. Como el fondo de la card
+          pasa de oscuro a claro, `FormularioConsulta` deja de recibir
+          `sobreNavy` y vuelve a su cromática clara: labels y texto en navy,
+          campos con borde navy-600 (3.4:1, límite de control WCAG 1.4.11) y
+          botón arena sólido sobre navy (7.91, AAA). Con `sobreNavy` el
+          formulario es blanco sobre transparente y acá sería ilegible.
+
+          Nota de criterio: la sección es blanco liso, así que el `blur` no
+          tiene nada detrás que difuminar — lo que separa la card del fondo son
+          el borde navy-200 y la sombra, igual que le pasa al header cuando
+          flota sobre una sección blanca. */}
+      <div
+        class="border border-navy-200 bg-white/70 p-6 shadow-[0_12px_40px_rgba(0,0,0,0.1)] backdrop-blur-md md:p-10"
+        data-reveal
+      >
+        <FormularioConsulta />
       </div>
     </div>
   </section>

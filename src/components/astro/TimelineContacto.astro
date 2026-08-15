@@ -1,21 +1,21 @@
 ---
 /**
- * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente).
- * Timeline de 3 atributos con nodos sobre una línea vertical de referencia,
- * que interrumpen las líneas horizontales al superponerse (z-index), seguido de
- * un separador y los datos de contacto con ícono.
+ * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente):
+ * los 3 atributos de confianza, y debajo los datos de contacto con ícono.
  *
- * Todas las líneas son sólidas desde el 15/08/2026 (antes eran dasheadas, por
- * `repeating-linear-gradient`): se sacó el dasheado de todo el sitio a favor
- * del sistema de marco "hoja técnica". Siguen enmascaradas para desvanecerse en
- * los extremos en vez de cortar en seco, igual que el reticulado de GrillaLogos
- * y el marco de GrillaServicios, pero acá puertas adentro de la columna en vez
- * de sangrando fuera de ella.
+ * SIN LÍNEAS (15/08/2026, pedido directo: "mismo fix de los bordes/líneas en
+ * este componente"). Era un timeline literal: una vertical de referencia que
+ * corría de punta a punta del bloque, una horizontal por fila —enmascaradas
+ * para desvanecerse en los extremos— y un nodo de 4px en cada cruce. Se fue
+ * todo, nodos incluidos: sin las dos líneas que unían, los nodos quedaban como
+ * tres puntos sueltos. Con las líneas se fue también la sangría que existía
+ * para dejarles lugar, así que los atributos arrancan contra el borde de la
+ * columna. Es la misma pasada que vació de trazo a GrillaServicios,
+ * GrillaLogos y al riel de CarruselTestimonios.
  *
- * Los dos niveles del sistema se ven bien acá: la vertical es ESTRUCTURA —une
- * los tres nodos, si no se lee el timeline deja de existir— y por eso va en
- * navy a baja opacidad; las horizontales son separadores y van en la regla
- * casi subliminal (`--color-rule`), como el resto del marco.
+ * Lo que NO se tocó son las cajas de los íconos de contacto: no son líneas del
+ * sistema de marco sino la píldora de ícono del sitio (borde navy + fondo
+ * arena-200), el mismo componente visual que usa GrillaServicios.
  *
  * El NAP (teléfono, email, dirección) sale de site.ts, nunca hardcodeado, para
  * ser idéntico carácter por carácter en todos lados (§6.7).
@@ -32,39 +32,18 @@ interface Props {
   class?: string;
 }
 const { atributos, class: className } = Astro.props as Props;
-
-/* Indent horizontal de la línea vertical y de los nodos; el contenido de cada
- * fila arranca después, para no montarse encima. */
-const INDENT = '1.75rem';
 ---
 
 <div class:list={[className]}>
-  <div class="tl-rail relative">
-    {/* Línea vertical de referencia: corre por detrás de todo el bloque de
-        atributos, de punta a punta. */}
-    <span class="tl-vertical absolute inset-y-0" style={{ left: INDENT }} aria-hidden="true"></span>
-
+  <div class="flex flex-col gap-8">
     {
       atributos.map((a) => (
-        <div class="tl-fila relative" style={{ paddingLeft: `calc(${INDENT} + 1.25rem)` }}>
-          {/* Horizontal en el borde superior de la fila, con su nodo. */}
-          <span class="tl-linea absolute inset-x-0 top-0" aria-hidden="true" />
-          <span
-            class="tl-nodo absolute top-0 z-10 -translate-x-1/2 -translate-y-1/2"
-            style={{ left: INDENT }}
-            aria-hidden="true"
-          />
-          <div class="py-5">
-            <h3 class="font-medium text-navy">{a.titulo}</h3>
-            <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
-          </div>
+        <div>
+          <h3 class="font-medium text-navy">{a.titulo}</h3>
+          <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
         </div>
       ))
     }
-
-    {/* Línea de cierre del timeline: separa los atributos de los datos de
-        contacto. Sin nodo — es puramente un separador. */}
-    <span class="tl-linea absolute inset-x-0 bottom-0" aria-hidden="true" />
   </div>
 
   <p class="mt-8 text-sm font-medium uppercase tracking-[0.06em] text-navy-700">
@@ -126,43 +105,6 @@ const INDENT = '1.75rem';
 </div>
 
 <style>
-  /* Sólida en navy al 20% (15/08/2026; antes, dasheada en navy al 32%). Es la
-   * única línea del componente que NO va en `--color-rule`: es el eje que une
-   * los tres nodos, y a 1.09 de contraste desaparecería y el timeline quedaría
-   * como tres bloques sueltos. Al 20% de navy tiene el mismo peso visual que
-   * tenía el trazo dasheado al 32%, sin el ruido del guión. Sigue con fundido
-   * en las dos puntas: ninguna línea del sitio corta en seco. */
-  .tl-vertical {
-    width: 1px;
-    background-color: color-mix(in srgb, var(--color-navy) 20%, transparent);
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
-    mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
-  }
-
-  /* En `--color-rule` (15/08/2026): sólida, y del mismo color que las reglas de
-   * `MarcoSeccion` — que desde el pedido de la usuaria del 15/08 también es
-   * arena. Cumplen exactamente el mismo rol (separador horizontal), así que
-   * tienen que verse iguales; lo que cambia respecto de antes es que el valor
-   * ya no está hardcodeado acá sino que sale del token del sistema. */
-  .tl-linea {
-    height: 1px;
-    background-color: var(--color-rule);
-    /* Más presencia al centro, se desvanece en los dos extremos — no
-     * termina en seco. */
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
-    mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
-  }
-
-  /* De 9px a 4px (10/08/2026, segunda vuelta: seguía leyéndose grande incluso
-   * a 6px). El mismo tamaño que las marcas de registro del marco de
-   * GrillaServicios y del reticulado de GrillaLogos (3-4px) — la familia de
-   * puntos "chicos" del sitio, no la de badges (6px). */
-  .tl-nodo {
-    width: 4px;
-    height: 4px;
-    background-color: var(--color-navy);
-  }
-
   /* Contenedor arena para los íconos de contacto, mismo lenguaje que la
    * píldora de ícono de GrillaServicios (borde navy + fondo arena-200). Más
    * chico porque acá conviven en una fila junto al texto, no como bloque

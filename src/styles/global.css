@@ -145,6 +145,22 @@
   }
 }
 
+/* Rayado diagonal del sistema "hoja técnica": el achurado con el que se marca
+ * una zona en un plano. 115°, 8.5px de aire y 1px de trazo.
+ *
+ * Vive acá, junto a `--color-hatch` —que existe solo para esto—, y no dentro de
+ * FranjaRayado, que hoy es su único consumidor: se sacó del componente el
+ * 15/08/2026 cuando las píldoras de ícono de GrillaServicios lo compartieron por
+ * unas horas, y se queda acá como patrón del sistema, disponible para el
+ * próximo que lo necesite sin tener que volver a copiarlo.
+ *
+ * En `:root` y no en `@theme` por el mismo motivo que --guia-margen: no genera
+ * utilidades, se consume siempre como `var()` en un `background-image`, y acá
+ * la emisión está garantizada. */
+:root {
+  --rayado: repeating-linear-gradient(115deg, transparent 0 8.5px, var(--color-hatch) 8.5px 9.5px);
+}
+
 /*
  * RESERVADO PARA FASE 3 — mapeo de tokens semánticos de shadcn (identidad §3.2).
  * Aplicar EXACTAMENTE esto al correr `shadcn init` (no usar sus defaults).

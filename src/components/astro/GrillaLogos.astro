@@ -1,20 +1,37 @@
 ---
 /**
- * Clientes corporativos como logos (§5.1 Sección 6). Marco "blueprint": el
- * reticulado completo de la grilla dibujado con líneas finas —una por cada
- * límite de columna y de fila, incluidos los exteriores— y un punto en cada
- * intersección. Mismo lenguaje que el marco de Servicios del proto Glass
- * (decisión del 07/08/2026). Líneas en arena-200, puntos en navy.
+ * Clientes corporativos como logos (§5.1 Sección 6).
  *
- * Las líneas NO son continuas: se dibujan como segmentos que se cortan antes
- * de cada cruce (GAP), así el punto queda separado del stroke y no parecen
- * una sola pieza — es el detalle de la referencia del cliente. Por eso el
- * marco es un overlay absoluto con segmentos posicionados por porcentaje, y no
- * bordes por celda: un borde no puede interrumpirse en sus cruces.
+ * SIN RETICULADO (15/08/2026, pedido directo: "mantené la distribución de la
+ * grilla pero que no tengan líneas", mismo recurso que se sacó de
+ * GrillaServicios). Hasta acá el bloque llevaba el marco "blueprint" del proto
+ * Glass (07/08/2026): un overlay absoluto que dibujaba el reticulado completo
+ * —una línea por cada límite de columna y de fila, exteriores incluidos, cortada
+ * en segmentos que dejaban aire antes de cada cruce— con un punto navy de 3px en
+ * cada intersección y dos extensiones que se difuminaban hacia los bordes del
+ * viewport. Se fue entero, líneas y puntos: sin líneas los puntos quedaban como
+ * marcas de registro de un marco que ya no existe.
  *
- * Se renderiza dos veces con distinta geometría (2 columnas en mobile, 4 en
- * desktop) porque el reticulado cambia con el breakpoint: mismas celdas, otra
- * cantidad de filas y columnas.
+ * La grilla en sí sobrevivió a ese cambio: 2 columnas en mobile, `auto-rows-fr`
+ * para que todas las filas midan igual. Lo único que se perdió fue el trazo.
+ *
+ * A TODO EL ANCHO (15/08/2026, pedido: "que ocupe todo el ancho que pueda del
+ * componente padre"). Ojo con la premisa: la grilla YA medía el 100% del
+ * contenedor (1104px en desktop). El que no llegaba a los bordes era su
+ * contenido. Dos cambios, por dos causas distintas:
+ *
+ * 1. Los logos venían topeados por ALTO (`h-12`) y encima con `max-w-[140px]`,
+ *    dentro de celdas de 276px. Ahora la caja de cada `<img>` es `h-16 w-full`
+ *    con `object-contain` —que nunca estira— y el padding lateral de celda baja
+ *    de 24px a 16px.
+ * 2. De 4 a 5 columnas en desktop. Con 4, diez logos daban 3 filas y la última
+ *    usaba 2 celdas de 4: media hilera vacía a la derecha. Con 5 dan DOS FILAS
+ *    EXACTAS y no queda hueco. Mobile sigue en 2 columnas, que también divide
+ *    justo (5 filas).
+ *
+ * Techo real, por si vuelve el pedido: los 10 SVG tienen ratios de 1.11 a 2.96 y
+ * la celda es más ancha que alta, así que TODOS quedan limitados por el alto de
+ * 64px. Ensanchar la celda no los agranda — el que manda es `h-16`.
  */
 interface Props {
   class?: string;
@@ -34,137 +51,27 @@ const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(
 logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
 
 /* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
- * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
- * mide solo su padding, así que las filas dejaban de ser uniformes y el
- * reticulado —que reparte porcentajes iguales— se desalineaba de los logos.
- * Con las celdas justas, mobile da 5 filas exactas (10/2) y desktop 3 (⌈10/4⌉),
- * y `auto-rows-fr` en la grilla garantiza que todas midan igual. */
+ * (2 columnas) eso dejaba una fila entera vacía, con lo cual las filas dejaban
+ * de medir todas lo mismo. Con las celdas justas y las columnas de hoy, los dos
+ * breakpoints dividen exacto: mobile 5 filas (10/2) y desktop 2 (10/5), sin
+ * celdas sobrantes. `auto-rows-fr` garantiza que midan igual. */
 const celdas = logosReales;
-
-/** Aire entre la punta de cada segmento y el punto del cruce. */
-const GAP = '8px';
-
-/* Las dos extensiones que salen de la grilla se difuminan hacia el borde del
- * viewport: arrancan opacas contra la grilla y llegan 100% transparentes justo
- * al llegar al margen, en vez de cortarse en seco.
- *
- * El ancho es el margen exacto entre la grilla y el borde de la pantalla:
- * `100%` es el ancho del contenedor (el overlay está adentro), así que
- * (100vw - 100%) / 2 es lo que sobra de cada lado. Antes eran 50vw fijos y el
- * degradé se completaba fuera de pantalla — se veía solo su tramo más opaco y
- * el efecto no se notaba.
- *
- * El fundido va por `mask-image` y no por un degradé de color: la máscara es
- * independiente del pintado del trazo, así que el mismo recurso sirvió cuando
- * la línea era dasheada y sigue sirviendo ahora que es sólida. */
-const MARGEN = 'calc((100vw - 100%) / 2)';
-
-const reticulados = [
-  { cols: 2, visibilidad: 'md:hidden' },
-  { cols: 4, visibilidad: 'hidden md:block' },
-].map(({ cols, visibilidad }) => {
-  const filas = Math.ceil(celdas.length / cols);
-  const anchoCol = 100 / cols;
-  const altoFila = 100 / filas;
-
-  return {
-    visibilidad,
-    /** Porcentajes de los límites de columna y de fila (0 … 100). */
-    x: Array.from({ length: cols + 1 }, (_, i) => i * anchoCol),
-    y: Array.from({ length: filas + 1 }, (_, i) => i * altoFila),
-    /** Un segmento vertical por cada tramo entre dos filas, en cada columna. */
-    segmentosV: Array.from({ length: cols + 1 }, (_, c) =>
-      Array.from({ length: filas }, (_, f) => ({
-        left: `${c * anchoCol}%`,
-        top: `calc(${f * altoFila}% + ${GAP})`,
-        height: `calc(${altoFila}% - ${GAP} * 2)`,
-      })),
-    ).flat(),
-    /** Ídem horizontal, más las dos extensiones que salen de la grilla. */
-    segmentosH: Array.from({ length: filas + 1 }, (_, f) => {
-      const top = `${f * altoFila}%`;
-      return [
-        {
-          estilo: { top, left: `calc(-1 * ${MARGEN})`, width: `calc(${MARGEN} - ${GAP})` },
-          clase: 'funde-izq',
-        },
-        ...Array.from({ length: cols }, (_, c) => ({
-          estilo: {
-            top,
-            left: `calc(${c * anchoCol}% + ${GAP})`,
-            width: `calc(${anchoCol}% - ${GAP} * 2)`,
-          },
-          clase: '',
-        })),
-        {
-          estilo: { top, left: `calc(100% + ${GAP})`, width: `calc(${MARGEN} - ${GAP})` },
-          clase: 'funde-der',
-        },
-      ];
-    }).flat(),
-  };
-});
 ---
 
 <div class:list={['relative', className]}>
-  <div class="relative grid auto-rows-fr grid-cols-2 md:grid-cols-4">
+  <div class="grid auto-rows-fr grid-cols-2 md:grid-cols-5">
     {
       celdas.map((logo) => (
-        <div class="flex items-center justify-center px-6 py-6">
+        <div class="flex items-center justify-center px-4 py-6">
           <img
             src={logo.src}
             alt={logo.alt}
             loading="lazy"
             decoding="async"
-            class="h-12 w-auto max-w-[140px] object-contain grayscale transition-[filter] duration-300 hover:grayscale-0"
+            class="h-16 w-full object-contain grayscale transition-[filter] duration-300 hover:grayscale-0"
           />
         </div>
       ))
     }
   </div>
-
-  {
-    reticulados.map(({ visibilidad, x, y, segmentosV, segmentosH }) => (
-      <div class:list={['pointer-events-none absolute inset-0', visibilidad]} aria-hidden="true">
-        {segmentosV.map((s) => (
-          <span class="linea-v absolute w-px" style={s} />
-        ))}
-        {segmentosH.map((s) => (
-          <span class:list={['linea-h absolute h-px', s.clase]} style={s.estilo} />
-        ))}
-        {x.map((px) =>
-          y.map((py) => (
-            <span
-              class="absolute h-[3px] w-[3px] -translate-x-1/2 -translate-y-1/2 bg-navy"
-              style={{ left: `${px}%`, top: `${py}%` }}
-            />
-          )),
-        )}
-      </div>
-    ))
-  }
 </div>
-
-<style>
-  /* Trazo sólido en --color-rule (15/08/2026). Antes era dasheado en
-   * arena-200, vía repeating-linear-gradient. Se sacaron todas las líneas
-   * dasheadas del sitio: el reticulado ahora habla el mismo idioma que las
-   * guías de página y el marco de sección (HojaTecnica / MarcoSeccion), que son
-   * reglas continuas casi subliminales con marcas navy en los cruces. Acá esas
-   * marcas ya existían: los puntos de 3px del markup. */
-  .linea-h,
-  .linea-v {
-    background-color: var(--color-rule);
-  }
-
-  /* El fundido de las extensiones va por máscara y no por un degradé de color,
-   * para no depender de cómo esté pintado el trazo. */
-  .funde-izq {
-    -webkit-mask-image: linear-gradient(to right, transparent, #000);
-    mask-image: linear-gradient(to right, transparent, #000);
-  }
-  .funde-der {
-    -webkit-mask-image: linear-gradient(to left, transparent, #000);
-    mask-image: linear-gradient(to left, transparent, #000);
-  }
-</style>

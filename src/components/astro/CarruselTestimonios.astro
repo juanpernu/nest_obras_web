@@ -1,9 +1,10 @@
 ---
 /**
  * Carrusel de testimonios (§5.1 Sección 7) — layout asimétrico portado del
- * proto Glass (decisión del 07/08/2026): número gigante de fondo, riel
- * izquierdo, cita que se revela palabra por palabra y botones circulares que
- * se rellenan desde el lado de su flecha.
+ * proto Glass (decisión del 07/08/2026): número gigante de fondo, cita que se
+ * revela palabra por palabra y botones circulares que se rellenan desde el lado
+ * de su flecha. El riel izquierdo que completaba el layout se eliminó el
+ * 15/08/2026 (ver el comentario del markup).
  *
  * Cromática adaptada al local: el proto vive sobre navy oscuro y esta sección
  * es clara (arena-200), así que el acento es NAVY y no arena (§1.2: la arena
@@ -35,14 +36,14 @@ const { testimonios, class: className } = Astro.props as Props;
     01
   </div>
 
+  {/* El riel —el trazo vertical de 1px que corría a la izquierda de la cita, con
+      su sangría de 8/14 en desktop— se eliminó el 15/08/2026 por pedido
+      directo, en la misma pasada que vació de líneas a GrillaServicios,
+      GrillaLogos y TimelineContacto. Sin él la cita arranca contra el borde de
+      la columna y el flex queda con un solo hijo; se conserva igual porque
+      `.tst-main` necesita ser el contexto posicionado del `.tst-nav` absoluto. */}
   <div class="relative z-10 flex">
-    {/* Riel: solo el trazo. Se oculta en mobile, donde no hay ancho de sobra.
-        Consistente con el resto del sistema de líneas del sitio: 1px sólido en
-        --color-rule, con fundido en las puntas — la misma regla que usan las
-        guías de página (HojaTecnica) y el timeline de contacto. */}
-    <div class="tst-riel hidden shrink-0 pr-8 md:block lg:pr-14" aria-hidden="true"></div>
-
-    <div class="tst-main relative min-w-0 flex-1 py-8 md:py-12 md:pl-8 lg:pl-14">
+    <div class="tst-main relative min-w-0 flex-1 py-8 md:py-12">
       {
         testimonios.map(({ entry, Contenido }, i) => (
           <div class:list={['tst-slide', i === 0 && 'is-active']} data-i={i}>
@@ -120,25 +121,6 @@ const { testimonios, class: className } = Astro.props as Props;
   }
   .tst:not([data-js]) .tst-slide + .tst-slide {
     margin-top: 3rem;
-  }
-
-  /* Trazo sólido de 1px sobre el borde derecho, en --color-rule (15/08/2026).
-   * Antes era dasheado (repeating-linear-gradient de 4px/4px en navy/32%): se
-   * sacaron todas las líneas dasheadas del sitio y el riel pasa al mismo
-   * lenguaje que las guías de página y el marco de sección. Los extremos se
-   * siguen degradando por máscara en vez de cortarse en seco. */
-  .tst-riel {
-    position: relative;
-  }
-  .tst-riel::after {
-    content: '';
-    position: absolute;
-    inset-block: 0;
-    right: 0;
-    width: 1px;
-    background-color: var(--color-rule);
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
-    mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
   }
 
   /* Relleno que entra desde el lado al que apunta cada flecha. */

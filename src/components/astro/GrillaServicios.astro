@@ -1,16 +1,36 @@
 ---
 /**
- * Tarjetas de servicios (§5.1 Sección 4) — marco "blueprint" portado del proto
- * Glass (decisión del 07/08/2026): las tarjetas quedan contorneadas por dos
- * líneas horizontales y cuatro verticales, con una marca de registro en cada
- * intersección. Los separadores son columnas reales de 1px en la grilla, no
- * `gap`, y sobresalen 44px por arriba y por abajo de las horizontales.
+ * Tarjetas de servicios (§5.1 Sección 4).
  *
- * Cromática adaptada al local: el proto vive sobre navy oscuro con líneas y
- * puntos en arena; acá el fondo es claro (navy-50), así que el trazo y las
- * marcas son NAVY — la arena sobre fondo claro no pasa WCAG y el acento en
- * claro es navy (§1.2). La arena queda para la píldora del ícono, donde es
- * fondo y no trazo.
+ * SIN LÍNEAS (15/08/2026, pedido directo: "elimina las líneas/bordes que tienen
+ * los items de este contenedor"). Hasta acá el bloque llevaba el marco
+ * "blueprint" portado del proto Glass (07/08/2026): dos reglas horizontales que
+ * sangraban hasta el borde del viewport, cuatro verticales —las dos de los
+ * extremos más un divisor de 1px entre tarjetas, como columna real de la grilla
+ * y no como `gap`— y una marca de registro de 3px en cada intersección. Se fue
+ * todo: reglas, verticales, divisores y marcas. Es el mismo pedido que vació de
+ * líneas a GrillaLogos y a TimelineContacto el mismo día.
+ *
+ * Lo que SÍ se conserva es la distribución, que era la condición explícita: tres
+ * columnas iguales en desktop, apiladas en mobile, y los 44px de aire arriba y
+ * abajo que antes daba el sobresalir de las verticales (`--bp-over`).
+ *
+ * Con el marco se fue también el padding de la tarjeta (15/08/2026, segundo
+ * pedido: "que ocupen, relativamente, todo el ancho del componente"). Esos 48px
+ * existían para despegar el texto de los divisores verticales; sin líneas eran
+ * ancho muerto y dejaban el contenido en 272px de una columna de 368px. Ahora la
+ * separación la da el `gap` de la grilla y cada item ocupa su tercio completo.
+ * Se fue con ellos el `background-color` blanco del hover, que además era letra
+ * muerta desde que la Sección 4 pasó a fondo blanco (14/08/2026): pintaba blanco
+ * sobre blanco.
+ *
+ * Como ya no hay divisores intercalados, las columnas se generan a partir de
+ * `servicios.length` en vez del `1fr auto 1fr auto 1fr` fijo de antes, que
+ * asumía exactamente tres items.
+ *
+ * Cromática: el acento sobre fondo claro es NAVY (§1.2, la arena sobre claro no
+ * pasa WCAG); la arena queda para el fondo de la píldora del ícono, donde es
+ * superficie y no trazo.
  *
  * Tipografía por tokens locales: el proto usa 22px/14px fijos y acá van
  * `text-h3` y `text-sm`, que escalan con el resto del sitio.
@@ -32,80 +52,60 @@ const { servicios, class: className } = Astro.props as Props;
 ---
 
 <div class:list={['bp-frame', className]}>
-  {/* Marco: verticales de los extremos, horizontales con las extensiones que
-      se degradan hacia los bordes, y las 4 marcas de las esquinas. */}
-  <span class="bp-vline bp-vline--l" aria-hidden="true"></span>
-  <span class="bp-vline bp-vline--r" aria-hidden="true"></span>
-  <span class="bp-rule bp-rule--top" aria-hidden="true"></span>
-  <span class="bp-rule bp-rule--bottom" aria-hidden="true"></span>
-  <span class="bp-dot bp-dot--tl" aria-hidden="true"></span>
-  <span class="bp-dot bp-dot--tr" aria-hidden="true"></span>
-  <span class="bp-dot bp-dot--bl" aria-hidden="true"></span>
-  <span class="bp-dot bp-dot--br" aria-hidden="true"></span>
-
-  <div class="srv-grid">
+  <div class="srv-grid" style={{ '--srv-cols': String(servicios.length) }}>
     {
-      servicios.map((s, i) => (
-        <>
-          {/* El trazo va en un <span> aparte: los puntos son pseudo-elementos
-              del divisor y la máscara del degradé también los borraría. */}
-          {i > 0 && (
-            <div class="srv-div" aria-hidden="true">
-              <span class="srv-div-linea" />
-            </div>
-          )}
-          <div class="srv-card">
-            <span class="srv-ico" aria-hidden="true">
-              {s.icono === 'vivienda' && (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M3 10.5 12 3l9 7.5" />
-                  <path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5" />
-                  <path d="M9.75 21v-6.25h4.5V21" />
-                </svg>
-              )}
-              {s.icono === 'corporativo' && (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M3.5 21h17" />
-                  <path d="M5.5 21V6.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V21" />
-                  <path d="M13.5 21V11h4.5a1 1 0 0 1 1 1v9" />
-                  <path d="M8 9h3M8 12.5h3M8 16h3M16 14.5h1" />
-                </svg>
-              )}
-              {s.icono === 'direccion' && (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
-                  <rect x="9" y="2.75" width="6" height="3.5" rx="1" />
-                  <path d="M8.75 11.5l1.5 1.5 3-3" />
-                  <path d="M14.75 16.25h1.5M8.75 16.25h3" />
-                </svg>
-              )}
-            </span>
+      servicios.map((s) => (
+        <div class="srv-card">
+          <span class="srv-ico" aria-hidden="true">
+            {s.icono === 'vivienda' && (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5" />
+                <path d="M9.75 21v-6.25h4.5V21" />
+              </svg>
+            )}
+            {s.icono === 'corporativo' && (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3.5 21h17" />
+                <path d="M5.5 21V6.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V21" />
+                <path d="M13.5 21V11h4.5a1 1 0 0 1 1 1v9" />
+                <path d="M8 9h3M8 12.5h3M8 16h3M16 14.5h1" />
+              </svg>
+            )}
+            {s.icono === 'direccion' && (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
+                <rect x="9" y="2.75" width="6" height="3.5" rx="1" />
+                <path d="M8.75 11.5l1.5 1.5 3-3" />
+                <path d="M14.75 16.25h1.5M8.75 16.25h3" />
+              </svg>
+            )}
+          </span>
 
-            <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
-            <p class="srv-desc text-sm leading-relaxed font-light text-navy-700">{s.texto}</p>
-          </div>
-        </>
+          <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
+          <p class="srv-desc text-sm leading-relaxed font-light text-navy-700">{s.texto}</p>
+        </div>
       ))
     }
   </div>
@@ -113,190 +113,65 @@ const { servicios, class: className } = Astro.props as Props;
 
 <style>
   .bp-frame {
-    /* Cuánto sobresalen las verticales por fuera de las horizontales. */
+    /* Lo que antes sobresalían las verticales por fuera de las horizontales.
+     * Las líneas ya no están (15/08/2026) pero el aire sí: es el respiro que el
+     * bloque tenía arriba y abajo, y sacarlo cambiaría la distribución, que era
+     * justamente lo que había que conservar. */
     --bp-over: 44px;
-    /* Trazo sólido en --color-rule (15/08/2026), igual que el reticulado de
-     * GrillaLogos: las dos secciones tienen que leer como el mismo sistema.
-     * Antes era dasheado en arena-200 (repeating-linear-gradient de 4px/4px);
-     * se sacaron todas las líneas dasheadas del sitio en favor del sistema de
-     * marco (HojaTecnica / MarcoSeccion): reglas continuas casi subliminales,
-     * con las marcas navy —acá, los cuadrados de 3px— haciendo la jerarquía.
-     * Sigue siendo un `background-image` y no un `background-color` porque
-     * `.srv-card` lo usa como separador vía `background-size: 100% 1px`. */
-    --bp-trazo: linear-gradient(var(--color-rule), var(--color-rule));
-    /* Desvanecido de las puntas: va por máscara, para no depender de cómo esté
-     * pintado el trazo. */
-    --bp-fade-v: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
 
     position: relative;
     padding: var(--bp-over) 0;
   }
 
-  /* Verticales de los extremos: se desvanecen en las dos puntas, ninguna
-   * línea corta en seco. */
-  .bp-vline {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background-image: var(--bp-trazo);
-    -webkit-mask-image: var(--bp-fade-v);
-    mask-image: var(--bp-fade-v);
-  }
-  .bp-vline--l {
-    left: 0;
-  }
-  .bp-vline--r {
-    right: 0;
-  }
-
-  /* Horizontales; las extensiones salen del contenedor y se degradan hacia los
-   * bordes del viewport. */
-  .bp-rule {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-image: var(--bp-trazo);
-  }
-  .bp-rule--top {
-    top: var(--bp-over);
-  }
-  .bp-rule--bottom {
-    bottom: var(--bp-over);
-  }
-  /* Ancho = el margen exacto entre el contenedor y el borde de la pantalla.
-   * `100%` es el ancho de .bp-rule, que abarca el contenedor. Antes eran 50vw
-   * fijos: se iban ~600px más allá del viewport y generaban scroll horizontal
-   * en toda la página, y encima el degradé se completaba fuera de pantalla, así
-   * que en pantalla el trazo se veía plano (09/08/2026). */
-  .bp-rule::before,
-  .bp-rule::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    height: 1px;
-    width: calc((100vw - 100%) / 2);
-  }
-  /* Las extensiones llevan el mismo trazo y se difuminan hacia el borde del
-   * viewport, igual que en GrillaLogos. */
-  .bp-rule::before {
-    right: 100%;
-    background-image: var(--bp-trazo);
-    -webkit-mask-image: linear-gradient(to left, #000, transparent);
-    mask-image: linear-gradient(to left, #000, transparent);
-  }
-  .bp-rule::after {
-    left: 100%;
-    background-image: var(--bp-trazo);
-    -webkit-mask-image: linear-gradient(to right, #000, transparent);
-    mask-image: linear-gradient(to right, #000, transparent);
-  }
-
-  /* Marcas de registro en las intersecciones. */
-  .bp-dot {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    background: var(--color-navy);
-    z-index: 2;
-  }
-  .bp-dot--tl {
-    top: var(--bp-over);
-    left: 0;
-    transform: translate(-50%, -50%);
-  }
-  .bp-dot--tr {
-    top: var(--bp-over);
-    left: 100%;
-    transform: translate(-50%, -50%);
-  }
-  .bp-dot--bl {
-    bottom: var(--bp-over);
-    left: 0;
-    transform: translate(-50%, 50%);
-  }
-  .bp-dot--br {
-    bottom: var(--bp-over);
-    left: 100%;
-    transform: translate(-50%, 50%);
-  }
-
+  /* La separación entre items la hace el `gap`, no el padding de la tarjeta
+   * (15/08/2026, pedido: "los 3 items separalos en 3 columnas que ocupen,
+   * relativamente, todo el ancho del componente"). Antes era `gap: 0` y cada
+   * `.srv-card` traía 48px de padding en desktop: la columna medía 368px pero el
+   * contenido solo 272px, con 48px muertos contra cada borde del contenedor y 96
+   * entre items. Ahora el contenido de cada columna arranca en el borde de su
+   * tercio y el bloque llega de punta a punta de los 1104px. */
   .srv-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  /* Los divisores sobresalen igual que las verticales del marco y llevan su
-   * marca en cada cruce. */
-  .srv-div {
-    display: none;
-    position: relative;
-    width: 1px;
-    margin: calc(var(--bp-over) * -1) 0;
-  }
-  .srv-div-linea {
-    position: absolute;
-    inset: 0;
-    background-image: var(--bp-trazo);
-    -webkit-mask-image: var(--bp-fade-v);
-    mask-image: var(--bp-fade-v);
-  }
-  .srv-div::before,
-  .srv-div::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    width: 3px;
-    height: 3px;
-    background: var(--color-navy);
-  }
-  .srv-div::before {
-    top: var(--bp-over);
-    transform: translate(-50%, -50%);
-  }
-  .srv-div::after {
-    bottom: var(--bp-over);
-    transform: translate(-50%, 50%);
+    gap: 2.5rem;
   }
 
   .srv-card {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    overflow: hidden;
-    padding: 1.25rem;
-    /* La superficie aparece solo en hover: en reposo la tarjeta es el fondo de
-     * la sección, delimitada nada más que por el marco. `background-color` y no
-     * el shorthand: éste resetearía el background-image con el que se dibuja el
-     * separador del apilado. */
-    background-color: transparent;
-    transition: background-color 0.3s;
-  }
-  .srv-card:hover {
-    background-color: #fff;
-  }
-
-  /* Apilado: sin divisores verticales, se separan con una línea horizontal del
-   * mismo trazo que el resto del marco. */
-  .srv-card:not(:last-child) {
-    background-image: var(--bp-trazo);
-    background-repeat: no-repeat;
-    background-position: bottom left;
-    background-size: 100% 1px;
   }
 
   /* Cuadrado con radio del botón y trazo navy de 1px (09/08/2026): antes era
-   * una píldora. El fondo sigue en arena-200. */
+   * una píldora.
+   *
+   * NAVY TRANSLÚCIDO (15/08/2026, pedido directo: "bg sólido azul, con
+   * transparencia como el navbar"). Reemplaza al rayado diagonal que había
+   * durado unas horas, y antes de eso al arena-200 plano. Es la misma receta
+   * glass del header scrolleado —fill translúcido + blur + borde— pero en navy
+   * en vez de blanco: `bg-white/70` allá, navy al 70% acá, y el mismo
+   * `blur(12px)` del `backdrop-blur-md` de Tailwind.
+   *
+   * El ícono TIENE que pasar a blanco. Navy al 70% sobre el blanco de la sección
+   * compone #4D6E89, y el trazo navy que había antes da 2.53 contra eso: se
+   * borraba. En blanco da 5.37, holgado para un gráfico (WCAG 1.4.11 pide 3:1).
+   * El borde se queda en navy sólido: contra el fill al 70% se lee como un
+   * escalón de tono y es lo que le sigue dando canto al cuadrado.
+   *
+   * El `backdrop-filter` es, hoy, decorativo: la Sección 4 es blanco liso y no
+   * hay nada detrás que difuminar. Va igual porque el pedido fue replicar el
+   * tratamiento del navbar, y porque el día que atrás haya una foto o una
+   * textura el efecto aparece solo. Si se busca ahorrar la capa de composición
+   * (3 chips), sacarlo no cambia nada de lo que se ve. */
   .srv-ico {
     width: 56px;
     height: 56px;
     flex: 0 0 auto;
     border-radius: var(--radius-boton);
     border: 1px solid var(--color-navy);
-    background: var(--color-arena-200);
-    color: var(--color-navy);
+    background-color: color-mix(in srgb, var(--color-navy) 70%, transparent);
+    backdrop-filter: blur(12px);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -311,25 +186,13 @@ const { servicios, class: className } = Astro.props as Props;
     margin-top: 1.125rem;
   }
 
-  @media (min-width: 768px) {
-    .srv-card {
-      padding: 2rem;
-    }
-  }
-
   @media (min-width: 1024px) {
+    /* Una columna por servicio. Antes era `1fr auto 1fr auto 1fr`: los `auto`
+     * eran los divisores de 1px, que ya no existen (15/08/2026), y el valor
+     * fijo daba por sentado que los servicios eran exactamente tres. */
     .srv-grid {
-      grid-template-columns: 1fr auto 1fr auto 1fr;
-    }
-    .srv-div {
-      display: block;
-    }
-    .srv-card {
-      padding: 3rem;
-    }
-    /* En columnas, el separador lo hacen los divisores verticales. */
-    .srv-card:not(:last-child) {
-      background-image: none;
+      grid-template-columns: repeat(var(--srv-cols, 3), minmax(0, 1fr));
+      gap: 3rem;
     }
   }
 </style>
