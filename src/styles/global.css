@@ -83,12 +83,66 @@
   --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
   --text-h3--line-height: 1.3;
 
+  /* ---- Sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria) ----
+   * Reemplaza todas las líneas dasheadas del sitio por un lenguaje de papel
+   * técnico: guías de página, marco por sección y franja de rayado diagonal.
+   * En ARENA por pedido de la usuaria (15/08/2026); la referencia original
+   * traía dos grises neutros (#EEEEEE y #DEDEDE) y el sistema queda mejor
+   * hablando en color de marca: el papel se lee cálido, no gris de oficina.
+   *
+   * Los dos son ORNAMENTO PURO —líneas y textura de fondo—: nunca texto, nunca
+   * borde estructural, nunca anillo de foco, nunca estado. Por eso pueden ir en
+   * arena sobre blanco (1.70) sin violar §1.2, que es una regla de contraste de
+   * LECTURA. Lo que sí ancla el ojo, y lo que hace que el marco se lea aunque
+   * las líneas sean casi imperceptibles, son las escuadras en NAVY.
+   *
+   * La jerarquía rule < hatch se mantiene bajando un escalón de la escala de
+   * arena: el rayado son trazos de 1px cada 9px, así que a igual color leería
+   * MÁS claro que una línea llena; arena-600 lo compensa y lo deja apenas por
+   * encima de la regla, como en la referencia. */
+  --color-rule: var(--color-arena); /* #D9C2B6 — guías de página y reglas de marco */
+  --color-hatch: var(--color-arena-600); /* #C3AFA4 — rayado de las franjas divisoras */
+
   /* Geometría (EXTRAÍDO §3.3): sin radios, sin sombras, sin degradados. */
   --radius: 0;
 
-  /* Excepción al radio cero, solo para la acción primaria (decisión de diseño
-   * del 03/08/2026). Tarjetas, campos y variantes secundarias siguen en 0. */
-  --radius-boton: 4px;
+  /* La excepción de 4px para la acción primaria (decisión del 03/08/2026) se
+   * revirtió el 14/08/2026: pedido directo de la usuaria de sacar todos los
+   * border-radius del sitio, sin excepciones. El token se mantiene en 0 para
+   * no reescribir cada `rounded-boton` / `var(--radius-boton)` del código. */
+  --radius-boton: 0;
+
+  /* Contenedor ancho (14/08/2026, feedback del cliente): `max-w-6xl` (72rem /
+   * 1152px, default de Tailwind) es el ancho de columna de TODO el sitio —
+   * Nav, Footer y cada sección de esta rama lo comparten. En pantallas
+   * grandes se leía demasiado angosto. Se pisa acá, no en cada componente,
+   * para que el header/footer y el contenido seguido midan siempre lo mismo.
+   * `clamp()` deja el valor intacto hasta que el viewport pasa los 1920px
+   * (60vw = 1152px en ese punto) — mobile y tablet no cambian — y de ahí
+   * escala con el viewport hasta un techo de 96rem (1536px), para no crecer
+   * sin límite en monitores ultra-anchos. */
+  --container-6xl: clamp(72rem, 60vw, 96rem);
+}
+
+/* Margen mínimo de las guías verticales de página (HojaTecnica) y de las
+ * esquinas en L del marco de sección (MarcoSeccion). Va en `:root` y no en
+ * `@theme` porque no genera utilidades: se consume siempre como `var()` dentro
+ * de `calc()`/`max()`, y acá la emisión está garantizada.
+ *
+ * La posición real es `max(--guia-margen, (100% - --container-6xl) / 2)`: en
+ * desktop las guías caen justo sobre el borde exterior de la columna de
+ * contenido (antes del `px-6`), así que todo el sitio se alinea contra ellas;
+ * en pantallas chicas, donde ese cálculo daría negativo, gana el margen fijo y
+ * quedan 12px del borde (16px de aire hasta el texto, que arranca en 24px).
+ * Se usa `100%` y no `100vw` a propósito: `100vw` incluye el ancho de la barra
+ * de scroll y descentraría las dos guías entre sí. */
+:root {
+  --guia-margen: 0.75rem;
+}
+@media (min-width: 640px) {
+  :root {
+    --guia-margen: 1.25rem;
+  }
 }
 
 /*

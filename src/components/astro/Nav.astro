@@ -15,6 +15,26 @@
  * para no competir con la máscara del isotipo del hero — recién al scrollear
  * se diferencia con el glass sólido. En el resto de las páginas (sin hero
  * full-bleed) el header sigue `sticky` y opaco como antes.
+ *
+ * Sin navy (14/08/2026, pedido directo): el header ya no usa navy en ningún
+ * estado. Home arranca transparente con texto blanco (sigue teniendo sentido:
+ * flota sobre el video oscuro del hero) y al scrollear pasa a glass blanco
+ * (`bg-white/70` + blur) con texto navy — el mismo mecanismo `data-scrolled`
+ * de siempre, ahora también condiciona el color de texto vía
+ * `group-data-[scrolled=true]:`. En el resto de las páginas el header es
+ * blanco sólido con texto navy desde el vamos. El activo/hover de los links
+ * ya no usa arena sobre fondo claro (1.70, falla WCAG, §1.2): sobre blanco
+ * el hover es navy-700 y el estado activo se marca con navy + peso 500
+ * (font-medium), no con color. Arena como acento de hover solo sobrevive en
+ * el tramo inicial del Home, sobre el video oscuro, donde sí pasa contraste.
+ *
+ * Logo (14/08/2026): /logo-nest.svg tiene el wordmark en blanco, pensado para
+ * el hero oscuro de Home; invisible sobre el header blanco del resto de las
+ * páginas y sobre el glass blanco al scrollear en Home. Ahí usamos
+ * /logo-nest-oscuro.svg (wordmark navy, isotipo arena-800). En Home, como el
+ * header pasa de transparente a glass blanco, se superponen las dos variantes
+ * y se alternan con el mismo `data-scrolled` que ya condiciona el resto del
+ * header, vía `group-data-[scrolled=true]:opacity-*` — sin JS nuevo.
  */
 import Boton from '@/components/astro/Boton.astro';
 
@@ -33,15 +53,35 @@ const esHome = path === '/';
 <header
   id="site-header"
   class:list={[
-    'group z-50 border-b border-transparent py-3 text-white transition-[background-color,box-shadow,border-color,backdrop-filter] duration-300',
-    esHome ? 'fixed inset-x-0 top-0 bg-transparent' : 'sticky top-0 bg-navy',
-    'data-[scrolled=true]:border-navy-800 data-[scrolled=true]:bg-navy/70 data-[scrolled=true]:shadow-[0_12px_40px_rgba(0,0,0,0.35)] data-[scrolled=true]:backdrop-blur-md',
+    'group z-50 border-b border-transparent py-3 transition-[background-color,box-shadow,border-color,backdrop-filter,color] duration-300',
+    esHome
+      ? 'fixed inset-x-0 top-0 bg-transparent text-white data-[scrolled=true]:text-navy'
+      : 'sticky top-0 bg-white text-navy',
+    'data-[scrolled=true]:border-navy-200 data-[scrolled=true]:bg-white/70 data-[scrolled=true]:shadow-[0_12px_40px_rgba(0,0,0,0.1)] data-[scrolled=true]:backdrop-blur-md',
   ]}
 >
   <div class="mx-auto flex max-w-6xl items-center justify-between px-6">
-    <a href="/" class="flex items-center">
-      {/* 2.7rem = 43.2px, un 20% más que el h-9 (36px) original. */}
-      <img src="/logo-nest.svg" alt="NEST" class="h-[2.7rem] w-auto" />
+    <a href="/" class="relative flex items-center">
+      {/* 2.97rem = 47.52px: +10% sobre el 2.7rem anterior (14/08/2026, escala de navbar). */}
+      {
+        esHome ? (
+          <>
+            <img
+              src="/logo-nest.svg"
+              alt="NEST"
+              class="h-[2.97rem] w-auto transition-opacity duration-300 group-data-[scrolled=true]:opacity-0"
+            />
+            <img
+              src="/logo-nest-oscuro.svg"
+              alt=""
+              aria-hidden="true"
+              class="absolute inset-0 h-[2.97rem] w-auto opacity-0 transition-opacity duration-300 group-data-[scrolled=true]:opacity-100"
+            />
+          </>
+        ) : (
+          <img src="/logo-nest-oscuro.svg" alt="NEST" class="h-[2.97rem] w-auto" />
+        )
+      }
     </a>
 
     <nav class="hidden items-center md:flex" aria-label="Principal">
@@ -52,8 +92,15 @@ const esHome = path === '/';
               href={l.href}
               aria-current={activo(l.href) ? 'page' : undefined}
               class:list={[
-                'flex min-h-[44px] items-center text-sm uppercase tracking-[0.08em] transition-colors',
-                activo(l.href) ? 'text-arena' : 'hover:text-arena',
+                'flex min-h-[44px] items-center text-[0.9625rem] uppercase tracking-[0.08em] transition-colors',
+                activo(l.href) && 'font-medium',
+                esHome
+                  ? activo(l.href)
+                    ? 'text-arena group-data-[scrolled=true]:text-navy'
+                    : 'hover:text-arena group-data-[scrolled=true]:hover:text-navy-700'
+                  : activo(l.href)
+                    ? 'text-navy'
+                    : 'hover:text-navy-700',
               ]}
             >
               {l.label}
@@ -67,7 +114,18 @@ const esHome = path === '/';
           igual que un ancho, cosa que `width:auto` no permite. */}
       <div class="ml-0 grid grid-cols-[0fr] overflow-hidden transition-[grid-template-columns,margin-left] duration-700 group-data-[scrolled=true]:ml-8 group-data-[scrolled=true]:grid-cols-[1fr]">
         <div class="overflow-hidden">
-          <Boton href="/contacto" variante="primario" class="whitespace-nowrap"
+          {/* primarioClaro (14/08/2026): este CTA solo se muestra scrolleado —
+              el grid-cols-[0fr] de arriba lo mantiene en ancho 0 hasta ese
+              punto, en Home y en el resto de las páginas por igual — así que
+              siempre queda sobre el glass blanco, nunca sobre navy ni sobre el
+              hero transparente. `primario` (glass sobre navy) ya no aplica acá.
+              +10% de escala: el variante base es px-2 py-2 text-base; se pisa
+              con !text-[1.1rem] !px-[0.55rem] !py-[0.55rem] solo en esta
+              instancia. */}
+          <Boton
+            href="/contacto"
+            variante="primarioClaro"
+            class="!px-[0.55rem] !py-[0.55rem] whitespace-nowrap !text-[1.1rem]"
             >Consultá tu proyecto</Boton
           >
         </div>
@@ -83,7 +141,7 @@ const esHome = path === '/';
         <span class="hidden group-open:inline">Cerrar</span>
       </summary>
       <nav
-        class="absolute inset-x-0 top-full flex flex-col border-t border-navy-800 bg-navy px-6 pb-4"
+        class="absolute inset-x-0 top-full flex flex-col border-t border-navy-200 bg-white px-6 pb-4"
         aria-label="Principal (móvil)"
       >
         {
@@ -92,8 +150,8 @@ const esHome = path === '/';
               href={l.href}
               aria-current={activo(l.href) ? 'page' : undefined}
               class:list={[
-                'flex min-h-[44px] items-center text-sm uppercase tracking-[0.08em]',
-                activo(l.href) ? 'text-arena' : 'text-white',
+                'flex min-h-[44px] items-center text-[0.9625rem] uppercase tracking-[0.08em] text-navy transition-colors',
+                activo(l.href) ? 'font-medium' : 'hover:text-navy-700',
               ]}
             >
               {l.label}
@@ -107,8 +165,9 @@ const esHome = path === '/';
 
 <script>
   // Sin JS no pasa nada grave: el header queda fijo en su estado "no scrolleado"
-  // (bg-navy sólido), que ya es un header válido — no hay contenido que dependa
-  // de esto para funcionar.
+  // (transparente con texto blanco en Home, blanco sólido con texto navy en el
+  // resto), que ya es un header válido — no hay contenido que dependa de esto
+  // para funcionar.
   const header = document.getElementById('site-header');
   const actualizarScroll = () => header?.setAttribute('data-scrolled', String(window.scrollY > 8));
   actualizarScroll();

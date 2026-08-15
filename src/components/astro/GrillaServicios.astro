@@ -115,25 +115,17 @@ const { servicios, class: className } = Astro.props as Props;
   .bp-frame {
     /* Cuánto sobresalen las verticales por fuera de las horizontales. */
     --bp-over: 44px;
-    /* Trazo dasheado en arena-200, igual que el reticulado de GrillaLogos:
-     * mismo patrón (4px de línea, 4px de aire) y misma croma, para que las dos
-     * secciones lean como el mismo sistema. Estuvo en navy mientras la sección
-     * era navy-50, donde el arena no contrastaba; con el fondo blanco vuelve a
-     * leerse (09/08/2026). Va por repeating-linear-gradient y no por
-     * `border: dashed` porque el borde punteado del navegador no deja definir
-     * el largo del guión. */
-    --bp-dash-v: repeating-linear-gradient(
-      to bottom,
-      var(--color-arena-200) 0 4px,
-      transparent 4px 8px
-    );
-    --bp-dash-h: repeating-linear-gradient(
-      to right,
-      var(--color-arena-200) 0 4px,
-      transparent 4px 8px
-    );
-    /* Desvanecido de las puntas. Como el trazo ya usa el background para los
-     * guiones, el fundido va por máscara. */
+    /* Trazo sólido en --color-rule (15/08/2026), igual que el reticulado de
+     * GrillaLogos: las dos secciones tienen que leer como el mismo sistema.
+     * Antes era dasheado en arena-200 (repeating-linear-gradient de 4px/4px);
+     * se sacaron todas las líneas dasheadas del sitio en favor del sistema de
+     * marco (HojaTecnica / MarcoSeccion): reglas continuas casi subliminales,
+     * con las marcas navy —acá, los cuadrados de 3px— haciendo la jerarquía.
+     * Sigue siendo un `background-image` y no un `background-color` porque
+     * `.srv-card` lo usa como separador vía `background-size: 100% 1px`. */
+    --bp-trazo: linear-gradient(var(--color-rule), var(--color-rule));
+    /* Desvanecido de las puntas: va por máscara, para no depender de cómo esté
+     * pintado el trazo. */
     --bp-fade-v: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
 
     position: relative;
@@ -147,7 +139,7 @@ const { servicios, class: className } = Astro.props as Props;
     top: 0;
     bottom: 0;
     width: 1px;
-    background-image: var(--bp-dash-v);
+    background-image: var(--bp-trazo);
     -webkit-mask-image: var(--bp-fade-v);
     mask-image: var(--bp-fade-v);
   }
@@ -165,7 +157,7 @@ const { servicios, class: className } = Astro.props as Props;
     left: 0;
     right: 0;
     height: 1px;
-    background-image: var(--bp-dash-h);
+    background-image: var(--bp-trazo);
   }
   .bp-rule--top {
     top: var(--bp-over);
@@ -186,17 +178,17 @@ const { servicios, class: className } = Astro.props as Props;
     height: 1px;
     width: calc((100vw - 100%) / 2);
   }
-  /* Las extensiones siguen dasheadas y se difuminan hacia el borde del
+  /* Las extensiones llevan el mismo trazo y se difuminan hacia el borde del
    * viewport, igual que en GrillaLogos. */
   .bp-rule::before {
     right: 100%;
-    background-image: var(--bp-dash-h);
+    background-image: var(--bp-trazo);
     -webkit-mask-image: linear-gradient(to left, #000, transparent);
     mask-image: linear-gradient(to left, #000, transparent);
   }
   .bp-rule::after {
     left: 100%;
-    background-image: var(--bp-dash-h);
+    background-image: var(--bp-trazo);
     -webkit-mask-image: linear-gradient(to right, #000, transparent);
     mask-image: linear-gradient(to right, #000, transparent);
   }
@@ -206,7 +198,6 @@ const { servicios, class: className } = Astro.props as Props;
     position: absolute;
     width: 3px;
     height: 3px;
-    border-radius: 50%;
     background: var(--color-navy);
     z-index: 2;
   }
@@ -248,7 +239,7 @@ const { servicios, class: className } = Astro.props as Props;
   .srv-div-linea {
     position: absolute;
     inset: 0;
-    background-image: var(--bp-dash-v);
+    background-image: var(--bp-trazo);
     -webkit-mask-image: var(--bp-fade-v);
     mask-image: var(--bp-fade-v);
   }
@@ -259,7 +250,6 @@ const { servicios, class: className } = Astro.props as Props;
     left: 50%;
     width: 3px;
     height: 3px;
-    border-radius: 50%;
     background: var(--color-navy);
   }
   .srv-div::before {
@@ -280,7 +270,7 @@ const { servicios, class: className } = Astro.props as Props;
     /* La superficie aparece solo en hover: en reposo la tarjeta es el fondo de
      * la sección, delimitada nada más que por el marco. `background-color` y no
      * el shorthand: éste resetearía el background-image con el que se dibuja el
-     * separador dasheado del apilado. */
+     * separador del apilado. */
     background-color: transparent;
     transition: background-color 0.3s;
   }
@@ -288,10 +278,10 @@ const { servicios, class: className } = Astro.props as Props;
     background-color: #fff;
   }
 
-  /* Apilado: sin divisores verticales, se separan con una línea horizontal
-   * dasheada, del mismo patrón que el resto del marco. */
+  /* Apilado: sin divisores verticales, se separan con una línea horizontal del
+   * mismo trazo que el resto del marco. */
   .srv-card:not(:last-child) {
-    background-image: var(--bp-dash-h);
+    background-image: var(--bp-trazo);
     background-repeat: no-repeat;
     background-position: bottom left;
     background-size: 100% 1px;

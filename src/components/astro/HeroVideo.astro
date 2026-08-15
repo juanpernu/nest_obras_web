@@ -1,6 +1,12 @@
 ---
 /**
  * Video de fondo del hero (docs/PLAN-EJECUCION.md §7.2).
+ *
+ * Vuelve a <video> nativo (revertido el embed de YouTube, 14/08/2026): el
+ * embed mostraba su propia UI —título, controles, tarjeta "más videos"— en
+ * cada ciclo del loop y no hay parámetro que la elimine, así que rompía el
+ * efecto de fondo continuo. El archivo es propio (public/hero-video.mp4).
+ *
  * El <source> matchea solo en ≥768px Y sin prefers-reduced-motion: en mobile o
  * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de
  * video, solo pinta el poster. Se resuelve en el media del <source>, no con CSS

@@ -13,6 +13,11 @@
  *   documentado arriba). Al llevar texto blanco en reposo, ESTANDARIZADO para
  *   usarse solo sobre fondo navy — no sobre navy-50 ni blanco, donde el texto
  *   blanco no pasaría contraste.
+ * - primarioClaro (14/08/2026): mismo lenguaje de caja con borde que primario,
+ *   pero para fondo claro — se necesitó cuando el header sacó el navy y el CTA
+ *   "Consultá tu proyecto" del Nav empezó a mostrarse siempre sobre glass
+ *   blanco. Borde y texto navy (13.46, AAA), hover invierte a navy sólido +
+ *   texto blanco (mismo 13.46). Nunca arena: sobre blanco da 1.70 (§1.2).
  * - secundario y sobreNavy: sin borde ni caja. El stroke se convierte en un
  *   subrayado de 3px que crece de izquierda a derecha en hover/foco. Sin padding
  *   horizontal para que el texto alinee con el párrafo que lo precede; el min-h
@@ -24,7 +29,7 @@
  */
 interface Props {
   href: string;
-  variante?: 'primario' | 'secundario' | 'sobreNavy';
+  variante?: 'primario' | 'primarioClaro' | 'secundario' | 'sobreNavy';
   class?: string;
 }
 const { href, variante = 'primario', class: className } = Astro.props as Props;
@@ -34,6 +39,8 @@ const base =
 const variantes = {
   primario:
     'rounded-boton border border-arena bg-white/10 px-2 py-2 text-white backdrop-blur-2xl transition-colors hover:bg-arena hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena',
+  primarioClaro:
+    'rounded-boton border border-navy bg-transparent px-2 py-2 text-navy transition-colors hover:bg-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy',
   secundario: 'py-3 text-navy',
   sobreNavy: 'py-3 text-arena',
 };
@@ -43,6 +50,7 @@ const subrayado =
   'bg-[image:linear-gradient(currentColor,currentColor)] bg-[length:0%_3px] bg-[position:0_100%] bg-no-repeat pb-1 transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_3px] group-focus-visible:bg-[length:100%_3px] motion-reduce:transition-none';
 const internas = {
   primario: '',
+  primarioClaro: '',
   secundario: subrayado,
   sobreNavy: subrayado,
 };

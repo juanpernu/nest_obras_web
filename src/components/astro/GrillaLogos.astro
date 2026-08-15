@@ -54,9 +54,9 @@ const GAP = '8px';
  * degradé se completaba fuera de pantalla — se veía solo su tramo más opaco y
  * el efecto no se notaba.
  *
- * El fundido va por `mask-image` y no por el color de la línea: el trazo ahora
- * es dasheado (un repeating-linear-gradient, ver <style>), así que el canal de
- * background ya está ocupado dibujando los guiones. */
+ * El fundido va por `mask-image` y no por un degradé de color: la máscara es
+ * independiente del pintado del trazo, así que el mismo recurso sirvió cuando
+ * la línea era dasheada y sigue sirviendo ahora que es sólida. */
 const MARGEN = 'calc((100vw - 100%) / 2)';
 
 const reticulados = [
@@ -135,7 +135,7 @@ const reticulados = [
         {x.map((px) =>
           y.map((py) => (
             <span
-              class="absolute h-[3px] w-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-navy"
+              class="absolute h-[3px] w-[3px] -translate-x-1/2 -translate-y-1/2 bg-navy"
               style={{ left: `${px}%`, top: `${py}%` }}
             />
           )),
@@ -146,28 +146,19 @@ const reticulados = [
 </div>
 
 <style>
-  /* Trazo dasheado (decisión del 07/08/2026). Va por `repeating-linear-gradient`
-   * y no por `border: dashed`: el borde punteado del navegador no deja definir
-   * el largo del guión ni el del hueco, y en un elemento de 1px queda irregular
-   * según el zoom. Con el gradiente el patrón es explícito: 4px de línea, 4px
-   * de aire. */
-  .linea-h {
-    background-image: repeating-linear-gradient(
-      to right,
-      var(--color-arena-200) 0 4px,
-      transparent 4px 8px
-    );
-  }
+  /* Trazo sólido en --color-rule (15/08/2026). Antes era dasheado en
+   * arena-200, vía repeating-linear-gradient. Se sacaron todas las líneas
+   * dasheadas del sitio: el reticulado ahora habla el mismo idioma que las
+   * guías de página y el marco de sección (HojaTecnica / MarcoSeccion), que son
+   * reglas continuas casi subliminales con marcas navy en los cruces. Acá esas
+   * marcas ya existían: los puntos de 3px del markup. */
+  .linea-h,
   .linea-v {
-    background-image: repeating-linear-gradient(
-      to bottom,
-      var(--color-arena-200) 0 4px,
-      transparent 4px 8px
-    );
+    background-color: var(--color-rule);
   }
 
-  /* El fundido de las extensiones se aplica sobre el trazo dasheado, así que va
-   * por máscara: el background ya lo usan los guiones. */
+  /* El fundido de las extensiones va por máscara y no por un degradé de color,
+   * para no depender de cómo esté pintado el trazo. */
   .funde-izq {
     -webkit-mask-image: linear-gradient(to right, transparent, #000);
     mask-image: linear-gradient(to right, transparent, #000);

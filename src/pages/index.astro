@@ -8,13 +8,15 @@ import TarjetaObraHover from '@/components/astro/TarjetaObraHover.astro';
 import CarruselTestimonios from '@/components/astro/CarruselTestimonios.astro';
 import GrillaLogos from '@/components/astro/GrillaLogos.astro';
 import GrillaServicios from '@/components/astro/GrillaServicios.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import type { Servicio } from '@/components/astro/GrillaServicios.astro';
 import elCantonAerea from '@/assets/obras/el-canton-aerea.jpg';
 import tacuari1 from '../../assets/img/tacuari1.png';
 import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
 import TimelineContacto from '@/components/astro/TimelineContacto.astro';
-import alberdiOlivos from '@/assets/contacto/alberdi-olivos.png';
 import quienesSomosImg from '@/assets/intro/servicios.webp';
 import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
@@ -136,16 +138,19 @@ const seo = {
   </noscript>
 
   {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2).
-      El overlay es navy/50 (marca), no negro: es el mismo tono y opacidad que
-      el header en reposo (Nav.astro), para que ambos lean como una sola
-      superficie hasta que aparece el scroll. */}
-  <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-navy">
+      El overlay es negro/50 (feedback del cliente, 14/08/2026): antes era
+      navy/50 para leer como una sola superficie con el header en reposo
+      (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el
+      video en vez de un tinte de marca. `bg-black` en el fallback de la
+      sección por la misma razón — es lo que se ve un instante antes de que
+      cargue el primer frame del video. */}
+  <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-black">
     <HeroVideo
       srcDesktop="/hero-video.mp4"
       poster="/hero-poster.jpg"
       class="absolute inset-0 -z-20 h-full w-full object-cover"
     />
-    <div class="hero-overlay absolute inset-0 -z-10 bg-navy/50"></div>
+    <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
       {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
           necesario porque el tamaño base de Eyebrow también es un valor
@@ -212,43 +217,63 @@ const seo = {
     </a>
   </section>
 
-  {/* Sección 2 — Estadísticas (banda navy). id="stats" es el destino de la
-      flecha del hero. */}
-  <section id="stats" class="bg-navy py-20 md:py-[120px]">
-    <div class="mx-auto max-w-6xl px-6" data-reveal>
-      <BarraEstadisticas />
-    </div>
-  </section>
+  {/* Sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria).
+      Todo el cuerpo del documento —de Estadísticas a Contacto— vive dentro de
+      un único <HojaTecnica>, así las dos guías verticales son DOS ELEMENTOS
+      ÚNICOS que miden el 100% del bloque: no se reinician ni se cortan en
+      ninguna junta de sección. El hero queda afuera a propósito (ver
+      HojaTecnica.astro: un trazo #EEEEEE sobre el video oscuro deja de ser una
+      guía subliminal y pasa a ser una línea blanca de alto contraste, además de
+      competir con la ventana del isotipo del overlay). El footer, navy sólido,
+      queda afuera por el motivo simétrico.
 
-  {/* Sección 3 — Intro. Recurso tipográfico de fondo (10/08/2026, ajustado el
-      mismo día): en vez de una palabra suelta ("NEST"), el propio subheader
-      de la sección ("Quiénes somos") repetido en gran escala, condensado y
-      apenas alargado por transform — mismo lenguaje que el número gigante de
-      CarruselTestimonios (tst-num), tonado más sutil por pedido explícito: sin
-      ocupar el ancho completo, alineado a la izquierda dentro del margen del
-      contenedor (no de toda la sección), en arena y a baja opacidad. Va DENTRO
-      del contenedor de max-w-6xl (no del <section>) para que su posición y
-      ancho se calculen contra ese margen y no contra el viewport completo. */}
-  <section class="relative overflow-hidden bg-navy py-20 md:py-[120px]">
-    <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
-      <span
-        class="pointer-events-none absolute top-0 left-6 z-0 -translate-y-[calc(6%-1.2rem)] scale-x-[0.82] scale-y-[1.08] text-left leading-[0.8] font-medium tracking-[-0.03em] text-arena/30 uppercase select-none md:left-[-1rem]"
-        style={{ fontSize: 'clamp(45px, 5.1vw, 109px)' }}
-        aria-hidden="true"
-      >
-        Quiénes somos
-      </span>
+      Cada sección va envuelta en <MarcoSeccion>. La regla horizontal es siempre
+      la del borde SUPERIOR; `cierra` agrega la inferior solo donde la cadena de
+      secciones se interrumpe (antes de una franja, o al final). Así cada junta
+      tiene exactamente una línea de 1px y el contorno se lee parejo de punta a
+      punta.
 
-      <div class="relative z-10" data-reveal>
-        {/* Oculto visualmente (10/08/2026): el texto ya está en el recurso
-            tipográfico de fondo. `sr-only` y no eliminarlo — ese fondo va con
-            aria-hidden (decorativo), así que esta sigue siendo la única
-            etiqueta accesible para lectores de pantalla. */}
-        <Eyebrow sobreNavy class="sr-only">Quiénes somos</Eyebrow>
-        <h2 class="max-w-[640px] text-h2 font-medium text-white">
+      Las <FranjaRayado> son tres y marcan cambio de capítulo, no separación de
+      sección: quiénes somos → qué hacemos → con quiénes → contacto. */}
+  <HojaTecnica>
+    {/* Sección 2 — Estadísticas. id="stats" es el destino de la flecha del hero.
+      Fondo blanco (14/08/2026, unificación de fondos de sección pedida por la
+      usuaria): antes era una banda navy. `sobreBlanco` en BarraEstadisticas
+      adapta su croma interna (el valor destacado pasa de arena a navy — arena
+      sobre blanco falla WCAG, §1.2 — y la etiqueta de navy-200 a navy-700 para
+      seguir siendo legible). `/nosotros` sigue usando el componente sin el
+      prop, sobre su propia banda navy. */}
+  <MarcoSeccion>
+    <section id="stats" class="bg-white py-20 md:py-[120px]">
+      <div class="mx-auto max-w-6xl px-6" data-reveal>
+        <BarraEstadisticas sobreBlanco />
+      </div>
+    </section>
+  </MarcoSeccion>
+
+  {/* Sección 3 — Intro. El subheader vuelve a ser un eyebrow común (14/08/2026):
+      antes el "Quiénes somos" se repetía gigante y a baja opacidad como fondo
+      decorativo (mismo lenguaje que el número de CarruselTestimonios) y el
+      eyebrow real quedaba sr-only. El cliente pidió sacar ese recurso y tratar
+      el subheader como en el resto del sitio — mismo patrón que usa la
+      Sección 7 (Testimonios): Eyebrow visible + h2 debajo.
+
+      La foto es la protagonista visual de esta sección (spec del cliente,
+      14/08/2026): el párrafo baja de `text-h3` (escala de heading) a `text-lg`,
+      un cuerpo de texto de lectura, para no competirle tamaño a la imagen.
+
+      Fondo blanco (14/08/2026, unificación de fondos): antes era banda navy,
+      con Eyebrow/h2/párrafo en sus variantes claras (sobreNavy, blanco,
+      navy-100). Pasan a las variantes de fondo claro del resto del sitio. */}
+  <MarcoSeccion cierra>
+  <section class="bg-white py-20 md:py-[120px]">
+    <div class="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2">
+      <div data-reveal>
+        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="max-w-[640px] text-h2 font-medium text-navy">
           Más de 30 años construyendo lo que prometemos
         </h2>
-        <p class="mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy-100">
+        <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
           NEST es una empresa constructora especializada en viviendas premium, refacciones y
           proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
           con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
@@ -256,17 +281,21 @@ const seo = {
         </p>
       </div>
 
-      <div class="relative z-10 aspect-[4/3] w-full overflow-hidden rounded-boton" data-reveal>
+      <div class="aspect-[4/3] w-full overflow-hidden rounded-boton" data-reveal>
         <Image
           src={quienesSomosImg}
           alt="Obra de NEST en desarrollo"
           widths={[400, 640, 960]}
           sizes="(min-width: 768px) 50vw, 100vw"
-          class="h-full w-full object-cover"
+          class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
         />
       </div>
     </div>
   </section>
+  </MarcoSeccion>
+
+  {/* Cierre del capítulo "quiénes somos". */}
+  <FranjaRayado />
 
   {/* Sección 4 — Servicios destacados (3). `overflow-x-clip` porque el marco
       sangra hasta el borde de la pantalla: `100vw` cuenta el ancho de la barra
@@ -274,61 +303,50 @@ const seo = {
       y aparece scroll horizontal. `clip` y no `hidden` para no crear un
       contenedor de scroll.
 
-      Recurso tipográfico de fondo (10/08/2026, replicado de la Sección 3 —
-      ver [[07 - Sistema de patrones — Glass Blueprint]] §5 en el vault): el
-      eyebrow "Servicios" repetido en gran escala. Única adaptación real del
-      patrón: la croma. Esta sección es `bg-white` (las otras dos instancias
-      son navy), y arena a baja opacidad se lava casi invisible sobre blanco
-      —mismo problema ya visto con las líneas dasheadas de GrillaLogos/
-      GrillaServicios—, así que el texto gigante va en navy/10 en vez de
-      arena/30. El resto (escala, posición, sr-only del eyebrow real) es
-      idéntico. */}
-  <section class="relative overflow-x-clip bg-white py-20 md:py-[120px]">
-    <div class="relative mx-auto max-w-6xl px-6">
-      <span
-        class="pointer-events-none absolute top-0 left-6 z-0 -translate-y-[calc(6%-1.2rem)] scale-x-[0.82] scale-y-[1.08] text-left leading-[0.8] font-medium tracking-[-0.03em] text-arena/30 uppercase select-none md:left-[-1rem]"
-        style={{ fontSize: 'clamp(45px, 5.1vw, 109px)' }}
-        aria-hidden="true"
-      >
-        Servicios
-      </span>
-
+      Subheader estándar (14/08/2026): antes tenía el mismo recurso
+      tipográfico de fondo que la Sección 3, retirado en toda la Home — ver
+      esa sección para el detalle de la decisión. Mismo patrón que el resto:
+      Eyebrow visible + h2. */}
+  <MarcoSeccion>
+  <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
+    <div class="mx-auto max-w-6xl px-6">
       {/* Eyebrow y h2 comparten wrapper: `data-reveal` va en elementos del
           markup de esta página, y Eyebrow es un componente que solo acepta
           `class`. Entran juntos como un bloque de encabezado. */}
-      <div class="relative z-10" data-reveal>
-        <Eyebrow class="sr-only">Servicios</Eyebrow>
+      <div data-reveal>
+        <Eyebrow class="mb-2.5">Servicios</Eyebrow>
         <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
       </div>
-      <div class="relative z-10" data-reveal>
+      <div data-reveal>
         <GrillaServicios class="mt-4" servicios={serviciosHome} />
       </div>
     </div>
   </section>
+  </MarcoSeccion>
 
-  {/* Sección 5 — Obras destacadas (3). Recurso tipográfico de fondo
-      (10/08/2026, replicado del mismo patrón de la Sección 3 — ver
-      [[07 - Sistema de patrones — Glass Blueprint]] §5 en el vault): el propio
-      eyebrow "Portfolio" repetido en gran escala detrás del encabezado, y el
-      eyebrow real pasa a `sr-only` (el texto grande lleva aria-hidden). */}
-  <section class="relative overflow-hidden bg-navy pt-20 md:pt-[120px]">
-    <div class="relative mx-auto max-w-6xl px-6">
-      <span
-        class="pointer-events-none absolute top-0 left-6 z-0 -translate-y-[calc(6%-1.2rem)] scale-x-[0.82] scale-y-[1.08] text-left leading-[0.8] font-medium tracking-[-0.03em] text-arena/30 uppercase select-none md:left-[-1rem]"
-        style={{ fontSize: 'clamp(45px, 5.1vw, 109px)' }}
-        aria-hidden="true"
-      >
-        Portfolio
-      </span>
+  {/* Sección 5 — Obras destacadas (3). Subheader estándar (14/08/2026): antes
+      tenía el eyebrow "Portfolio" repetido en gran escala como fondo, retirado
+      en toda la Home — ver Sección 3 para el detalle.
 
-      <div class="relative z-10 flex items-end justify-between gap-4" data-reveal>
+      Fondo blanco (14/08/2026, unificación de fondos): antes era banda navy.
+      Eyebrow, h2 y Boton pasan de sus variantes de fondo oscuro (sobreNavy,
+      blanco) a las de fondo claro — variante "secundario" en vez de
+      "sobreNavy": mismo subrayado de 3px, en navy en vez de arena (arena sobre
+      blanco falla WCAG, §1.2). */}
+  {/* `pb` propio (15/08/2026): antes esta sección cerraba sin padding inferior
+      y se apoyaba en el de la siguiente. Con el marco eso dejaba la regla y las
+      escuadras inferiores montadas sobre las tarjetas. El valor es menor que el
+      `pt` a propósito: una fila de imágenes pide menos aire abajo que un bloque
+      de texto, y así el corte de capítulo que sigue no se infla. */}
+  <MarcoSeccion cierra>
+  <section class="bg-white pt-20 pb-16 md:pt-[120px] md:pb-20">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="flex items-end justify-between gap-4" data-reveal>
         <div>
-          <Eyebrow sobreNavy class="sr-only">Portfolio</Eyebrow>
-          <h2 class="text-h2 font-medium text-white">Obras destacadas</h2>
+          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
+          <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
         </div>
-        {/* `sobreNavy` es la variante secundaria para fondo oscuro: sin caja y
-            con el subrayado de 3px que crece en hover/foco. */}
-        <Boton href="/obras" variante="sobreNavy" class="whitespace-nowrap">Ver todas</Boton>
+        <Boton href="/obras" variante="secundario" class="whitespace-nowrap">Ver todas</Boton>
       </div>
     </div>
     {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
@@ -353,9 +371,14 @@ const seo = {
       }
     </div>
   </section>
+  </MarcoSeccion>
+
+  {/* Cierre del capítulo "qué hacemos". */}
+  <FranjaRayado />
 
   {/* Sección 6 — Clientes corporativos. `overflow-x-clip` por el mismo motivo
       que la Sección 4: el reticulado sangra hasta el borde del viewport. */}
+  <MarcoSeccion>
   <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6 text-center">
       <h2 class="text-h2 font-medium text-navy" data-reveal>Empresas que confiaron en NEST</h2>
@@ -369,11 +392,17 @@ const seo = {
       </p>
     </div>
   </section>
+  </MarcoSeccion>
 
-  {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3) */}
+  {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3).
+      Fondo blanco (14/08/2026, unificación de fondos): antes era arena-200. El
+      texto ya era navy/navy-700 (pensado para fondo claro), así que no hace
+      falta tocar nada más que el fondo — el trazo del riel y de la línea del
+      autor, en navy con opacidad, se sigue leyendo igual sobre blanco. */}
   {
     testimonios.length > 0 && (
-      <section class="overflow-hidden bg-arena-200 py-20 md:py-[120px]">
+      <MarcoSeccion>
+      <section class="overflow-hidden bg-white py-20 md:py-[120px]">
         <div class="mx-auto max-w-6xl px-6">
           <div class="text-center" data-reveal>
             <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
@@ -384,45 +413,47 @@ const seo = {
           </div>
         </div>
       </section>
+      </MarcoSeccion>
     )
   }
 
-  {/* Sección 8 — Equipo (preview). Recurso tipográfico de fondo (10/08/2026,
-      replicado — ver [[07 - Sistema de patrones — Glass Blueprint]] §5). Fondo
-      navy: mismo croma que Intro/Portfolio, `text-arena/30`. */}
-  <section class="relative overflow-hidden bg-navy py-20 md:py-[120px]">
-    <div class="relative mx-auto max-w-6xl px-6">
-      <span
-        class="pointer-events-none absolute top-0 left-6 z-0 -translate-y-[calc(6%-1.2rem)] scale-x-[0.82] scale-y-[1.08] text-left leading-[0.8] font-medium tracking-[-0.03em] text-arena/30 uppercase select-none md:left-[-1rem]"
-        style={{ fontSize: 'clamp(45px, 5.1vw, 109px)' }}
-        aria-hidden="true"
-      >
-        Quiénes somos
-      </span>
+  {/* Sección 8 — Equipo (preview). Subheader estándar (14/08/2026): antes
+      tenía el mismo recurso tipográfico de fondo que el resto, retirado en
+      toda la Home — ver Sección 3.
 
-      <div class="relative z-10" data-reveal>
-        <Eyebrow sobreNavy class="sr-only">Quiénes somos</Eyebrow>
-        <h2 class="text-h2 font-medium text-white">El equipo detrás de cada obra</h2>
+      Fondo blanco (14/08/2026, unificación de fondos): antes era navy, mismo
+      croma que Intro/Portfolio antes de ese cambio. Eyebrow, h2, nombre y
+      Boton pasan a variantes de fondo claro; rol/credenciales suben de
+      navy-200 (ilegible sobre blanco) a navy-700, el piso de texto secundario
+      sobre blanco del sistema. */}
+  <MarcoSeccion cierra>
+  <section class="bg-white py-20 md:py-[120px]">
+    <div class="mx-auto max-w-6xl px-6">
+      <div data-reveal>
+        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="text-h2 font-medium text-navy">El equipo detrás de cada obra</h2>
       </div>
-      <div class="relative z-10 mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
+      <div class="mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
         {
           equipo.map((m) => (
             <div>
-              <h3 class="text-h3 font-medium text-white">{m.data.nombre}</h3>
-              {/* navy-200 y no navy-700: sobre navy el 700 no se lee. Es el
-                  mismo tono que las etiquetas de la barra de estadísticas. */}
-              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-200">{m.data.rol}</p>
-              <p class="mt-2 text-sm text-navy-200">{m.data.credenciales.join(' · ')}</p>
+              <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
+              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">{m.data.rol}</p>
+              <p class="mt-2 text-sm text-navy-700">{m.data.credenciales.join(' · ')}</p>
             </div>
           ))
         }
       </div>
       {/* El `data-reveal` va en un wrapper: Boton solo acepta `class`. */}
       <div class="mt-8" data-reveal>
-        <Boton href="/nosotros" variante="sobreNavy">Ver todo el equipo →</Boton>
+        <Boton href="/nosotros" variante="secundario">Ver todo el equipo →</Boton>
       </div>
     </div>
   </section>
+  </MarcoSeccion>
+
+  {/* Cierre del capítulo "con quiénes": lo que sigue es la acción. */}
+  <FranjaRayado />
 
   {/* Sección 9 — Contacto. Reestructurada el 10/08/2026 sobre spec del
       cliente: columna editorial (timeline de atributos + datos de contacto) a
@@ -431,48 +462,17 @@ const seo = {
       planas. `items-start` porque las dos columnas ya no necesitan alinearse
       por altura de contenido (antes el padding-top de la derecha compensaba el
       encabezado de la izquierda; ahora cada una tiene su propio título).
-      El fondo fotográfico (agregado el 10/08/2026) ocupa el 50% derecho de la
-      SECCIÓN, no del contenedor de contenido de max-w-6xl — a partir de cierto
-      ancho de viewport hay espacio libre entre el borde de ese contenedor y el
-      de la pantalla, y la imagen tiene que llegar hasta ahí. `overflow-hidden`
-      es necesario: sin el objeto `sm:h-[600px]` de las tarjetas de arriba no lo
-      pediría, pero acá la imagen es `absolute inset-y-0` a la altura real de la
-      sección, que varía con el contenido, así que puede sobrar recorte en
-      algún breakpoint intermedio. Solo desde `lg`: por debajo la columna del
-      formulario ya ocupa el ancho completo y no queda lugar visual para una
-      foto sin tapar contenido. */}
-  <section id="contacto" class="relative overflow-hidden bg-white py-20 md:py-[120px]">
-    <div class="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 lg:block" aria-hidden="true">
-      <Image
-        src={alberdiOlivos}
-        alt=""
-        widths={[640, 960, 1280, 1600]}
-        sizes="50vw"
-        class="h-full w-full object-cover"
-      />
-      {/* Degradé desde el borde izquierdo de la imagen hacia el blanco de la
-          sección — el fundido pedido. */}
-      <div class="absolute inset-0 bg-gradient-to-r from-white via-white/40 to-transparent"></div>
-    </div>
-
-    <div class="relative z-10 mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
-      {/* Recurso tipográfico de fondo (10/08/2026, replicado — ver
-          [[07 - Sistema de patrones — Glass Blueprint]] §5). Fondo blanco:
-          mismo croma que Servicios, `text-navy/10`. Va dentro de este grid
-          (no del <section>) para que `left-6` se calcule contra su propio
-          margen y no contra el borde de la sección. Las dos columnas de
-          contenido necesitan `relative z-10` explícito para ganarle en
-          stacking a este span, que es z-0. */}
-      <span
-        class="pointer-events-none absolute top-0 left-6 z-0 -translate-y-[calc(6%-1.2rem)] scale-x-[0.82] scale-y-[1.08] text-left leading-[0.8] font-medium tracking-[-0.03em] text-arena/30 uppercase select-none md:left-[-1rem]"
-        style={{ fontSize: 'clamp(45px, 5.1vw, 109px)' }}
-        aria-hidden="true"
-      >
-        Contacto
-      </span>
-
-      <div class="relative z-10" data-reveal>
-        <Eyebrow class="sr-only">Contacto</Eyebrow>
+      El fondo fotográfico agregado el 10/08/2026 se sacó el 14/08/2026 (feedback
+      directo del cliente en la Home): la sección vuelve a ser blanco liso, sin
+      foto de por medio. */}
+  <MarcoSeccion cierra>
+  <section id="contacto" class="bg-white py-20 md:py-[120px]">
+    <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
+      {/* Subheader estándar (14/08/2026): antes tenía el mismo recurso
+          tipográfico de fondo que el resto, retirado en toda la Home — ver
+          Sección 3. */}
+      <div data-reveal>
+        <Eyebrow class="mb-2.5">Contacto</Eyebrow>
         <h2 class="text-h2 font-medium text-navy">Contanos de tu proyecto</h2>
         <p class="mt-3 text-navy-700">
           Respondemos en menos de 24 horas en días hábiles. Sin compromiso.
@@ -480,19 +480,21 @@ const seo = {
         <TimelineContacto class="mt-10" atributos={bloquesDeConfianza} />
       </div>
 
-      {/* Card glass (10/08/2026): navy translúcido + blur medio en vez de
-          blanco sólido, para que el fondo fotográfico de la sección se siga
-          percibiendo detrás de los campos, como en el resto de los
-          componentes glass de esta rama. `FormularioConsulta` recibe
-          `sobreNavy` para adaptar su croma interna a este fondo oscuro. */}
-      <div
-        class="relative z-10 rounded-boton border border-white/15 bg-navy/70 p-6 shadow-lg backdrop-blur-md md:p-10"
-        data-reveal
-      >
+      {/* Card sólido (14/08/2026): sin la foto detrás, el glass (navy
+          translúcido + blur) no tenía nada fotográfico que dejar entrever —
+          quedaba un efecto de vidrio sobre blanco liso, sin justificación.
+          Pasa a navy sólido: mismo acento de color que distingue esta card
+          del resto de la sección (blanca), sin blur ni sombra (`shadow-lg`
+          también se saca acá — la identidad no admite sombras, §3.3).
+          `FormularioConsulta` sigue recibiendo `sobreNavy` porque el fondo
+          sigue siendo oscuro, solo que ahora sólido en vez de translúcido. */}
+      <div class="bg-navy p-6 md:p-10" data-reveal>
         <FormularioConsulta sobreNavy />
       </div>
     </div>
   </section>
+  </MarcoSeccion>
+  </HojaTecnica>
 </Layout>
 
 <script>

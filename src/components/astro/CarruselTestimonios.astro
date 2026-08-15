@@ -36,19 +36,18 @@ const { testimonios, class: className } = Astro.props as Props;
   </div>
 
   <div class="relative z-10 flex">
-    {/* Riel: solo el trazo. Se oculta en mobile, donde no hay ancho de sobra. */}
-    <div
-      class="tst-riel hidden shrink-0 border-r-2 border-dashed border-navy/15 pr-8 md:block lg:pr-14"
-      aria-hidden="true"
-    >
-    </div>
+    {/* Riel: solo el trazo. Se oculta en mobile, donde no hay ancho de sobra.
+        Consistente con el resto del sistema de líneas del sitio: 1px sólido en
+        --color-rule, con fundido en las puntas — la misma regla que usan las
+        guías de página (HojaTecnica) y el timeline de contacto. */}
+    <div class="tst-riel hidden shrink-0 pr-8 md:block lg:pr-14" aria-hidden="true"></div>
 
     <div class="tst-main relative min-w-0 flex-1 py-8 md:py-12 md:pl-8 lg:pl-14">
       {
         testimonios.map(({ entry, Contenido }, i) => (
           <div class:list={['tst-slide', i === 0 && 'is-active']} data-i={i}>
             <span class="mb-8 inline-flex items-center gap-2 text-[0.825rem] tracking-[0.12em] text-navy-700 uppercase">
-              <i class="h-1.5 w-1.5 rounded-full bg-navy" aria-hidden="true" />
+              <i class="h-1.5 w-1.5 bg-navy" aria-hidden="true" />
               {entry.data.zona}
             </span>
 
@@ -123,11 +122,21 @@ const { testimonios, class: className } = Astro.props as Props;
     margin-top: 3rem;
   }
 
-  /* Los extremos del trazo se degradan en vez de cortarse en seco. Va por
-   * máscara y no por gradiente de color: el trazo es un `border`, que no acepta
-   * degradé. El elemento no tiene contenido, así que enmascararlo solo afecta
-   * al borde. */
+  /* Trazo sólido de 1px sobre el borde derecho, en --color-rule (15/08/2026).
+   * Antes era dasheado (repeating-linear-gradient de 4px/4px en navy/32%): se
+   * sacaron todas las líneas dasheadas del sitio y el riel pasa al mismo
+   * lenguaje que las guías de página y el marco de sección. Los extremos se
+   * siguen degradando por máscara en vez de cortarse en seco. */
   .tst-riel {
+    position: relative;
+  }
+  .tst-riel::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    width: 1px;
+    background-color: var(--color-rule);
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
   }

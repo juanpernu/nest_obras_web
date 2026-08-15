@@ -2,14 +2,20 @@
 /**
  * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente).
  * Timeline de 3 atributos con nodos sobre una línea vertical de referencia,
- * que interrumpen las líneas horizontales dasheadas al superponerse (z-index),
- * seguido de un separador y los datos de contacto con ícono.
+ * que interrumpen las líneas horizontales al superponerse (z-index), seguido de
+ * un separador y los datos de contacto con ícono.
  *
- * Las líneas dasheadas van por `repeating-linear-gradient` (no `border: dashed`,
- * que no permite definir el largo del guión) enmascaradas para tener más
- * presencia al centro y desvanecerse en los dos extremos — mismo recurso que
- * el reticulado de GrillaLogos y el marco de GrillaServicios, aplicado acá
- * puertas adentro de la columna en vez de sangrando fuera de ella.
+ * Todas las líneas son sólidas desde el 15/08/2026 (antes eran dasheadas, por
+ * `repeating-linear-gradient`): se sacó el dasheado de todo el sitio a favor
+ * del sistema de marco "hoja técnica". Siguen enmascaradas para desvanecerse en
+ * los extremos en vez de cortar en seco, igual que el reticulado de GrillaLogos
+ * y el marco de GrillaServicios, pero acá puertas adentro de la columna en vez
+ * de sangrando fuera de ella.
+ *
+ * Los dos niveles del sistema se ven bien acá: la vertical es ESTRUCTURA —une
+ * los tres nodos, si no se lee el timeline deja de existir— y por eso va en
+ * navy a baja opacidad; las horizontales son separadores y van en la regla
+ * casi subliminal (`--color-rule`), como el resto del marco.
  *
  * El NAP (teléfono, email, dirección) sale de site.ts, nunca hardcodeado, para
  * ser idéntico carácter por carácter en todos lados (§6.7).
@@ -120,32 +126,27 @@ const INDENT = '1.75rem';
 </div>
 
 <style>
-  /* Dasheada, no sólida (10/08/2026): mismo tratamiento que las horizontales
-   * —repeating-linear-gradient, con más presencia al centro y fundido en las
-   * dos puntas— para que las líneas del timeline sean consistentes entre sí,
-   * como pide la spec ("tratamiento de las líneas"). */
+  /* Sólida en navy al 20% (15/08/2026; antes, dasheada en navy al 32%). Es la
+   * única línea del componente que NO va en `--color-rule`: es el eje que une
+   * los tres nodos, y a 1.09 de contraste desaparecería y el timeline quedaría
+   * como tres bloques sueltos. Al 20% de navy tiene el mismo peso visual que
+   * tenía el trazo dasheado al 32%, sin el ruido del guión. Sigue con fundido
+   * en las dos puntas: ninguna línea del sitio corta en seco. */
   .tl-vertical {
     width: 1px;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--color-navy) 32%, transparent) 0 4px,
-      transparent 4px 8px
-    );
+    background-color: color-mix(in srgb, var(--color-navy) 20%, transparent);
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
   }
 
-  /* En arena (10/08/2026): antes navy, igual que la vertical. Va en la marca
-   * arena base y no en arena-200 —la usada en GrillaLogos/GrillaServicios—
-   * porque ahí compiten contra fondos navy-50/blanco de la misma familia
-   * clara, y arena-200 ya demostró leerse casi invisible en ese contexto; acá
-   * el fondo es blanco puro, así que necesita el tono más saturado para
-   * seguir siendo decorativo pero visible. Decorativo, no texto: no aplica
-   * la regla de "arena nunca sobre blanco" de §1.2 (esa es sobre contraste de
-   * lectura, no sobre líneas). */
+  /* En `--color-rule` (15/08/2026): sólida, y del mismo color que las reglas de
+   * `MarcoSeccion` — que desde el pedido de la usuaria del 15/08 también es
+   * arena. Cumplen exactamente el mismo rol (separador horizontal), así que
+   * tienen que verse iguales; lo que cambia respecto de antes es que el valor
+   * ya no está hardcodeado acá sino que sale del token del sistema. */
   .tl-linea {
     height: 1px;
-    background-image: repeating-linear-gradient(to right, var(--color-arena) 0 4px, transparent 4px 8px);
+    background-color: var(--color-rule);
     /* Más presencia al centro, se desvanece en los dos extremos — no
      * termina en seco. */
     -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent);
@@ -159,7 +160,6 @@ const INDENT = '1.75rem';
   .tl-nodo {
     width: 4px;
     height: 4px;
-    border-radius: 50%;
     background-color: var(--color-navy);
   }
 

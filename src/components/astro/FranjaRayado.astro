@@ -1,0 +1,45 @@
+---
+/**
+ * Capa 3 del sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria).
+ *
+ * Franja de rayado diagonal a 115°, el achurado con el que se marca una zona
+ * en un plano. Es el único elemento del sistema con textura: se usa como corte
+ * de capítulo, no como separador de cada sección. En la Home van tres, una por
+ * cambio de tema (quiénes somos → qué hacemos → con quiénes → contacto); si
+ * fuera entre todas las secciones dejaría de leerse como corte y pasaría a ser
+ * un fondo.
+ *
+ * El patrón —8.5px de aire, 1px de trazo— es el mismo `repeating-linear-gradient`
+ * que antes se usaba para las líneas dasheadas del sitio, ahora aplicado donde
+ * sí corresponde: a una superficie, no a un trazo de 1px. Puramente decorativo,
+ * de ahí el `aria-hidden` y la ausencia de contenido.
+ *
+ * NO es full-bleed, a diferencia de las reglas horizontales de `MarcoSeccion`:
+ * el achurado va exactamente de guía a guía y afuera de ellas el papel queda en
+ * blanco. Ese contraste —reglas que se van hasta el borde de la pantalla,
+ * textura que respeta el margen de imprenta— es lo que hace leer la página como
+ * un plano y no como una serie de bandas. Por eso el margen usa el mismo
+ * cálculo que las guías de `HojaTecnica` y las escuadras de `MarcoSeccion`, y
+ * por eso el div NO lleva `w-full`: con `margin-inline` encima, un `width: 100%`
+ * sumaría los dos márgenes al ancho y metería scroll horizontal.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props as Props;
+---
+
+<div class:list={['franja h-8 sm:h-12 lg:h-[68px]', className]} aria-hidden="true"></div>
+
+<style>
+  .franja {
+    /* Mismo cálculo que --hoja-x (HojaTecnica) y --marco-x (MarcoSeccion): el
+     * rayado arranca y termina justo sobre las dos guías verticales. */
+    margin-inline: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+    background-image: repeating-linear-gradient(
+      115deg,
+      transparent 0 8.5px,
+      var(--color-hatch) 8.5px 9.5px
+    );
+  }
+</style>

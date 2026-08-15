@@ -74,16 +74,15 @@ const optimizada = await getImage({
    * `article` porque `article` es el flex item que crece en hover — darle
    * margen ahí restaría del cálculo de `flex-grow` y desalinearía el ancho
    * real de la tarjeta expandida. */
-  /* `border-radius: 8px` rompe el radio cero de §3.3, ya decidido para varios
-   * componentes en esta rama (09/08/2026). Margen solo vertical (10/08/2026,
-   * se quitó el horizontal): el `gap` del contenedor (.obras-fila, en
-   * index.astro) ya da los 12px entre tarjetas, y sin margen-x llegan al
-   * borde de la fila. */
+  /* El `border-radius: 8px` que rompía el radio cero de §3.3 se sacó el
+   * 14/08/2026 (pedido directo de la usuaria de esquinas rectas en todo el
+   * sitio, sin excepciones). Margen solo vertical (10/08/2026, se quitó el
+   * horizontal): el `gap` del contenedor (.obras-fila, en index.astro) ya da
+   * los 12px entre tarjetas, y sin margen-x llegan al borde de la fila. */
   .tarjeta {
     position: relative;
     display: block;
     overflow: hidden;
-    border-radius: 8px;
     background-color: var(--color-navy);
     margin: 56px 0;
   }
@@ -100,23 +99,44 @@ const optimizada = await getImage({
   }
 
   /* scale(1.15) deja 15% de sobrante: el desplazamiento de 20px del hover nunca
-   * descubre el borde de la imagen. */
+   * descubre el borde de la imagen. Blanco y negro por default, color en hover
+   * (14/08/2026): mismo recurso que ya usaban los logos de clientes en
+   * GrillaLogos (`grayscale` + `hover:grayscale-0`), unificado acá para las
+   * fotos de obra. La transición de `filter` va siempre (no solo con
+   * `prefers-reduced-motion: no-preference`): es un cambio de color, no de
+   * movimiento. */
   .marco img {
     height: 100%;
     width: 100%;
     object-fit: cover;
     scale: 1.15;
+    filter: grayscale(1);
+    transition: filter 0.3s ease-out;
   }
 
+  .tarjeta:hover .marco img,
+  .tarjeta:focus-visible .marco img {
+    filter: grayscale(0);
+  }
+
+  /* Sin hover (touch) la foto se ve siempre a color, igual que el resto del
+   * contenido de esta tarjeta en el mismo media query más abajo. */
+  @media (hover: none) {
+    .marco img {
+      filter: grayscale(0);
+    }
+  }
+
+  /* Velo plano (14/08/2026), no degradado: antes era un linear-gradient de
+   * navy/70 a transparente — el cliente pidió sacar los degradados de toda la
+   * Home. El tono es el mismo que tenía el punto más oscuro del degradé
+   * original, así que el contraste contra el texto blanco no empeora (sigue
+   * dando 5.41:1 en el peor caso, foto blanca — ver comentario más abajo). */
   .velo-degrade {
     position: absolute;
     inset: 0;
     z-index: 10;
-    background-image: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--color-navy) 70%, transparent),
-      transparent
-    );
+    background-color: color-mix(in srgb, var(--color-navy) 70%, transparent);
     opacity: 0;
   }
 

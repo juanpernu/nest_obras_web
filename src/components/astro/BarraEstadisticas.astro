@@ -9,13 +9,21 @@
  * (§7.1, sin client:*). `parseValor` separa el prefijo/sufijo no numérico
  * (ej. "+") del número, para poder animar solo la parte numérica y reconstruir
  * el string exacto al final (mismo formato es-AR con "." de miles).
+ *
+ * `sobreBlanco` (14/08/2026): variante para fondo blanco, usada en la Sección 2
+ * del Home tras unificar todos los fondos de sección a blanco excepto el hero.
+ * `/nosotros` sigue montando el componente sin el prop, sobre su banda navy
+ * original — por eso esto es un prop y no un cambio directo de color: la arena
+ * y el navy-200 siguen siendo correctos ahí.
  */
 import { estadisticas } from '@/data/estadisticas';
 
 interface Props {
   class?: string;
+  /** true cuando el componente va sobre fondo blanco en vez de navy. */
+  sobreBlanco?: boolean;
 }
-const { class: className } = Astro.props as Props;
+const { class: className, sobreBlanco = false } = Astro.props as Props;
 
 const parseValor = (valor: string) => {
   const match = valor.match(/^(\D*)([\d.]+)(\D*)$/);
@@ -31,11 +39,16 @@ const parseValor = (valor: string) => {
       const parsed = parseValor(e.valor);
       return (
         <div class="flex flex-col text-center">
-          <dt class="order-2 mt-2 text-sm uppercase tracking-[0.08em] text-navy-200">
+          <dt
+            class:list={[
+              'order-2 mt-2 text-sm uppercase tracking-[0.08em]',
+              sobreBlanco ? 'text-navy-700' : 'text-navy-200',
+            ]}
+          >
             {e.etiqueta}
           </dt>
           <dd
-            class="order-1 text-stat font-light text-arena"
+            class:list={['order-1 text-stat font-light', sobreBlanco ? 'text-navy' : 'text-arena']}
             data-contador={parsed ? '' : undefined}
             data-target={parsed?.target}
             data-prefijo={parsed?.prefijo}
