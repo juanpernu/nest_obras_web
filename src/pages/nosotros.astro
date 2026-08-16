@@ -6,13 +6,11 @@ import Eyebrow from '@/components/astro/Eyebrow.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
-/* Foto REAL, no una `portada` de la colección: todas las portadas de
- * src/assets/obras son placeholders navy con el texto "REEMPLAZAR CON FOTO
- * REAL" (ver docs/DEUDA-TECNICA.md), y a este tamaño el cartel se lee entero.
- * `el-canton-aerea` es una aérea de obra real —la misma que la Home usa como
- * fondo de una destacada— y es hoy la única foto horizontal de obra disponible. */
-import nosotrosImg from '@/assets/obras/el-canton-aerea.jpg';
-import { Image } from 'astro:assets';
+/* Sin imports de imagen: la cabecera volvió a ser solo texto (16/08/2026, ver la
+ * nota de la sección). Si vuelve una foto a esta página, la única real y
+ * horizontal disponible hoy es `@/assets/obras/el-canton-aerea.jpg` — todas las
+ * `portada` de la colección son placeholders navy con el cartel "REEMPLAZAR CON
+ * FOTO REAL" impreso (ver docs/DEUDA-TECNICA.md). */
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -82,28 +80,20 @@ const personasLd = [
   jsonLd={personasLd}
 >
   <HojaTecnica>
-    {/* Cabecera de página. El <h1> va en `text-h1` y no en el `text-hero` del
-        Home: el hero de la Home ocupa la ventana entera sobre video, acá el
-        título vive dentro de la hoja y `text-hero` lo dejaría fuera de escala
-        respecto de los <h2> que siguen. La regla de arena bajo el título es la
-        misma del Home, sin la animación de entrada (ahí encadena con el reveal
-        del hero; acá lo hace el `data-reveal` del bloque). */}
-    {/* Bloque editorial a alto completo, mismo patrón que la Sección 3 del Home
-        (16/08/2026, pedido directo: "que este componente se parezca al de la
-        home que tiene foto a la derecha"). El <h1> y el párrafo de apertura, que
-        antes vivían en una sección aparte a todo el ancho, se mudan acá como
-        columna izquierda: la intro de la página ES el bloque con foto, no un
-        encabezado suelto seguido de otro bloque.
+    {/* Cabecera de página, IDÉNTICA a la de /servicios (16/08/2026, pedido
+        directo: "ajustá este componente para que tenga el mismo layout que el
+        de servicios"). Mismo contenedor, mismas medidas de columna —h1 en
+        `max-w-[900px]`, bajada en `max-w-[680px]`— y mismo ritmo vertical, así
+        las cinco páginas abren exactamente igual.
 
-        FOTO TOPEADA EN 500px DE ALTO (16/08/2026, pedido directo). Antes la
-        sección medía `min-h-dvh` y la foto llenaba la ventana entera, como en
-        el Home; ahora la manda la foto y el alto de la sección lo pone el
-        contenido. Se conserva lo que sí importaba del patrón: el `gap`/`px-6`
-        se anulan en md y se mudan a la columna de texto, así la foto ocupa
-        exactamente el 50% derecho de borde a borde y se apoya contra la guía.
-        `md:items-center` centra la foto contra la columna de texto, que con su
-        `py-[120px]` mide algo más que los 500px. En mobile vuelve a una columna
-        con el recorte 4:3 de siempre.
+        SIN FOTO. La intro pasó por tres formas en el día: texto a todo el ancho,
+        después el bloque partido con foto a la derecha de la Sección 3 del Home,
+        después ese mismo bloque con la foto topeada en 500px. Vuelve a ser solo
+        texto por decisión directa: la apertura de /servicios no lleva imagen y
+        acá tenía que leerse igual. Con eso sale de la página la única foto que
+        tenía —`el-canton-aerea`, que la Home sigue usando como fondo de una
+        destacada—; si más adelante se quiere una imagen en /nosotros, el lugar
+        natural es una banda propia debajo de esta cabecera, no partiendo el h1.
 
         El <h1> va en `text-h1` y no en el `text-hero` del Home: el hero de la
         Home ocupa la ventana entera sobre video, acá el título vive dentro de la
@@ -112,48 +102,20 @@ const personasLd = [
         animación de entrada (ahí encadena con el reveal del hero; acá lo hace el
         `data-reveal` del bloque). */}
     <MarcoSeccion cierra>
-      <section class="bg-white">
-        <div
-          class="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2 md:items-center md:gap-0 md:px-0"
-        >
-          <div class="flex items-center py-20 md:py-[120px] md:pr-12 md:pl-6" data-reveal>
-            <div>
-              <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-              <h1 class="max-w-[640px] text-h1 font-medium text-navy">
-                Más de 30 años construyendo lo que prometemos
-              </h1>
-              <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
-              <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
-                NEST nació de la convicción de que construir una casa merece el mismo nivel de
-                gestión, rigor técnico y atención al cliente que los proyectos corporativos más
-                exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con
-                la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen:
-                plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que
-                prometemos, lo entregamos.
-              </p>
-            </div>
-          </div>
-
-          {/* `absolute inset-0` y no `h-full`: el alto lo pone el contenedor
-              —500px en md— y una imagen en flujo puede quedar midiendo su alto
-              intrínseco en vez del de la caja. Posicionada, siempre la llena.
-
-              `sizes` declara 60vw y no el 50vw real de la columna: el recorte es
-              `object-cover` sobre una caja de ~552×500 contra una foto de
-              4000×2250, así que con el valor exacto el navegador elegía la
-              variante justo por debajo y se veía blanda al escalar. */}
-          <div
-            class="relative aspect-[4/3] w-full overflow-hidden md:aspect-auto md:h-[500px]"
-            data-reveal
-          >
-            <Image
-              src={nosotrosImg}
-              alt="Vista aérea de una obra de NEST en ejecución en El Cantón, Escobar"
-              widths={[640, 960, 1280]}
-              sizes="(min-width: 768px) 60vw, 100vw"
-              class="absolute inset-0 h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
-            />
-          </div>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+          <h1 class="max-w-[900px] text-h1 font-medium text-navy">
+            Más de 30 años construyendo lo que prometemos
+          </h1>
+          <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
+          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
+            NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión,
+            rigor técnico y atención al cliente que los proyectos corporativos más exigentes.
+            Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad
+            de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y
+            calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
+          </p>
         </div>
       </section>
     </MarcoSeccion>
