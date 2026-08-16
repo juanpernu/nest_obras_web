@@ -35,18 +35,29 @@ const { atributos, class: className } = Astro.props as Props;
 ---
 
 <div class:list={[className]}>
-  <div class="flex flex-col gap-8">
-    {
-      atributos.map((a) => (
-        <div>
-          <h3 class="font-medium text-navy">{a.titulo}</h3>
-          <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
-        </div>
-      ))
-    }
-  </div>
+  {/* El contenedor solo existe si hay atributos (16/08/2026). /contacto monta
+      este componente con `atributos={[]}` —renderiza los suyos aparte y usa
+      esto solo por el bloque de NAP— y sin el guard quedaba un <div> vacío en
+      el HTML, además de sumarle su `mt-8` al margen del uso. */}
+  {
+    atributos.length > 0 && (
+      <div class="flex flex-col gap-8">
+        {atributos.map((a) => (
+          <div>
+            <h3 class="font-medium text-navy">{a.titulo}</h3>
+            <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
-  <p class="mt-8 text-sm font-medium uppercase tracking-[0.06em] text-navy-700">
+  <p
+    class:list={[
+      'text-sm font-medium uppercase tracking-[0.06em] text-navy-700',
+      atributos.length > 0 && 'mt-8',
+    ]}
+  >
     También nos podés contactar por:
   </p>
   <address class="mt-4 flex flex-col gap-5 not-italic">

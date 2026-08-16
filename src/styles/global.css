@@ -1,16 +1,32 @@
 @import "tailwindcss";
 
-/* Roboto Condensed self-hosted (Fontsource). Solo pesos 300/400/500 (identidad §2.1)
- * y solo subsets latin + latin-ext (español rioplatense). Importar los CSS
- * all-subset metía cyrillic/greek/vietnamese y base64-inlineaba greek-ext
- * (~62% del presupuesto de CSS) — ver auditoría de performance. Preload del
- * peso 300 (hero/LCP) va en main.astro. */
-@import "@fontsource/roboto-condensed/latin-300.css";
-@import "@fontsource/roboto-condensed/latin-ext-300.css";
-@import "@fontsource/roboto-condensed/latin-400.css";
-@import "@fontsource/roboto-condensed/latin-ext-400.css";
-@import "@fontsource/roboto-condensed/latin-500.css";
-@import "@fontsource/roboto-condensed/latin-ext-500.css";
+/* Roboto Condensed self-hosted (Fontsource). Solo pesos 300/400/500 (identidad §2.1).
+ *
+ * AGREGADOS POR PESO, NO CSS POR SUBSET (16/08/2026, auditoría de performance).
+ * Antes se importaban los seis `latin-*.css` / `latin-ext-*.css` justamente para
+ * no traer cyrillic/greek/vietnamese. El problema es que ESOS ARCHIVOS NO TRAEN
+ * `unicode-range`: sin esa declaración el navegador no puede descartar ninguna
+ * cara y descargaba las seis. Medido en /nosotros, mobile, caché fría:
+ * 106.162 B de woff2 en 6 archivos.
+ *
+ * Los agregados `300.css`/`400.css`/`500.css` sí declaran `unicode-range` por
+ * subset. Declaran más caras —cyrillic, greek, vietnamese—, pero el navegador
+ * resuelve por rango y solo pide las que el texto necesita: 63.369 B en 3
+ * archivos, −42.793 B por ruta (−40% del payload tipográfico). Las caras
+ * `latin-ext` quedan en `unloaded` hasta que aparezca un carácter que las pida.
+ *
+ * Efecto lateral bueno: sin `unicode-range` ganaba la última cara declarada, así
+ * que Chrome elegía `latin-ext` como primaria y el preload de main.astro
+ * apuntaba a una cara que no lo era. Ahora `latin-300` sí es la primaria.
+ *
+ * El costo es ~1 KB de CSS sin comprimir en declaraciones que nunca se
+ * descargan. Verificar al tocar esto que no vuelva el base64-inlining de
+ * greek-ext que hubo en la primera versión (Vite inlinea assets bajo su
+ * `assetsInlineLimit`): si el CSS se dispara, volver a declarar los @font-face
+ * a mano con los `unicode-range` copiados de estos agregados. */
+@import "@fontsource/roboto-condensed/300.css";
+@import "@fontsource/roboto-condensed/400.css";
+@import "@fontsource/roboto-condensed/500.css";
 
 /*
  * Sistema de diseño de Nest Obras — de docs/identidad-visual.md.

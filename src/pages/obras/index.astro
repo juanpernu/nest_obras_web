@@ -42,7 +42,13 @@ const labelBase =
   <HojaTecnica>
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <div class="mx-auto max-w-6xl px-6" data-reveal>
+        {/* Entrada CSS-only y no `data-reveal`: este bloque trae el <h1>, que
+            es el LCP de la ruta. Ver la nota extensa en nosotros.astro —
+            `opacity: 0` gateada por JS lo sacaba de la elegibilidad de LCP y
+            costaba +140 ms medidos en esta página. */}
+        <div
+          class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        >
           <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
           <h1 class="max-w-[900px] text-h1 font-medium text-navy">Obras</h1>
           <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>

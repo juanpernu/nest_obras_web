@@ -103,7 +103,22 @@ const personasLd = [
         `data-reveal` del bloque). */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <div class="mx-auto max-w-6xl px-6" data-reveal>
+        {/* ENTRADA CSS-ONLY, NO `data-reveal` (16/08/2026, auditoría de
+            performance). Este bloque contiene el <h1>, que es el LCP de la
+            página. Con `data-reveal` arrancaba en `opacity: 0` y solo se hacía
+            visible cuando corría el script del layout: Chrome no considera
+            candidato a LCP a un elemento con opacidad cero, así que el LCP
+            dejaba de coincidir con el FCP y pasaba a depender de la ejecución
+            del módulo más la primera entrega del IntersectionObserver —medido:
+            +356 ms en esta ruta, y entre +140 y +424 ms en las otras cuatro.
+
+            La animación es la misma, pero declarada en CSS: arranca en el
+            primer frame, sin esperar JS, así el elemento es candidato a LCP
+            desde el vamos. Es exactamente el recurso que el hero de la Home ya
+            usaba para su <h1> (index.astro), por el mismo motivo. */}
+        <div
+          class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        >
           <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
           <h1 class="max-w-[900px] text-h1 font-medium text-navy">
             Más de 30 años construyendo lo que prometemos
