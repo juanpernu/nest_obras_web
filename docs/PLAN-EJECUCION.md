@@ -446,7 +446,7 @@ Lo que no es contenido editorial va en `src/data/` como TypeScript tipado. `site
 - Subheadline: *30 años construyendo casas y proyectos que cumplen plazo, presupuesto y los más altos estándares. Con un equipo que te acompaña desde el primer trazo.*
 - CTA principal: **Consulta tu proyecto**
 - Link secundario: **Ver obras**
-- Fondo: video existente en `archivo.nestobras.com.ar/archivos/video_nest.mp4`, overlay oscuro al 40%. **En mobile no se carga el video** (§7.2).
+- Fondo: embed de YouTube (`7YZh4hHG7OM`) cargado como fachada, overlay oscuro al 50%. Reemplaza (16/08/2026) al mp4 propio en `public/`, que a su vez venía de `archivo.nestobras.com.ar/archivos/video_nest.mp4`. **En mobile no se carga el video** (§7.2).
 
 **Sección 2 — Estadísticas**
 
@@ -729,9 +729,13 @@ El público llega mayoritariamente desde el teléfono y el CTA principal es un W
 | CLS | < 0,05 |
 
 ### 7.2 Video del hero
-Es el mayor riesgo de rendimiento del sitio. **En viewports menores a 768 px no se carga el video**: solo el poster optimizado. La decisión se toma con `<source media="...">` o no renderizando el elemento — **nunca cargándolo y ocultándolo con CSS**, que descarga igual.
+Es el mayor riesgo de rendimiento del sitio. **En viewports menores a 768 px no se carga el video**: solo el poster. La decisión se toma en JS antes de crear el elemento — **nunca cargándolo y ocultándolo con CSS**, que descarga igual.
 
-En desktop: `preload="none"`, `poster`, `muted playsinline loop`, `aria-hidden="true"`, sin texto embebido. Respetar `prefers-reduced-motion`.
+Desde el 16/08/2026 el fondo es un embed de YouTube y no un `<video>` propio. Un embed pesa más de 1 MB de JS de terceros, así que **no puede estar en el HTML inicial**: se sirve como fachada (solo el poster entra en el camino crítico) y el iframe se inyecta después de `load`, en el primer hueco de idle. En mobile y con `prefers-reduced-motion` no se inyecta nunca.
+
+El iframe va con `pointer-events: none` — es lo que impide que aparezca el chrome del player, que se dispara al hover — y con `loop=1&playlist=<id>` más una red de seguridad por postMessage para que nunca se vea la pantalla final de "más videos".
+
+No hay forma soportada de forzar la resolución: el ABR decide por tamaño renderizado y ancho de banda, así que el player se dimensiona a cubrir el viewport entero.
 
 **El LCP tiene que ser el `<h1>`, no el video.**
 

@@ -124,7 +124,10 @@ const seo = {
 ---
 
 <Layout title={seo.title} description={seo.description}>
-  {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2).
+  {/* Sección 1 — Hero. El LCP es el <h1>; en mobile no se pide un solo byte de
+      video (§7.2). El fondo pasó a ser un embed de YouTube cargado como fachada
+      (16/08/2026, pedido directo) — el porqué y las tres trampas del embed están
+      en HeroVideo.astro.
       El overlay es negro/50 (feedback del cliente, 14/08/2026): antes era
       navy/50 para leer como una sola superficie con el header en reposo
       (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el
@@ -132,11 +135,7 @@ const seo = {
       sección por la misma razón — es lo que se ve un instante antes de que
       cargue el primer frame del video. */}
   <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-black">
-    <HeroVideo
-      srcDesktop="/hero-video.mp4"
-      poster="/hero-poster.jpg"
-      class="absolute inset-0 -z-20 h-full w-full object-cover"
-    />
+    <HeroVideo youtubeId="7YZh4hHG7OM" poster="/hero-poster.jpg" class="-z-20" />
     <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
       {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es

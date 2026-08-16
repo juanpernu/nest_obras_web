@@ -166,7 +166,7 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 - [ ] **Bing Webmaster Tools** + sitemap (alimenta Copilot — del skill `seo-geo`).
 - [ ] **Perfil de Negocio de Google** con NAP idéntico carácter por carácter (§6.7) — bloqueado por la dirección física.
 - [ ] **Deployment Protection APAGADA en producción** (con protección, Googlebot/GPTBot reciben 401, §9). Dejarla solo en previews.
-- [ ] **Dominio**: `nestobras.com.ar` principal + redirect **308** desde `www`; confirmar que `archivo.nestobras.com.ar` (video del hero) sigue apuntando tras la migración de DNS.
+- [ ] **Dominio**: `nestobras.com.ar` principal + redirect **308** desde `www`. (El hero ya no depende de `archivo.nestobras.com.ar`: desde el 16/08/2026 el video es un embed de YouTube.)
 - [ ] **Lighthouse mobile real** ≥95 perf / 100 a11y contra el preview servido (no `astro dev`).
 - [ ] **FAQ + `FAQPage` schema** — recomendación del skill `seo-geo` (mayor palanca GEO). **Es una adición al spec §5 → requiere OK del usuario.** Preguntas candidatas ya armables con contenido real (zonas, proceso, modalidades).
 
