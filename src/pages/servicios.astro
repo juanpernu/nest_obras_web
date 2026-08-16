@@ -56,7 +56,7 @@ const serviciosLd = entries.map((s) => ({
         servicios.map((s) => (
           <div class="grid gap-6 border-t-4 border-arena pt-8 md:grid-cols-[2fr_1fr]">
             <div>
-              <h2 class="text-h2 font-medium text-navy">{s.data.nombre}</h2>
+              <h2 class="text-h2 font-normal text-navy">{s.data.nombre}</h2>
               <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
               <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
                 <s.Content />
@@ -79,14 +79,14 @@ const serviciosLd = entries.map((s) => ({
   {/* Clientes corporativos (tabla reubicada de la ex-página corporativa, §5.3 / p.14) */}
   <section class="bg-navy py-16 text-center text-white md:py-20">
     <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium">Empresas que confiaron en NEST</h2>
+      <h2 class="text-h2 font-normal">Empresas que confiaron en NEST</h2>
       <GrillaLogos class="mt-10" />
     </div>
   </section>
 
   <section class="py-16 md:py-24">
     <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Modalidades de contratación</h2>
+      <h2 class="text-h2 font-normal text-navy">Modalidades de contratación</h2>
       <p class="mt-2 text-navy-700">Cómo preferís trabajar con nosotros.</p>
       <div class="mt-10 grid gap-8 md:grid-cols-2">
         {
@@ -104,7 +104,7 @@ const serviciosLd = entries.map((s) => ({
 
   <section class="bg-navy py-16 text-center text-white md:py-20">
     <div class="mx-auto max-w-3xl px-6">
-      <h2 class="text-h2 font-medium">Consulta tu proyecto sin compromiso</h2>
+      <h2 class="text-h2 font-normal">Consulta tu proyecto sin compromiso</h2>
       <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
     </div>
   </section>

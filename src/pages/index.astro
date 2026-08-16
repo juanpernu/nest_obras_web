@@ -161,7 +161,7 @@ const seo = {
         >Constructora premium · Zona Norte y CABA</Eyebrow
       >
       <h1
-        class="max-w-3xl text-hero font-medium opacity-0 delay-100 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="max-w-3xl text-hero font-normal opacity-0 delay-100 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
       >
         Tu obra en manos expertas <br class="hidden lg:block" />
         <span class="subrayado-hero inline-block whitespace-nowrap">de principio a fin.</span>
@@ -265,55 +265,44 @@ const seo = {
       Fondo blanco (14/08/2026, unificación de fondos): antes era banda navy,
       con Eyebrow/h2/párrafo en sus variantes claras (sobreNavy, blanco,
       navy-100). Pasan a las variantes de fondo claro del resto del sitio. */}
-  {/* A ALTO COMPLETO (15/08/2026, pedido directo: "que este contenedor ocupe
-      todo el alto" + "que esta imagen ocupe el 50% de la derecha y todo el
-      alto"). En desktop la sección deja de medir lo que mide su contenido y
-      pasa a `min-h-dvh`: la grilla llena la ventana y la foto ocupa su mitad
-      derecha completa, de borde a borde vertical. Para que la mitad sea
-      exactamente el 50% el `gap-12` y el `px-6` se anulan en md y se mueven a
-      la columna de texto (`md:pl-6 md:pr-12`); así la foto llega justo hasta el
-      borde del contenedor, que es donde cae la guía derecha de HojaTecnica — el
-      recurso no se pisa, la imagen se apoya contra él.
-
-      En mobile no cambia nada: una columna, el 4:3 de siempre y el `px-6` del
-      contenedor, porque una foto de alto de ventana en pantalla angosta empuja
-      todo el texto fuera del primer scroll. */}
   <MarcoSeccion cierra>
   <section class="bg-white">
-    <div class="mx-auto grid max-w-6xl gap-12 px-6 md:min-h-dvh md:grid-cols-2 md:gap-0 md:px-0">
-      <div class="flex items-center py-20 md:py-[120px] md:pr-12 md:pl-6" data-reveal>
-        <div>
-          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-          <h2 class="max-w-[640px] text-h2 font-medium text-navy">
-            Más de 30 años construyendo lo que prometemos
-          </h2>
-          <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
-            NEST es una empresa constructora especializada en viviendas premium, refacciones y
-            proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer
-            nivel con acompañamiento personalizado para que tu obra sea una experiencia sin
-            sorpresas, desde el primer trazo hasta la llave en la mano.
-          </p>
-        </div>
+    {/* `md:pr-0` (16/08/2026, pedido explícito): sin padding derecho en
+        desktop para que la imagen se adhiera al marco de la sección — en
+        mobile (columna única) el `pr-6` normal se mantiene. */}
+    <div class="mx-auto grid max-w-6xl items-stretch gap-12 pl-6 pr-6 md:pr-0 md:grid-cols-2">
+      {/* `self-center` (16/08/2026): con el grid en `items-stretch` la celda de
+          texto mide lo mismo que la imagen (más alta que su propio contenido),
+          y sin esto el bloque Eyebrow+h2+párrafo quedaba pegado arriba. Centra
+          el CONTENIDO dentro de la celda sin tocar `items-stretch` del grid
+          padre — eso volvería a achicar la imagen a la altura del texto. */}
+      <div class="self-center" data-reveal>
+        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="max-w-[640px] text-h2 font-normal text-navy">
+          Más de 30 años construyendo lo que prometemos
+        </h2>
+        <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
+          NEST es una empresa constructora especializada en viviendas premium, refacciones y
+          proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
+          con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
+          el primer trazo hasta la llave en la mano.
+        </p>
       </div>
 
-      {/* `absolute inset-0` y no `h-full`: en md el alto lo pone la fila de la
-          grilla, y una imagen en flujo con `h-full` dentro de un item que a su
-          vez se estira puede quedar midiendo su alto intrínseco en vez del de la
-          celda. Posicionada, siempre llena la celda.
-
-          `sizes` declara 70vw y no el 50vw real de la columna a propósito: el
-          recorte es `object-cover` sobre un contenedor mucho más alto que ancho
-          (≈576×1329 en desktop) contra una foto vertical de 1687×1906, así que
-          el ancho que hay que descargar lo manda el ALTO de la caja, no su
-          ancho — con 50vw el navegador elegía una variante que después se
-          escalaba ~1.2x y se veía blanda. */}
-      <div class="relative aspect-[4/3] w-full overflow-hidden md:aspect-auto" data-reveal>
+      {/* Sin `aspect-[4/3]` (16/08/2026): antes la imagen tenía una relación de
+          aspecto fija que, con `items-center` en el grid padre, la dejaba más
+          baja que la columna de texto y centrada con aire arriba/abajo. Ahora
+          el contenedor toma `h-full` y el grid pasa a `items-stretch` (default,
+          pero explícito acá) para que ambas columnas compartan la altura real
+          de la fila — `object-cover` en la imagen interna se encarga del
+          recorte sin distorsión. */}
+      <div class="h-full w-full overflow-hidden rounded-boton" data-reveal>
         <Image
           src={quienesSomosImg}
           alt="Obra de NEST en desarrollo"
-          widths={[640, 960, 1280]}
-          sizes="(min-width: 768px) 70vw, 100vw"
-          class="absolute inset-0 h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+          widths={[400, 640, 960]}
+          sizes="(min-width: 768px) 50vw, 100vw"
+          class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
         />
       </div>
     </div>
@@ -323,32 +312,46 @@ const seo = {
   {/* Cierre del capítulo "quiénes somos". */}
   <FranjaRayado />
 
-  {/* Sección 4 — Servicios destacados (3). `overflow-x-clip` porque el marco
-      sangra hasta el borde de la pantalla: `100vw` cuenta el ancho de la barra
-      de scroll y el contenedor no, así que sin recortar sobra un par de píxeles
-      y aparece scroll horizontal. `clip` y no `hidden` para no crear un
-      contenedor de scroll.
+  {/* Sección 4 — Servicios destacados (3). El marco de GrillaServicios se
+      unificó (16/08/2026) con el sistema HojaTecnica/MarcoSeccion: reglas y
+      escuadras en `--marco-x` (relativo a 100% de la sección, sin `100vw`),
+      así que ya no sangra por fuera del contenedor y no hace falta
+      `overflow-x-clip` — el bug de scroll horizontal que forzaba a recortar
+      era del sistema viejo (`50vw`/`100vw` fijos).
 
       Subheader estándar (14/08/2026): antes tenía el mismo recurso
       tipográfico de fondo que la Sección 3, retirado en toda la Home — ver
       esa sección para el detalle de la decisión. Mismo patrón que el resto:
       Eyebrow visible + h2. */}
   <MarcoSeccion>
-  <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
+  <section class="bg-white pt-20 md:pt-[120px]">
     <div class="mx-auto max-w-6xl px-6">
       {/* Eyebrow y h2 comparten wrapper: `data-reveal` va en elementos del
           markup de esta página, y Eyebrow es un componente que solo acepta
           `class`. Entran juntos como un bloque de encabezado. */}
       <div data-reveal>
         <Eyebrow class="mb-2.5">Servicios</Eyebrow>
-        <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
+        <h2 class="text-h2 font-normal text-navy">Lo que construimos</h2>
       </div>
-      <div data-reveal>
-        <GrillaServicios class="mt-4" servicios={serviciosHome} />
-      </div>
+    </div>
+    {/* GrillaServicios queda fuera del contenedor `max-w-6xl px-6`: su propio
+        marco necesita medir 100% contra la sección (full-bleed) para que las
+        escuadras caigan sobre las mismas guías que el resto de la página —
+        el `max-w-6xl` interno para la grilla de tarjetas lo pone el propio
+        componente. Ver comentario de `.bp-frame` en GrillaServicios.astro. */}
+    <div class="mt-4" data-reveal>
+      <GrillaServicios servicios={serviciosHome} />
     </div>
   </section>
   </MarcoSeccion>
+
+  {/* Separación con Obras destacadas (16/08/2026, pedido explícito): sin
+      padding inferior propio (arriba, `pt` solo), el corte con la siguiente
+      sección lo marca esta franja de 80px en vez de aire en blanco — mismo
+      recurso que las otras franjas de "cambio de capítulo", con la altura
+      fija en `!h-20` en vez de la escala responsive por defecto del
+      componente (32/48/68px), porque acá se pidió un tamaño concreto. */}
+  <FranjaRayado class="!h-20" />
 
   {/* Sección 5 — Obras destacadas (3). Subheader estándar (14/08/2026): antes
       tenía el eyebrow "Portfolio" repetido en gran escala como fondo, retirado
@@ -359,28 +362,40 @@ const seo = {
       blanco) a las de fondo claro — variante "secundario" en vez de
       "sobreNavy": mismo subrayado de 3px, en navy en vez de arena (arena sobre
       blanco falla WCAG, §1.2). */}
-  {/* `pb` propio (15/08/2026): antes esta sección cerraba sin padding inferior
-      y se apoyaba en el de la siguiente. Con el marco eso dejaba la regla y las
-      escuadras inferiores montadas sobre las tarjetas. El valor es menor que el
-      `pt` a propósito: una fila de imágenes pide menos aire abajo que un bloque
-      de texto, y así el corte de capítulo que sigue no se infla. */}
+  {/* Sin padding vertical propio (16/08/2026, vuelta atrás sobre el `pb`
+      propio del 15/08/2026): pedido explícito de la usuaria de sacar todo el
+      aire vertical de esta sección. El `<MarcoSeccion cierra>` sigue marcando
+      el límite visual con sus reglas/escuadras, así que la sección puede
+      quedar pegada contra las vecinas sin padding propio. */}
   <MarcoSeccion cierra>
-  <section class="bg-white pt-20 pb-16 md:pt-[120px] md:pb-20">
+  <section class="bg-white">
     <div class="mx-auto max-w-6xl px-6">
       <div class="flex items-end justify-between gap-4" data-reveal>
-        <div>
+        <div class="mt-[120px]">
           <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
-          <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
+          <h2 class="text-h2 font-normal text-navy">Obras destacadas</h2>
         </div>
         <Boton href="/obras" variante="secundario" class="whitespace-nowrap">Ver todas</Boton>
       </div>
     </div>
     {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
-        grid de columnas fijas no permite (ver TarjetaObraHover). `mx-auto
-        max-w-6xl px-6` (10/08/2026): antes la fila era full-bleed, ahora
-        respeta el mismo margen que el encabezado de arriba. */}
+        grid de columnas fijas no permite (ver TarjetaObraHover). Contenida
+        dentro del marco, sin gap en la fila (16/08/2026, corrección sobre el
+        full-bleed total del 16/08/2026 anterior): las tarjetas siguen
+        pegadas entre sí en el eje de la fila (sin `gap` horizontal), pero la
+        fila ya no llega a los bordes del viewport — el padding lateral usa
+        `var(--marco-x)`, la misma variable que ya calculan las escuadras del
+        `<MarcoSeccion cierra>` que envuelve esta sección (heredada por
+        cascada, sin redefinirla acá), así que el borde de la fila cae
+        exactamente sobre las mismas guías que el resto del sistema de
+        página, en vez del padding fijo `px-6`/`max-w-6xl` del encabezado de
+        arriba. `gap-y-8` es solo vertical: en mobile (`flex-col`) separa las
+        tarjetas apiladas: en desktop (`sm:flex-row`) el `gap` vertical no
+        genera separación horizontal, así que la fila sigue sin gap entre
+        cards en ese eje. */}
     <div
-      class="obras-fila relative z-10 mx-auto mt-10 flex w-full max-w-6xl flex-col gap-3 px-6 sm:flex-row"
+      class="obras-fila relative z-10 mt-10 flex w-full flex-col gap-y-8 sm:flex-row sm:gap-y-0"
+      style="padding-inline: var(--marco-x, 0px);"
       data-reveal
     >
       {
@@ -402,15 +417,30 @@ const seo = {
   {/* Cierre del capítulo "qué hacemos". */}
   <FranjaRayado />
 
-  {/* Sección 6 — Clientes corporativos. `overflow-x-clip` por el mismo motivo
-      que la Sección 4: el reticulado sangra hasta el borde del viewport. */}
+  {/* Sección 6 — Clientes corporativos. `overflow-x-clip` de vuelta (16/08/2026):
+      el fix de `MARGEN` en `GrillaLogos.astro` (anclado a `--marco-x`) no
+      elimina el desborde en la práctica — verificado con Playwright, sigue
+      habiendo ~20px de scroll horizontal en 375/768px. La causa probable es
+      que `%` dentro de un custom property se resuelve tarde, contra el
+      elemento que lo consume, no contra donde se declaró `--marco-x`: al
+      heredar por cascada a un contexto de ancho distinto, el cálculo no da
+      lo mismo que en `MarcoSeccion`. No vale la pena perseguir esto más —
+      `overflow-x-clip` es la salvaguarda simple y ya probada. */}
   <MarcoSeccion>
   <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6 text-center">
-      <h2 class="text-h2 font-medium text-navy" data-reveal>Empresas que confiaron en NEST</h2>
-      <div data-reveal>
-        <GrillaLogos class="mt-10" />
-      </div>
+      <h2 class="text-h2 font-normal text-navy" data-reveal>Empresas que confiaron en NEST</h2>
+    </div>
+    {/* GrillaLogos sin el px-6 fijo de este contenedor (16/08/2026, pedido
+        explícito), pero SIN llegar a pantalla completa: contenida dentro del
+        margen del marco de la sección (`--marco-x`, la misma guía que usan
+        las escuadras de `MarcoSeccion`), igual criterio que `.obras-fila`.
+        El encabezado y el párrafo de abajo siguen con su `mx-auto max-w-6xl
+        px-6` de siempre. */}
+    <div class="mt-10" style={{ paddingInline: 'var(--marco-x, 0px)' }} data-reveal>
+      <GrillaLogos />
+    </div>
+    <div class="mx-auto max-w-6xl px-6 text-center">
       {/* COPY PROVISIONAL — reemplazar por la redacción exacta del PDF p.14 (§5.1 Sección 6). */}
       <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-700" data-reveal>
         Trabajamos para empresas que no dejan nada librado al azar. Si NEST pasó el filtro de una
@@ -432,7 +462,7 @@ const seo = {
         <div class="mx-auto max-w-6xl px-6">
           <div class="text-center" data-reveal>
             <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
-            <h2 class="text-h2 font-medium text-navy">La obra habla, pero el cliente confirma</h2>
+            <h2 class="text-h2 font-normal text-navy">La obra habla, pero el cliente confirma</h2>
           </div>
           <div data-reveal>
             <CarruselTestimonios class="mt-12" testimonios={testimonios} />
@@ -455,24 +485,56 @@ const seo = {
   <MarcoSeccion cierra>
   <section class="bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6">
-      <div data-reveal>
-        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-        <h2 class="text-h2 font-medium text-navy">El equipo detrás de cada obra</h2>
+      {/* Botón al otro extremo del título (16/08/2026, pedido explícito) —
+          mismo patrón `flex items-end justify-between` que ya usa el
+          encabezado de Obras destacadas. */}
+      <div class="flex items-end justify-between gap-4" data-reveal>
+        <div>
+          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+          <h2 class="text-h2 font-normal text-navy">El equipo detrás de cada obra</h2>
+        </div>
+        <Boton href="/nosotros" variante="secundario" class="whitespace-nowrap">
+          Ver todo el equipo →
+        </Boton>
       </div>
       <div class="mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
         {
           equipo.map((m) => (
             <div>
+              {/* Foto arriba del texto (16/08/2026, pedido explícito). El
+                  schema de `equipo` ya tiene `foto` opcional (§content.config)
+                  pero ninguna entrada la carga todavía: mientras tanto se ve
+                  un placeholder con las iniciales, mismo tratamiento
+                  (blanco y negro / color en hover) que el resto de las fotos
+                  del sitio en cuanto se suba una imagen real. */}
+              <div class="mb-4 aspect-square w-full max-w-[220px] overflow-hidden bg-navy-50">
+                {m.data.foto ? (
+                  <Image
+                    src={m.data.foto}
+                    alt={m.data.nombre}
+                    width={440}
+                    height={440}
+                    class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+                  />
+                ) : (
+                  <div
+                    class="flex h-full w-full items-center justify-center text-h2 font-medium text-navy-200"
+                    aria-hidden="true"
+                  >
+                    {m.data.nombre
+                      .replace(/^(Arq\.|Ing\.)\s*/, '')
+                      .split(' ')
+                      .map((p) => p[0])
+                      .join('')}
+                  </div>
+                )}
+              </div>
               <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
               <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">{m.data.rol}</p>
               <p class="mt-2 text-sm text-navy-700">{m.data.credenciales.join(' · ')}</p>
             </div>
           ))
         }
-      </div>
-      {/* El `data-reveal` va en un wrapper: Boton solo acepta `class`. */}
-      <div class="mt-8" data-reveal>
-        <Boton href="/nosotros" variante="secundario">Ver todo el equipo →</Boton>
       </div>
     </div>
   </section>
@@ -491,46 +553,36 @@ const seo = {
       El fondo fotográfico agregado el 10/08/2026 se sacó el 14/08/2026 (feedback
       directo del cliente en la Home): la sección vuelve a ser blanco liso, sin
       foto de por medio. */}
+  {/* `pb` propio, achicado (16/08/2026): esta es la última sección antes del
+      Footer del layout. Mismo criterio que ya usa Obras destacadas (Sección
+      5): `pt`/`pb` asimétrico en vez del `py` parejo, para que la sección no
+      deje los 120px de aire de siempre justo antes del footer. El `pt` no se
+      toca — es el aire después de la sección anterior. */}
   <MarcoSeccion cierra>
-  <section id="contacto" class="bg-white py-20 md:py-[120px]">
+  <section id="contacto" class="bg-white pt-20 pb-6 md:pt-[120px] md:pb-10">
     <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
       {/* Subheader estándar (14/08/2026): antes tenía el mismo recurso
           tipográfico de fondo que el resto, retirado en toda la Home — ver
           Sección 3. */}
       <div data-reveal>
         <Eyebrow class="mb-2.5">Contacto</Eyebrow>
-        <h2 class="text-h2 font-medium text-navy">Contanos de tu proyecto</h2>
+        <h2 class="text-h2 font-normal text-navy">Contanos de tu proyecto</h2>
         <p class="mt-3 text-navy-700">
           Respondemos en menos de 24 horas en días hábiles. Sin compromiso.
         </p>
         <TimelineContacto class="mt-10" atributos={bloquesDeConfianza} />
       </div>
 
-      {/* Card GLASS, con el mismo tratamiento que el header scrolleado
-          (15/08/2026, pedido directo: "que este componente tenga el mismo
-          background con estilos tipo glass — revisá los estilos del navbar
-          para replicarlos"). Los cuatro valores salen tal cual de Nav.astro:
-          `bg-white/70` + `backdrop-blur-md` + `border-navy-200` + la sombra
-          `0_12px_40px_rgba(0,0,0,0.1)`. Es la misma excepción a §3.3 (sin
-          sombras) que el header ya tenía abierta desde el 06/08/2026, no una
-          nueva.
-
-          Reemplaza al navy sólido del 14/08/2026. Como el fondo de la card
-          pasa de oscuro a claro, `FormularioConsulta` deja de recibir
-          `sobreNavy` y vuelve a su cromática clara: labels y texto en navy,
-          campos con borde navy-600 (3.4:1, límite de control WCAG 1.4.11) y
-          botón arena sólido sobre navy (7.91, AAA). Con `sobreNavy` el
-          formulario es blanco sobre transparente y acá sería ilegible.
-
-          Nota de criterio: la sección es blanco liso, así que el `blur` no
-          tiene nada detrás que difuminar — lo que separa la card del fondo son
-          el borde navy-200 y la sombra, igual que le pasa al header cuando
-          flota sobre una sección blanca. */}
-      <div
-        class="border border-navy-200 bg-white/70 p-6 shadow-[0_12px_40px_rgba(0,0,0,0.1)] backdrop-blur-md md:p-10"
-        data-reveal
-      >
-        <FormularioConsulta />
+      {/* Card sólido (14/08/2026): sin la foto detrás, el glass (navy
+          translúcido + blur) no tenía nada fotográfico que dejar entrever —
+          quedaba un efecto de vidrio sobre blanco liso, sin justificación.
+          Pasa a navy sólido: mismo acento de color que distingue esta card
+          del resto de la sección (blanca), sin blur ni sombra (`shadow-lg`
+          también se saca acá — la identidad no admite sombras, §3.3).
+          `FormularioConsulta` sigue recibiendo `sobreNavy` porque el fondo
+          sigue siendo oscuro, solo que ahora sólido en vez de translúcido. */}
+      <div class="bg-navy p-6 md:p-10" data-reveal>
+        <FormularioConsulta sobreNavy />
       </div>
     </div>
   </section>

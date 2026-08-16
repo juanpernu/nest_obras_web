@@ -2,38 +2,46 @@
 /**
  * Tarjetas de servicios (§5.1 Sección 4).
  *
- * SIN LÍNEAS (15/08/2026, pedido directo: "elimina las líneas/bordes que tienen
- * los items de este contenedor"). Hasta acá el bloque llevaba el marco
- * "blueprint" portado del proto Glass (07/08/2026): dos reglas horizontales que
- * sangraban hasta el borde del viewport, cuatro verticales —las dos de los
- * extremos más un divisor de 1px entre tarjetas, como columna real de la grilla
- * y no como `gap`— y una marca de registro de 3px en cada intersección. Se fue
- * todo: reglas, verticales, divisores y marcas. Es el mismo pedido que vació de
- * líneas a GrillaLogos y a TimelineContacto el mismo día.
+ * Marco unificado con el sistema de página (16/08/2026, pedido de la usuaria):
+ * antes esta grilla dibujaba su propio marco "blueprint" (verticales dasheadas
+ * en los bordes del propio contenedor + puntos sólidos de 3px), un lenguaje
+ * distinto y desalineado del resto de la Home. Ahora usa exactamente la misma
+ * técnica que `MarcoSeccion.astro`: dos reglas horizontales en `--color-rule`
+ * sólido (no gradiente/máscara) y cuatro escuadras en L de 9px con 1.5px de
+ * borde en navy, posicionadas con el mismo cálculo `--marco-x` que las guías
+ * de `HojaTecnica` — así las esquinas de esta grilla caen exactamente sobre
+ * las mismas guías verticales que el resto de la página, en vez de sobre los
+ * bordes del propio contenedor (que es lo que generaba el desalineamiento).
  *
- * Lo que SÍ se conserva es la distribución, que era la condición explícita: tres
- * columnas iguales en desktop, apiladas en mobile, y los 44px de aire arriba y
- * abajo que antes daba el sobresalir de las verticales (`--bp-over`).
+ * Para que `--marco-x` mida contra el mismo 100% que usa `MarcoSeccion` (el
+ * ancho de la sección, no el `max-w-6xl` de la columna de contenido), este
+ * componente se monta FUERA del `<div class="mx-auto max-w-6xl px-6">` de la
+ * sección (ver `index.astro`) y trae su propio contenedor `max-w-6xl` interno
+ * para la grilla de tarjetas. `.bp-frame` es el bloque full-bleed que porta el
+ * marco; adentro, un wrapper angosto centra las tarjetas.
  *
- * Con el marco se fue también el padding de la tarjeta (15/08/2026, segundo
- * pedido: "que ocupen, relativamente, todo el ancho del componente"). Esos 48px
- * existían para despegar el texto de los divisores verticales; sin líneas eran
- * ancho muerto y dejaban el contenido en 272px de una columna de 368px. Ahora la
- * separación la da el `gap` de la grilla y cada item ocupa su tercio completo.
- * Se fue con ellos el `background-color` blanco del hover, que además era letra
- * muerta desde que la Sección 4 pasó a fondo blanco (14/08/2026): pintaba blanco
- * sobre blanco.
+ * Mismo criterio que `MarcoSeccion.astro` — si cambia una técnica ahí
+ * (grosor de escuadra, color de regla), replicarlo acá. No se extrajo a un
+ * partial compartido porque son ~20 líneas de CSS con selectores propios
+ * (`.bp-*` vs `.marco-*`); duplicar con este comentario es más simple que una
+ * abstracción nueva para dos usos.
  *
- * Como ya no hay divisores intercalados, las columnas se generan a partir de
- * `servicios.length` en vez del `1fr auto 1fr auto 1fr` fijo de antes, que
- * asumía exactamente tres items.
+ * Sin sangrado a `100vw`: a diferencia del blueprint viejo (que extendía los
+ * trazos por `calc((100vw - 100%) / 2)` para llegar al borde de pantalla,
+ * ignorando el ancho de la scrollbar), acá `left: 0; right: 0` alcanza porque
+ * `.bp-frame` ya es un bloque de ancho completo — cero `100vw` en el archivo.
  *
- * Cromática: el acento sobre fondo claro es NAVY (§1.2, la arena sobre claro no
- * pasa WCAG); la arena queda para el fondo de la píldora del ícono, donde es
- * superficie y no trazo.
+ * El separador entre tarjetas (`.srv-div` en desktop, borde inferior en
+ * mobile apilado) es un recurso interno de la grilla, no del marco de página:
+ * sigue en `--color-rule` sólido pero no lleva escuadras — esas quedan
+ * reservadas para las 4 esquinas del marco general.
  *
- * Tipografía por tokens locales: el proto usa 22px/14px fijos y acá van
- * `text-h3` y `text-sm`, que escalan con el resto del sitio.
+ * Cromática: fondo claro (navy-50/blanco), trazo y escuadras en navy — la
+ * arena sobre fondo claro no pasa WCAG y el acento en claro es navy (§1.2).
+ * La arena queda para la píldora del ícono, donde es fondo y no trazo.
+ *
+ * Tipografía por tokens locales: `text-h3` y `text-sm`, que escalan con el
+ * resto del sitio.
  *
  * Todo es CSS: sin JS y sin `client:*` (§7.1).
  */
@@ -51,127 +59,192 @@ interface Props {
 const { servicios, class: className } = Astro.props as Props;
 ---
 
-<div class:list={['bp-frame', className]}>
-  <div class="srv-grid" style={{ '--srv-cols': String(servicios.length) }}>
-    {
-      servicios.map((s) => (
-        <div class="srv-card">
-          <span class="srv-ico" aria-hidden="true">
-            {s.icono === 'vivienda' && (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M3 10.5 12 3l9 7.5" />
-                <path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5" />
-                <path d="M9.75 21v-6.25h4.5V21" />
-              </svg>
-            )}
-            {s.icono === 'corporativo' && (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M3.5 21h17" />
-                <path d="M5.5 21V6.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V21" />
-                <path d="M13.5 21V11h4.5a1 1 0 0 1 1 1v9" />
-                <path d="M8 9h3M8 12.5h3M8 16h3M16 14.5h1" />
-              </svg>
-            )}
-            {s.icono === 'direccion' && (
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
-                <rect x="9" y="2.75" width="6" height="3.5" rx="1" />
-                <path d="M8.75 11.5l1.5 1.5 3-3" />
-                <path d="M14.75 16.25h1.5M8.75 16.25h3" />
-              </svg>
-            )}
-          </span>
+<div class:list={['bp-frame relative', className]}>
+  {/* Marco: dos reglas horizontales sólidas + 4 escuadras en L, mismo criterio
+      que MarcoSeccion. */}
+  <span class="bp-regla bp-regla--sup" aria-hidden="true"></span>
+  <span class="bp-regla bp-regla--inf" aria-hidden="true"></span>
+  <span class="bp-esq bp-esq--si" aria-hidden="true"></span>
+  <span class="bp-esq bp-esq--sd" aria-hidden="true"></span>
+  <span class="bp-esq bp-esq--ii" aria-hidden="true"></span>
+  <span class="bp-esq bp-esq--id" aria-hidden="true"></span>
 
-          <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
-          <p class="srv-desc text-sm leading-relaxed font-light text-navy-700">{s.texto}</p>
-        </div>
-      ))
-    }
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="srv-grid">
+      {
+        servicios.map((s, i) => (
+          <>
+            {i > 0 && <div class="srv-div" aria-hidden="true" />}
+            <div class="srv-card">
+              <span class="srv-ico" aria-hidden="true">
+                {s.icono === 'vivienda' && (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M3 10.5 12 3l9 7.5" />
+                    <path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5" />
+                    <path d="M9.75 21v-6.25h4.5V21" />
+                  </svg>
+                )}
+                {s.icono === 'corporativo' && (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M3.5 21h17" />
+                    <path d="M5.5 21V6.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1V21" />
+                    <path d="M13.5 21V11h4.5a1 1 0 0 1 1 1v9" />
+                    <path d="M8 9h3M8 12.5h3M8 16h3M16 14.5h1" />
+                  </svg>
+                )}
+                {s.icono === 'direccion' && (
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M9 4.5H7a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 7 20.5h10a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 17 4.5h-2" />
+                    <rect x="9" y="2.75" width="6" height="3.5" rx="1" />
+                    <path d="M8.75 11.5l1.5 1.5 3-3" />
+                    <path d="M14.75 16.25h1.5M8.75 16.25h3" />
+                  </svg>
+                )}
+              </span>
+
+              <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
+              <p class="srv-desc text-sm leading-relaxed font-light text-navy-700">{s.texto}</p>
+            </div>
+          </>
+        ))
+      }
+    </div>
   </div>
 </div>
 
 <style>
   .bp-frame {
-    /* Lo que antes sobresalían las verticales por fuera de las horizontales.
-     * Las líneas ya no están (15/08/2026) pero el aire sí: es el respiro que el
-     * bloque tenía arriba y abajo, y sacarlo cambiaría la distribución, que era
-     * justamente lo que había que conservar. */
-    --bp-over: 44px;
-
-    position: relative;
+    /* Idéntico al `--marco-x` de MarcoSeccion / `--hoja-x` de HojaTecnica:
+     * las escuadras caen sobre las mismas guías de página. */
+    --marco-x: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+    /* Sin aire entre las reglas y la grilla de tarjetas (16/08/2026, pedido
+     * explícito): antes había 44px de padding acá (--bp-over); las tarjetas
+     * quedan pegadas directo contra las reglas del marco. */
+    --bp-over: 0px;
     padding: var(--bp-over) 0;
   }
 
-  /* La separación entre items la hace el `gap`, no el padding de la tarjeta
-   * (15/08/2026, pedido: "los 3 items separalos en 3 columnas que ocupen,
-   * relativamente, todo el ancho del componente"). Antes era `gap: 0` y cada
-   * `.srv-card` traía 48px de padding en desktop: la columna medía 368px pero el
-   * contenido solo 272px, con 48px muertos contra cada borde del contenedor y 96
-   * entre items. Ahora el contenido de cada columna arranca en el borde de su
-   * tercio y el bloque llega de punta a punta de los 1104px. */
+  /* Reglas horizontales: sólidas en --color-rule, igual que .marco-regla. */
+  .bp-regla {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: 1px;
+    background-color: var(--color-rule);
+    pointer-events: none;
+  }
+  .bp-regla--sup {
+    top: 0;
+  }
+  .bp-regla--inf {
+    bottom: 0;
+  }
+
+  /* Escuadras: cuadrado de 9px con dos lados en navy — misma técnica que
+   * .marco-esq en MarcoSeccion.astro. */
+  .bp-esq {
+    position: absolute;
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--color-navy);
+    pointer-events: none;
+  }
+  .bp-esq--si {
+    top: 0;
+    left: var(--marco-x);
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .bp-esq--sd {
+    top: 0;
+    right: var(--marco-x);
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+  .bp-esq--ii {
+    bottom: 0;
+    left: var(--marco-x);
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .bp-esq--id {
+    bottom: 0;
+    right: var(--marco-x);
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+
   .srv-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    gap: 0;
+  }
+
+  /* Divisor interno entre tarjetas (desktop): línea sólida en --color-rule,
+   * sin escuadras — esas quedan para las 4 esquinas del marco general. */
+  .srv-div {
+    display: none;
+    width: 1px;
+    background-color: var(--color-rule);
   }
 
   .srv-card {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    overflow: hidden;
+    padding: 1.25rem;
+    /* La superficie aparece solo en hover: en reposo la tarjeta es el fondo de
+     * la sección, delimitada nada más que por el marco. */
+    background-color: transparent;
+    transition: background-color 0.3s;
+  }
+  .srv-card:hover {
+    background-color: #fff;
   }
 
-  /* Cuadrado con radio del botón y trazo navy de 1px (09/08/2026): antes era
-   * una píldora.
-   *
-   * NAVY TRANSLÚCIDO (15/08/2026, pedido directo: "bg sólido azul, con
-   * transparencia como el navbar"). Reemplaza al rayado diagonal que había
-   * durado unas horas, y antes de eso al arena-200 plano. Es la misma receta
-   * glass del header scrolleado —fill translúcido + blur + borde— pero en navy
-   * en vez de blanco: `bg-white/70` allá, navy al 70% acá, y el mismo
-   * `blur(12px)` del `backdrop-blur-md` de Tailwind.
-   *
-   * El ícono TIENE que pasar a blanco. Navy al 70% sobre el blanco de la sección
-   * compone #4D6E89, y el trazo navy que había antes da 2.53 contra eso: se
-   * borraba. En blanco da 5.37, holgado para un gráfico (WCAG 1.4.11 pide 3:1).
-   * El borde se queda en navy sólido: contra el fill al 70% se lee como un
-   * escalón de tono y es lo que le sigue dando canto al cuadrado.
-   *
-   * El `backdrop-filter` es, hoy, decorativo: la Sección 4 es blanco liso y no
-   * hay nada detrás que difuminar. Va igual porque el pedido fue replicar el
-   * tratamiento del navbar, y porque el día que atrás haya una foto o una
-   * textura el efecto aparece solo. Si se busca ahorrar la capa de composición
-   * (3 chips), sacarlo no cambia nada de lo que se ve. */
+  /* Apilado (mobile): sin divisores verticales, se separan con un borde
+   * inferior sólido del mismo --color-rule que el resto del marco. */
+  .srv-card:not(:last-child) {
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  /* Cuadrado con radio del botón (09/08/2026): antes era una píldora. Sin
+   * trazo (16/08/2026, pedido de la usuaria): el fondo arena-200 solo, contra
+   * el fondo blanco/navy-50 de la sección, ya diferencia el contenedor sin
+   * necesitar el borde navy de 1px. */
   .srv-ico {
     width: 56px;
     height: 56px;
     flex: 0 0 auto;
     border-radius: var(--radius-boton);
-    border: 1px solid var(--color-navy);
-    background-color: color-mix(in srgb, var(--color-navy) 70%, transparent);
-    backdrop-filter: blur(12px);
-    color: #fff;
+    background: var(--color-arena-200);
+    color: var(--color-navy);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -186,13 +259,25 @@ const { servicios, class: className } = Astro.props as Props;
     margin-top: 1.125rem;
   }
 
+  @media (min-width: 768px) {
+    .srv-card {
+      padding: 2rem;
+    }
+  }
+
   @media (min-width: 1024px) {
-    /* Una columna por servicio. Antes era `1fr auto 1fr auto 1fr`: los `auto`
-     * eran los divisores de 1px, que ya no existen (15/08/2026), y el valor
-     * fijo daba por sentado que los servicios eran exactamente tres. */
     .srv-grid {
-      grid-template-columns: repeat(var(--srv-cols, 3), minmax(0, 1fr));
-      gap: 3rem;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+    }
+    .srv-div {
+      display: block;
+    }
+    .srv-card {
+      padding: 3rem;
+    }
+    /* En columnas, el separador lo hacen los divisores verticales. */
+    .srv-card:not(:last-child) {
+      border-bottom: none;
     }
   }
 </style>

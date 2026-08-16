@@ -1,21 +1,21 @@
 ---
 /**
- * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente):
- * los 3 atributos de confianza, y debajo los datos de contacto con ícono.
+ * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente).
+ * Timeline de 3 atributos con nodos sobre una línea vertical de referencia,
+ * que interrumpen las líneas horizontales al superponerse (z-index), seguido de
+ * un separador y los datos de contacto con ícono.
  *
- * SIN LÍNEAS (15/08/2026, pedido directo: "mismo fix de los bordes/líneas en
- * este componente"). Era un timeline literal: una vertical de referencia que
- * corría de punta a punta del bloque, una horizontal por fila —enmascaradas
- * para desvanecerse en los extremos— y un nodo de 4px en cada cruce. Se fue
- * todo, nodos incluidos: sin las dos líneas que unían, los nodos quedaban como
- * tres puntos sueltos. Con las líneas se fue también la sangría que existía
- * para dejarles lugar, así que los atributos arrancan contra el borde de la
- * columna. Es la misma pasada que vació de trazo a GrillaServicios,
- * GrillaLogos y al riel de CarruselTestimonios.
+ * Todas las líneas son sólidas desde el 15/08/2026 (antes eran dasheadas, por
+ * `repeating-linear-gradient`): se sacó el dasheado de todo el sitio a favor
+ * del sistema de marco "hoja técnica". Siguen enmascaradas para desvanecerse en
+ * los extremos en vez de cortar en seco, igual que el reticulado de GrillaLogos
+ * y el marco de GrillaServicios, pero acá puertas adentro de la columna en vez
+ * de sangrando fuera de ella.
  *
- * Lo que NO se tocó son las cajas de los íconos de contacto: no son líneas del
- * sistema de marco sino la píldora de ícono del sitio (borde navy + fondo
- * arena-200), el mismo componente visual que usa GrillaServicios.
+ * Los dos niveles del sistema se ven bien acá: la vertical es ESTRUCTURA —une
+ * los tres nodos, si no se lee el timeline deja de existir— y por eso va en
+ * navy a baja opacidad; las horizontales son separadores y van en la regla
+ * casi subliminal (`--color-rule`), como el resto del marco.
  *
  * El NAP (teléfono, email, dirección) sale de site.ts, nunca hardcodeado, para
  * ser idéntico carácter por carácter en todos lados (§6.7).
@@ -35,7 +35,12 @@ const { atributos, class: className } = Astro.props as Props;
 ---
 
 <div class:list={[className]}>
-  <div class="flex flex-col gap-8">
+  {/* Sin línea vertical, sin líneas horizontales entre filas, sin nodos
+      (16/08/2026, pedido explícito): antes cada fila tenía un separador
+      horizontal con un punto de referencia y una línea vertical de fondo
+      uniéndolos, todo el "timeline" visual. Ahora son bloques de texto
+      apilados en flujo simple, sin ningún trazo decorativo. */}
+  <div class="flex flex-col gap-5">
     {
       atributos.map((a) => (
         <div>

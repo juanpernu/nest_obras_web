@@ -55,10 +55,14 @@ const optimizada = await getImage({
       />
     </div>
 
-    {/* Degradé navy/70 → transparente, solo en hover/foco: deja ver la imagen
-     * arriba sin perder la legibilidad del texto, que vive abajo. Peor caso
-     * (imagen blanca) da 5.41:1 contra texto blanco. En reposo la foto se ve
-     * limpia — el velo plano del 30% se quitó el 07/08/2026. */}
+    {/* Degradé navy/70 → transparente, acotado al 20% inferior de la tarjeta
+     * (16/08/2026, pedido explícito de la usuaria — excepción puntual a la
+     * regla de "sin degradados en toda la Home" del 14/08/2026, que sigue
+     * vigente para el resto del sitio). Antes era un velo PLANO que cubría el
+     * 100% de la tarjeta (`inset: 0`); ahora es un gradiente de abajo hacia
+     * arriba, más opaco donde vive el texto y transparente antes de llegar al
+     * tope del bloque, para dejar ver la foto limpia arriba. Solo aparece en
+     * hover/foco — en reposo la foto se ve entera. */}
     <div aria-hidden="true" class="velo-degrade"></div>
 
     <div class="texto">
@@ -69,22 +73,19 @@ const optimizada = await getImage({
 </article>
 
 <style>
-  /* Margen entre tarjetas (09/08/2026): antes eran full-bleed, pegadas entre
-   * sí y contra los bordes de la fila. El margen va en `.tarjeta` y no en
-   * `article` porque `article` es el flex item que crece en hover — darle
-   * margen ahí restaría del cálculo de `flex-grow` y desalinearía el ancho
-   * real de la tarjeta expandida. */
   /* El `border-radius: 8px` que rompía el radio cero de §3.3 se sacó el
    * 14/08/2026 (pedido directo de la usuaria de esquinas rectas en todo el
-   * sitio, sin excepciones). Margen solo vertical (10/08/2026, se quitó el
-   * horizontal): el `gap` del contenedor (.obras-fila, en index.astro) ya da
-   * los 12px entre tarjetas, y sin margen-x llegan al borde de la fila. */
+   * sitio, sin excepciones). Sin margin (16/08/2026, pedido explícito de la
+   * usuaria): el margen vertical del 10/08/2026 se saca por completo. El
+   * espaciado entre tarjetas apiladas en mobile ya no es responsabilidad de
+   * la tarjeta individual — lo da `gap-y-8` en `.obras-fila` (index.astro),
+   * así que en desktop (fila) siguen pegadas entre sí sin ningún gap. */
   .tarjeta {
     position: relative;
     display: block;
     overflow: hidden;
     background-color: var(--color-navy);
-    margin: 56px 0;
+    margin: 0;
   }
 
   .tarjeta:focus-visible {
@@ -127,21 +128,29 @@ const optimizada = await getImage({
     }
   }
 
-  /* Velo plano (14/08/2026), no degradado: antes era un linear-gradient de
-   * navy/70 a transparente — el cliente pidió sacar los degradados de toda la
-   * Home.
-   *
-   * NEGRO y no navy (15/08/2026, pedido directo): se mantiene la misma
-   * transparencia (70%), solo cambia la tinta. Es el mismo criterio que ya se
-   * había aplicado al overlay del hero (`bg-black/50`, 14/08/2026): un velo
-   * neutro sobre la foto en vez de un tinte de marca. El contraste contra el
-   * texto blanco mejora — negro al 70% sobre el peor caso (foto blanca) compone
-   * #4D4D4D y da 8.5:1, contra los 5.41:1 que daba el navy. */
+  /* Gradiente acotado al 20% inferior (16/08/2026): vuelve el degradado que se
+   * había sacado el 14/08/2026 por pedido del cliente ("sin degradados en toda
+   * la Home") — acá es una excepción puntual pedida explícitamente por la
+   * usuaria para esta tarjeta, no una regresión de aquella decisión. El punto
+   * de partida del gradiente (navy/70, no navy/100) es el mismo tono que tenía
+   * el velo plano anterior en su punto más oscuro, así que el contraste contra
+   * el texto blanco en la base —donde el gradiente está en su punto más
+   * opaco— no empeora (sigue dando 5.41:1 en el peor caso, foto blanca). Hacia
+   * arriba baja a transparente: como el texto vive pegado a la base
+   * (`.texto`, `bottom: 1.25rem`), queda siempre sobre la franja más opaca del
+   * degradé. */
   .velo-degrade {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 20%;
     z-index: 10;
-    background-color: rgb(0 0 0 / 0.7);
+    background-image: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-navy) 70%, transparent) 0%,
+      transparent 100%
+    );
     opacity: 0;
   }
 

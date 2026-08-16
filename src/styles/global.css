@@ -64,7 +64,11 @@
    * no inyecta en la CSS-var de Tailwind v4 y mal-derivó las métricas. */
   --font-sans: "Roboto Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
 
-  --text-hero: clamp(2.125rem, 1.2rem + 4.6vw, 4rem);
+  /* Máximo subido a 70px (4.375rem) — pedido del 16/08/2026. Recalculado para
+   * mantener la misma curva del sitio: el término base+vw sigue tocando el
+   * mínimo en ~320px (mobile) y el máximo en ~960px (donde ya arrancaba a
+   * aplanarse antes), solo que ahora corre hasta 70px en vez de 64px. */
+  --text-hero: clamp(2.125rem, 1rem + 5.6vw, 4.375rem);
   --text-hero--line-height: 1.1;
   --text-hero--letter-spacing: -0.022em;
 
@@ -76,7 +80,10 @@
   --text-h1--line-height: 1.15;
   --text-h1--letter-spacing: -0.01em;
 
-  --text-h2: clamp(1.5rem, 1.3rem + 1.0vw, 2rem);
+  /* Máximo subido a 42px (2.625rem) — pedido del 16/08/2026. Recalculado igual
+   * que --text-hero: toca el mínimo en ~320px y el máximo en ~1120px (mismos
+   * puntos de referencia que antes), para que la curva no dé un salto. */
+  --text-h2: clamp(1.5rem, 1.05rem + 2.25vw, 2.625rem);
   --text-h2--line-height: 1.2;
   --text-h2--letter-spacing: -0.01em;
 
