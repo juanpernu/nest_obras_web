@@ -120,9 +120,9 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
     transition: opacity 0.6s ease;
   }
 
-  /* Se revela recién cuando el player avisa que está reproduciendo, para no
-     mostrar el rectángulo negro del iframe encima del poster. */
-  .hero-video :global(iframe.reproduciendo) {
+  /* La clase la pone el `load` del iframe (ver el script): no puede depender de
+     que YouTube conteste el handshake, o el video queda invisible para siempre. */
+  .hero-video :global(iframe.visible) {
     opacity: 1;
   }
 
@@ -176,11 +176,40 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
       iframe.setAttribute('aria-hidden', 'true');
       iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?${parametros}`;
 
-      iframe.addEventListener('load', () => {
-        /* Handshake del protocolo de eventos del player: sin esto el iframe no
-         * emite onStateChange. Evita tener que cargar iframe_api.js, que serían
-         * otros ~100 KB de JS para lo único que necesitamos. */
+      /* LA VISIBILIDAD NO DEPENDE DE YOUTUBE (16/08/2026). La primera versión
+       * revelaba el iframe recién cuando el player avisaba "reproduciendo" por
+       * postMessage. Medido en local: el handshake no contesta nunca —cero
+       * mensajes de vuelta— así que el video cargaba y se reproducía detrás de
+       * un `opacity: 0` permanente. Es el mismo error que el `data-reveal`
+       * gateado por JS que se arregló en el layout, y acá es peor porque el JS
+       * del que dependía es de un tercero. Ahora revela el `load` del propio
+       * iframe, que siempre dispara; el evento del player, si llega, solo
+       * adelanta el fundido. */
+      let revelado = false;
+      const revelar = () => {
+        if (revelado) return;
+        revelado = true;
+        iframe.classList.add('visible');
+      };
+
+      /* El `listening` se pierde si se manda antes de que el player arranque por
+       * dentro, y no hay evento que avise cuándo está listo: se reintenta. Es la
+       * red del loop, no de la visibilidad, así que si no engancha no se rompe
+       * nada visible. */
+      let respondio = false;
+      let intentos = 0;
+      const pedirEventos = () => {
+        if (respondio || intentos >= 6) return;
+        intentos++;
         enviar(iframe, { event: 'listening', id: 1, channel: 'widget' });
+        setTimeout(pedirEventos, 400);
+      };
+
+      iframe.addEventListener('load', () => {
+        pedirEventos();
+        /* Margen para que el player pinte el primer frame y no se vea el
+         * rectángulo negro del iframe encima del poster. */
+        setTimeout(revelar, 1000);
       });
 
       window.addEventListener('message', (evento) => {
@@ -192,10 +221,11 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
         } catch {
           return;
         }
+        respondio = true;
         if (datos.event !== 'onStateChange') return;
 
         // 1 = reproduciendo, 0 = terminado.
-        if (datos.info === 1) iframe.classList.add('reproduciendo');
+        if (datos.info === 1) revelar();
         if (datos.info === 0) {
           enviar(iframe, { event: 'command', func: 'seekTo', args: [0, true] });
           enviar(iframe, { event: 'command', func: 'playVideo', args: [] });
