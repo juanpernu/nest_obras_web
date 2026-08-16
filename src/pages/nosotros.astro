@@ -88,43 +88,41 @@ const personasLd = [
         respecto de los <h2> que siguen. La regla de arena bajo el título es la
         misma del Home, sin la animación de entrada (ahí encadena con el reveal
         del hero; acá lo hace el `data-reveal` del bloque). */}
-    <MarcoSeccion>
-      <section class="bg-white py-20 md:py-[120px]">
-        <div class="mx-auto max-w-6xl px-6" data-reveal>
-          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-          <h1 class="max-w-[900px] text-h1 font-medium text-navy">
-            Más de 30 años construyendo lo que prometemos
-          </h1>
-          <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
-          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
-            NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión,
-            rigor técnico y atención al cliente que los proyectos corporativos más exigentes.
-            Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad
-            de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y
-            calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
-          </p>
-        </div>
-      </section>
-    </MarcoSeccion>
+    {/* Bloque editorial a alto completo, mismo patrón que la Sección 3 del Home
+        (16/08/2026, pedido directo: "que este componente se parezca al de la
+        home que tiene foto a la derecha"). El <h1> y el párrafo de apertura, que
+        antes vivían en una sección aparte a todo el ancho, se mudan acá como
+        columna izquierda: la intro de la página ES el bloque con foto, no un
+        encabezado suelto seguido de otro bloque.
 
-    {/* Bloque editorial a alto completo, mismo patrón que la Sección 3 del Home:
-        en desktop la sección mide `min-h-dvh`, el `gap`/`px-6` se anulan y se
+        En desktop la sección mide `min-h-dvh`, el `gap`/`px-6` se anulan y se
         mudan a la columna de texto para que la foto ocupe exactamente el 50%
         derecho de borde a borde y se apoye contra la guía. En mobile vuelve a
-        una columna con el recorte 4:3 de siempre. */}
+        una columna con el recorte 4:3 de siempre.
+
+        El <h1> va en `text-h1` y no en el `text-hero` del Home: el hero de la
+        Home ocupa la ventana entera sobre video, acá el título vive dentro de la
+        hoja y `text-hero` lo dejaría fuera de escala respecto de los <h2> que
+        siguen. La regla de arena bajo el título es la misma del Home, sin la
+        animación de entrada (ahí encadena con el reveal del hero; acá lo hace el
+        `data-reveal` del bloque). */}
     <MarcoSeccion cierra>
       <section class="bg-white">
         <div class="mx-auto grid max-w-6xl gap-12 px-6 md:min-h-dvh md:grid-cols-2 md:gap-0 md:px-0">
           <div class="flex items-center py-20 md:py-[120px] md:pr-12 md:pl-6" data-reveal>
             <div>
-              <Eyebrow class="mb-2.5">Cómo nos paramos</Eyebrow>
-              <h2 class="max-w-[640px] text-h2 font-medium text-navy">
-                Ingeniería corporativa aplicada a tu casa
-              </h2>
+              <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+              <h1 class="max-w-[640px] text-h1 font-medium text-navy">
+                Más de 30 años construyendo lo que prometemos
+              </h1>
+              <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
               <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
-                La misma metodología con la que ejecutamos obras para Google, WeWork o PRUNE es la
-                que aplicamos a una vivienda: control diario de avance, presupuesto cerrado y un
-                solo responsable de punta a punta. Cambia la escala, no el estándar.
+                NEST nació de la convicción de que construir una casa merece el mismo nivel de
+                gestión, rigor técnico y atención al cliente que los proyectos corporativos más
+                exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con
+                la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen:
+                plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que
+                prometemos, lo entregamos.
               </p>
             </div>
           </div>
@@ -163,19 +161,32 @@ const personasLd = [
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
         <div class="mx-auto max-w-6xl px-6">
+          {/* Mismos estilos que la Sección 8 del Home (16/08/2026, pedido
+              directo), con el contenido completo de esta página: el preview de
+              la Home muestra nombre + rol + credenciales en una línea, acá va
+              además la bio del .md y las credenciales largas.
+
+              De la Home se toma exactamente: `Eyebrow` + `h2`, la grilla
+              `mt-10 grid gap-8 sm:grid-cols-2` y la escala tipográfica de cada
+              ficha —`text-h3 font-medium text-navy` el nombre, `mt-1 text-sm
+              uppercase tracking-[0.06em] text-navy-700` el rol, `text-sm
+              text-navy-700` las credenciales. Se va la regla de 1px que cada
+              ficha tenía arriba: en la Home el bloque no lleva ningún trazo, la
+              separación la hace el `gap`, y era el último resto del
+              `border-t-4` original de esta página. */}
           <div data-reveal>
-            <Eyebrow class="mb-2.5">El equipo</Eyebrow>
+            <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
             <h2 class="text-h2 font-medium text-navy">Las personas que están detrás de tu obra</h2>
           </div>
-          <div class="mt-10 grid gap-10 md:grid-cols-2" data-reveal>
+          <div class="mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
             {
               equipo.map((m) => (
-                <div class="border-t border-arena pt-6">
+                <div>
                   <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
                   <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
                     {m.data.rolDetalle ?? m.data.rol}
                   </p>
-                  <div class="mt-4 leading-relaxed text-navy-700 [&_p]:mt-0">
+                  <div class="mt-4 font-light leading-relaxed text-navy-700 [&_p]:mt-0">
                     <m.Content />
                   </div>
                   {/* Acá las credenciales van en lista vertical, no en una línea con `·`
@@ -209,13 +220,37 @@ const personasLd = [
             <Eyebrow class="mb-2.5">Proceso</Eyebrow>
             <h2 class="text-h2 font-medium text-navy">Cómo trabajamos, paso a paso</h2>
           </div>
-          <ol class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+          {/* ÍNDICE TIPOGRÁFICO (16/08/2026, pedido directo: "redisñá esto para
+              que quede más tipográfico, manteniendo el contenido"). Los cinco
+              pasos eran tarjetas en una grilla de 3×2, con la última fila
+              incompleta y cada paso encerrado en su propia caja. Ahora son cinco
+              renglones a todo el ancho separados por la regla de 1px del
+              sistema: el mismo recurso con el que la hoja técnica dibuja sus
+              juntas, aplicado al ritmo de lectura.
+
+              Lo que hace el trabajo es el contraste de escala, no una caja: la
+              cifra sube a `text-stat` en peso 300 —el mismo par tamaño/peso del
+              dato editorial de BarraEstadisticas— y queda colgada en su propia
+              columna a la izquierda, como la numeración al margen de un pliego.
+              El título y el texto se reparten las dos columnas restantes, así el
+              ojo baja por tres ejes verticales fijos y los renglones se leen
+              como un índice y no como cinco párrafos sueltos.
+
+              En mobile la grilla colapsa a una columna y la cifra queda arriba
+              de su título: a 375px una columna de 5rem para el número deja el
+              texto en ~200px y se parte cada dos palabras. */}
+          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
             {
               proceso.map((p) => (
-                <li class="border-t border-arena pt-6">
-                  <span class="text-stat font-light text-navy-700">{p.n}</span>
-                  <h3 class="mt-2 text-h3 font-medium text-navy">{p.titulo}</h3>
-                  <p class="mt-2 leading-relaxed font-light text-navy-700">{p.texto}</p>
+                <li class="grid gap-x-10 gap-y-2 py-8 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
+                  <span class="text-stat font-light leading-none text-navy">{p.n}</span>
+                  <h3 class="text-h3 font-medium text-navy">{p.titulo}</h3>
+                  {/* `ch` en Roboto Condensed rinde ~6.4px, así que 64ch ≈ 410px:
+                      medida de lectura cómoda sin dejar la columna a medio usar
+                      (con 52ch el renglón cortaba en 330px y sobraban 190px). */}
+                  <p class="max-w-[64ch] font-light leading-relaxed text-navy-700 md:col-start-2 lg:col-start-3">
+                    {p.texto}
+                  </p>
                 </li>
               ))
             }
