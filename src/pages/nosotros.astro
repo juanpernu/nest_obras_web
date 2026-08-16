@@ -2,6 +2,17 @@
 import Layout from '@/layouts/main.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
 import Boton from '@/components/astro/Boton.astro';
+import Eyebrow from '@/components/astro/Eyebrow.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
+/* Foto REAL, no una `portada` de la colección: todas las portadas de
+ * src/assets/obras son placeholders navy con el texto "REEMPLAZAR CON FOTO
+ * REAL" (ver docs/DEUDA-TECNICA.md), y a este tamaño el cartel se lee entero.
+ * `el-canton-aerea` es una aérea de obra real —la misma que la Home usa como
+ * fondo de una destacada— y es hoy la única foto horizontal de obra disponible. */
+import nosotrosImg from '@/assets/obras/el-canton-aerea.jpg';
+import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -49,99 +60,214 @@ const personasLd = [
 ];
 ---
 
+{/* Alineada al lenguaje de la Home (16/08/2026). La página estaba escrita antes
+    del sistema "hoja técnica" (15/08/2026) y de la unificación de fondos
+    (14/08/2026): tenía dos bandas navy (estadísticas y CTA de cierre), una
+    banda navy-50, cero eyebrows, cero marco y ninguna entrada escalonada. Ahora
+    monta exactamente los mismos componentes y las mismas reglas que la Home:
+
+     - Todo el cuerpo dentro de un único <HojaTecnica>, así las dos guías
+       verticales son dos elementos únicos que miden el 100% del bloque.
+     - Cada sección envuelta en <MarcoSeccion>; `cierra` solo donde la cadena se
+       interrumpe (antes de una <FranjaRayado> o al final).
+     - Tres <FranjaRayado> como cortes de capítulo: quiénes somos → cifras y
+       equipo → cómo trabajamos → contacto.
+     - Fondo blanco en todas las secciones (el navy queda para el footer) y
+       ritmo vertical py-20 / md:py-[120px].
+     - Los subrayados de 4px en arena que separaban las fichas bajan a la regla
+       de 1px del sistema: el trazo grueso competía con las reglas del marco. */}
 <Layout
   title="Quiénes somos | NEST Constructora Zona Norte y CABA"
   description="Conocé al equipo de NEST: Arq. Morena Alegre (MBA IAE, ex WeWork) e Ing. Carlos Alegre (Ing. Civil UBA, ex Benito Roggio). +30 años en Zona Norte y CABA."
   jsonLd={personasLd}
 >
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-3xl px-6">
-      <h1 class="text-h1 font-medium text-navy">Más de 30 años construyendo lo que prometemos</h1>
-      <p class="mt-6 leading-relaxed text-navy">
-        NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor
-        técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más
-        de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura
-        para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos
-        promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
-      </p>
-    </div>
-  </section>
+  <HojaTecnica>
+    {/* Cabecera de página. El <h1> va en `text-h1` y no en el `text-hero` del
+        Home: el hero de la Home ocupa la ventana entera sobre video, acá el
+        título vive dentro de la hoja y `text-hero` lo dejaría fuera de escala
+        respecto de los <h2> que siguen. La regla de arena bajo el título es la
+        misma del Home, sin la animación de entrada (ahí encadena con el reveal
+        del hero; acá lo hace el `data-reveal` del bloque). */}
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+          <h1 class="max-w-[900px] text-h1 font-medium text-navy">
+            Más de 30 años construyendo lo que prometemos
+          </h1>
+          <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
+          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
+            NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión,
+            rigor técnico y atención al cliente que los proyectos corporativos más exigentes.
+            Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad
+            de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y
+            calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
+          </p>
+        </div>
+      </section>
+    </MarcoSeccion>
 
-  <section class="bg-navy py-14">
-    <div class="mx-auto max-w-6xl px-6"><BarraEstadisticas /></div>
-  </section>
-
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Las personas que están detrás de tu obra</h2>
-      <div class="mt-10 grid gap-10 md:grid-cols-2">
-        {
-          equipo.map((m) => (
-            <div class="border-t-4 border-arena pt-6">
-              <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
-              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
-                {m.data.rolDetalle ?? m.data.rol}
+    {/* Bloque editorial a alto completo, mismo patrón que la Sección 3 del Home:
+        en desktop la sección mide `min-h-dvh`, el `gap`/`px-6` se anulan y se
+        mudan a la columna de texto para que la foto ocupe exactamente el 50%
+        derecho de borde a borde y se apoye contra la guía. En mobile vuelve a
+        una columna con el recorte 4:3 de siempre. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white">
+        <div class="mx-auto grid max-w-6xl gap-12 px-6 md:min-h-dvh md:grid-cols-2 md:gap-0 md:px-0">
+          <div class="flex items-center py-20 md:py-[120px] md:pr-12 md:pl-6" data-reveal>
+            <div>
+              <Eyebrow class="mb-2.5">Cómo nos paramos</Eyebrow>
+              <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+                Ingeniería corporativa aplicada a tu casa
+              </h2>
+              <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
+                La misma metodología con la que ejecutamos obras para Google, WeWork o PRUNE es la
+                que aplicamos a una vivienda: control diario de avance, presupuesto cerrado y un
+                solo responsable de punta a punta. Cambia la escala, no el estándar.
               </p>
-              <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
-                <m.Content />
-              </div>
-              {/* Acá las credenciales van en lista vertical, no en una línea con `·`
-                  como en el preview de la Home: son los nombres completos y en una
-                  sola línea se leen como un bloque indistinto. */}
-              <ul class="mt-5 space-y-1.5 text-sm text-navy-700">
-                {(m.data.credencialesDetalle ?? m.data.credenciales).map((c) => (
-                  <li class="flex gap-2.5">
-                    <span aria-hidden="true" class="text-arena-800">
-                      —
-                    </span>
-                    <span>{c}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+          </div>
 
-  <section class="bg-navy-50 py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Cómo trabajamos, paso a paso</h2>
-      <ol class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {
-          proceso.map((p) => (
-            <li>
-              <span class="text-stat font-light text-navy-700">{p.n}</span>
-              <h3 class="mt-2 text-h3 font-medium text-navy">{p.titulo}</h3>
-              <p class="mt-2 leading-relaxed text-navy">{p.texto}</p>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-  </section>
+          {/* `absolute inset-0` y no `h-full` por el mismo motivo que en el Home:
+              en md el alto lo pone la fila de la grilla y una imagen en flujo
+              podría medir su alto intrínseco en vez del de la celda. */}
+          <div class="relative aspect-[4/3] w-full overflow-hidden md:aspect-auto" data-reveal>
+            <Image
+              src={nosotrosImg}
+              alt="Vista aérea de una obra de NEST en ejecución en El Cantón, Escobar"
+              widths={[640, 960, 1280]}
+              sizes="(min-width: 768px) 70vw, 100vw"
+              class="absolute inset-0 h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+            />
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
 
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Nuestros valores</h2>
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
-        {
-          valores.map((v) => (
-            <div class="border-t-4 border-arena pt-6">
-              <h3 class="text-h3 font-medium text-navy">{v.titulo}</h3>
-              <p class="mt-3 leading-relaxed text-navy">{v.texto}</p>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+    {/* Cierre del capítulo "quiénes somos". */}
+    <FranjaRayado />
 
-  <section class="bg-navy py-16 text-center text-white md:py-20">
-    <div class="mx-auto max-w-3xl px-6">
-      <h2 class="text-h2 font-medium">Contá con NEST para tu proyecto</h2>
-      <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
-    </div>
-  </section>
+    {/* Estadísticas. `sobreBlanco` adapta la croma interna del componente al
+        fondo claro (el valor destacado pasa de arena a navy —arena sobre blanco
+        falla WCAG, §1.2— y la etiqueta de navy-200 a navy-700). Antes esta
+        página era el último lugar del sitio con la banda navy original. */}
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <BarraEstadisticas sobreBlanco />
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">El equipo</Eyebrow>
+            <h2 class="text-h2 font-medium text-navy">Las personas que están detrás de tu obra</h2>
+          </div>
+          <div class="mt-10 grid gap-10 md:grid-cols-2" data-reveal>
+            {
+              equipo.map((m) => (
+                <div class="border-t border-arena pt-6">
+                  <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
+                  <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
+                    {m.data.rolDetalle ?? m.data.rol}
+                  </p>
+                  <div class="mt-4 leading-relaxed text-navy-700 [&_p]:mt-0">
+                    <m.Content />
+                  </div>
+                  {/* Acá las credenciales van en lista vertical, no en una línea con `·`
+                      como en el preview de la Home: son los nombres completos y en una
+                      sola línea se leen como un bloque indistinto. */}
+                  <ul class="mt-5 space-y-1.5 text-sm text-navy-700">
+                    {(m.data.credencialesDetalle ?? m.data.credenciales).map((c) => (
+                      <li class="flex gap-2.5">
+                        <span aria-hidden="true" class="text-arena-800">
+                          —
+                        </span>
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    {/* Cierre del capítulo "con quiénes": lo que sigue es el método. */}
+    <FranjaRayado />
+
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">Proceso</Eyebrow>
+            <h2 class="text-h2 font-medium text-navy">Cómo trabajamos, paso a paso</h2>
+          </div>
+          <ol class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+            {
+              proceso.map((p) => (
+                <li class="border-t border-arena pt-6">
+                  <span class="text-stat font-light text-navy-700">{p.n}</span>
+                  <h3 class="mt-2 text-h3 font-medium text-navy">{p.titulo}</h3>
+                  <p class="mt-2 leading-relaxed font-light text-navy-700">{p.texto}</p>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">Valores</Eyebrow>
+            <h2 class="text-h2 font-medium text-navy">Lo que no negociamos</h2>
+          </div>
+          <div class="mt-10 grid gap-8 md:grid-cols-3" data-reveal>
+            {
+              valores.map((v) => (
+                <div class="border-t border-arena pt-6">
+                  <h3 class="text-h3 font-medium text-navy">{v.titulo}</h3>
+                  <p class="mt-3 leading-relaxed font-light text-navy-700">{v.texto}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    {/* Cierre del capítulo: lo que sigue es la acción. */}
+    <FranjaRayado />
+
+    {/* CTA de cierre. Blanco y `secundario` (subrayado navy que crece en hover),
+        no la banda navy con botón `primario` que tenía antes: `primario` es
+        glass con texto blanco y solo funciona sobre navy, y una banda navy acá
+        se pegaba con el footer —también navy— formando un único bloque oscuro
+        de doble alto al final de la página. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Contacto</Eyebrow>
+          <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+            Contá con NEST para tu proyecto
+          </h2>
+          <p class="mt-3 max-w-[560px] text-navy-700">
+            Respondemos en menos de 24 horas en días hábiles. Sin compromiso.
+          </p>
+          <div class="mt-6">
+            <Boton href="/contacto" variante="secundario">Consulta tu proyecto →</Boton>
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
 </Layout>

@@ -1,6 +1,11 @@
 ---
 import Layout from '@/layouts/main.astro';
 import TarjetaObra from '@/components/astro/TarjetaObra.astro';
+import Boton from '@/components/astro/Boton.astro';
+import Eyebrow from '@/components/astro/Eyebrow.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import { getCollection } from 'astro:content';
 
 const obras = (await getCollection('obras')).sort((a, b) => a.data.orden - b.data.orden);
@@ -21,43 +26,89 @@ const labelBase =
 // Título/meta/intro: provisional — reemplazar por la redacción del PDF p.10 (§5.4).
 ---
 
+{/* Alineada al lenguaje de la Home (16/08/2026). Ver la nota extensa de
+    nosotros.astro: mismo criterio y mismas reglas de marco. Específico de esta
+    página: la banda navy de la cabecera pasa a blanco y se suma un CTA de
+    cierre, que era la única de las cinco páginas que no tenía ninguno.
+
+    La grilla sigue montando <TarjetaObra> y no <TarjetaObraHover>: la variante
+    con hover expande la tarjeta apuntada por `flex-grow` y encoge a sus
+    hermanas, un efecto pensado para la fila de TRES destacadas de la Home. En
+    una grilla de 3×N reflowaría filas enteras en cada hover. */}
 <Layout
   title="Obras | NEST Constructora en Zona Norte y CABA"
   description="Viviendas premium, refacciones y proyectos corporativos de NEST en Nordelta, San Isidro, Escobar, Pilar, Tigre y CABA."
 >
-  <section class="bg-navy py-16 text-white md:py-20">
-    <div class="mx-auto max-w-6xl px-6">
-      <h1 class="text-hero font-light">Obras</h1>
-      <p class="mt-4 max-w-2xl leading-relaxed text-navy-100">
-        Viviendas premium, refacciones y proyectos corporativos en Zona Norte del Gran Buenos Aires
-        y CABA.
-      </p>
-    </div>
-  </section>
+  <HojaTecnica>
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
+          <h1 class="max-w-[900px] text-h1 font-medium text-navy">Obras</h1>
+          <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
+          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
+            Viviendas premium, refacciones y proyectos corporativos en Zona Norte del Gran Buenos
+            Aires y CABA.
+          </p>
+        </div>
+      </section>
+    </MarcoSeccion>
 
-  <section class="py-12 md:py-16">
-    <div class="mx-auto max-w-6xl px-6">
-      <fieldset class="mb-10 flex flex-wrap gap-2">
-        <legend class="sr-only">Filtrar obras por tipo</legend>
-        <input type="radio" name="filtro" id="f-todos" class="sr-only" checked />
-        <label for="f-todos" class={labelBase}>Todos</label>
-        {
-          tiposPresentes.map((t) => (
-            <Fragment>
-              <input type="radio" name="filtro" id={`f-${t}`} class="sr-only" />
-              <label for={`f-${t}`} class={labelBase}>
-                {filtroLabels[t]}
-              </label>
-            </Fragment>
-          ))
-        }
-      </fieldset>
+    {/* Cierre del capítulo: lo que sigue es el listado. */}
+    <FranjaRayado />
 
-      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {obras.map((o) => <li data-tipo={o.data.tipo}><TarjetaObra obra={o} /></li>)}
-      </ul>
-    </div>
-  </section>
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          {/* sr-only y no visible: las tarjetas de <TarjetaObra> llevan <h3> y sin
+              este <h2> colgarían directamente del <h1> de la cabecera (salto de
+              jerarquía, §6.2). En la Home el mismo <h3> vive bajo el h2 "Obras
+              destacadas"; acá el encabezado del listado ya lo da el h1 de la
+              página y repetirlo en pantalla sería redundante. */}
+          <h2 class="sr-only">Listado de obras</h2>
+          <fieldset class="mb-10 flex flex-wrap gap-2" data-reveal>
+            <legend class="sr-only">Filtrar obras por tipo</legend>
+            <input type="radio" name="filtro" id="f-todos" class="sr-only" checked />
+            <label for="f-todos" class={labelBase}>Todos</label>
+            {
+              tiposPresentes.map((t) => (
+                <Fragment>
+                  <input type="radio" name="filtro" id={`f-${t}`} class="sr-only" />
+                  <label for={`f-${t}`} class={labelBase}>
+                    {filtroLabels[t]}
+                  </label>
+                </Fragment>
+              ))
+            }
+          </fieldset>
+
+          <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+            {obras.map((o) => <li data-tipo={o.data.tipo}><TarjetaObra obra={o} /></li>)}
+          </ul>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    {/* Cierre del capítulo: lo que sigue es la acción. */}
+    <FranjaRayado />
+
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Contacto</Eyebrow>
+          <h2 class="max-w-[640px] text-h2 font-medium text-navy">
+            ¿Tenés un proyecto parecido?
+          </h2>
+          <p class="mt-3 max-w-[560px] text-navy-700">
+            Contanos y te respondemos en menos de 24 horas hábiles. Sin compromiso.
+          </p>
+          <div class="mt-6">
+            <Boton href="/contacto" variante="secundario">Consulta tu proyecto →</Boton>
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
 
   <style is:global>
     /* Filtro sin JavaScript: radios + :has() (§4.4). El label activo se resalta

@@ -153,6 +153,18 @@ const grafo = {
     <script type="application/ld+json" is:inline set:html={toSafeJson(grafo)} />
   </head>
   <body class="flex min-h-screen flex-col bg-white">
+    {/* Sin JS los bloques con `data-reveal` nunca recibirían la clase que los
+        hace visibles, así que acá se anula su estado inicial. `is:inline` para
+        que Astro no lo procese y el !important pise la regla global de abajo. */}
+    <noscript>
+      <style is:inline>
+        [data-reveal] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      </style>
+    </noscript>
+
     <Nav />
     <main class="flex-1">
       <slot />
@@ -161,3 +173,75 @@ const grafo = {
     {import.meta.env.DEV && <Agentation client:only="react" />}
   </body>
 </html>
+
+{/* Entrada escalonada de los bloques de cada sección — el patrón `.reveal` del
+    proto (09/08/2026). Nació dentro de index.astro y el 16/08/2026 subió acá,
+    cuando el resto de las páginas adoptó el lenguaje de la Home: son cinco
+    páginas que necesitan exactamente las mismas 30 líneas, y copiarlas una vez
+    por página es la forma segura de que un día dejen de estar sincronizadas.
+
+    index.astro conserva su copia scoped: es idéntica en valores y en efecto
+    (la suya gana por especificidad de scope, ambas terminan poniendo
+    `.visible`), y se dejó intacta a propósito para no tocar la Home en esta
+    pasada. Al unificar, borrar la de index.astro. */}
+<style is:global>
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  [data-reveal].visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /* El escalonado no se escribe a mano: cada elemento recibe un delay según su
+   * posición DENTRO de su sección, así agregar o mover bloques no obliga a
+   * renumerar nada. El footer y el header quedan afuera por construcción:
+   * `data-reveal` solo se marca en el contenido de las páginas. */
+  const elementos = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+  const mostrarTodo = () => elementos.forEach((el) => el.classList.add('visible'));
+
+  if (elementos.length) {
+    if (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !('IntersectionObserver' in window)
+    ) {
+      mostrarTodo();
+    } else {
+      for (const seccion of document.querySelectorAll('section')) {
+        seccion
+          .querySelectorAll<HTMLElement>('[data-reveal]')
+          .forEach((el, i) => (el.style.transitionDelay = `${i * 90}ms`));
+      }
+
+      const observador = new IntersectionObserver(
+        (entradas) => {
+          for (const entrada of entradas) {
+            if (!entrada.isIntersecting) continue;
+            entrada.target.classList.add('visible');
+            observador.unobserve(entrada.target);
+          }
+        },
+        // El margen inferior negativo evita que algo "entre" cuando apenas
+        // asoma un píxel al borde de la ventana.
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+      );
+      elementos.forEach((el) => observador.observe(el));
+    }
+  }
+</script>
