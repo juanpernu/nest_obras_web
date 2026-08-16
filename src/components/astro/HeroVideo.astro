@@ -209,8 +209,20 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
       else setTimeout(montar, 1000);
     };
 
+    /* El video es decorativo: no vale un solo byte si el usuario pidió ahorrar
+     * datos o está en una conexión lenta. `connection` no existe en Safari ni
+     * Firefox, y ahí simplemente no se aplica el recorte. */
+    const conexion = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    const conexionPobre =
+      conexion?.saveData === true ||
+      (conexion?.effectiveType !== undefined && /^(slow-)?2g$/.test(conexion.effectiveType));
+
     const evaluar = () => {
-      if (!consulta.matches) return;
+      if (conexionPobre || !consulta.matches) return;
       if (document.readyState === 'complete') cuandoHayaLugar();
       else window.addEventListener('load', cuandoHayaLugar, { once: true });
     };
