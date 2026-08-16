@@ -77,36 +77,57 @@ const serviciosLd = entries.map((s) => ({
     {/* Cierre del capítulo "qué hacemos": lo que sigue es el detalle. */}
     <FranjaRayado />
 
-    {/* Cada servicio arranca con su propia regla de 1px y un eyebrow numerado:
-        el número reemplaza al bloque de color que antes daba el `border-t-4` y
-        sostiene la lectura de índice sin sumar trazo grueso al marco. */}
+    {/* ÍNDICE TIPOGRÁFICO (16/08/2026, pedido directo: "aplicá el mismo criterio
+        tipográfico"). Mismo recurso que el proceso de /nosotros: renglones a
+        todo el ancho separados por la regla de 1px del sistema, y el contraste
+        de escala haciendo el trabajo en vez de una caja. La cifra sube a
+        `text-stat` en peso 300 —el par tamaño/peso del dato editorial de
+        BarraEstadisticas— y queda colgada en su propia columna, como la
+        numeración al margen de un pliego.
+
+        Reemplaza al eyebrow "SERVICIO 01" a 11px, que decía lo mismo en el
+        tamaño más chico del sistema: el número era información de índice
+        tratada como nota al pie.
+
+        `<ol>` y no `<ul>`: el orden es dato real de la colección (`orden` en el
+        schema de `servicios`, por el que se ordena arriba), no una casualidad
+        del markup.
+
+        Tres ejes en desktop —cifra, bloque de texto, lista de `incluye`— con
+        `items-baseline`, así las tres columnas arrancan en la misma línea. En
+        md son dos (la lista baja bajo el texto) y en mobile una: a 375px una
+        columna fija para el número deja el texto partiéndose cada dos palabras. */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <div class="mx-auto max-w-6xl space-y-14 px-6">
-          {
-            servicios.map((s, i) => (
-              <div class="grid gap-6 border-t border-arena pt-8 md:grid-cols-[2fr_1fr]" data-reveal>
-                <div>
-                  <Eyebrow class="mb-2.5">Servicio {String(i + 1).padStart(2, '0')}</Eyebrow>
-                  <h2 class="text-h2 font-medium text-navy">{s.data.nombre}</h2>
-                  <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
-                  <div class="mt-4 leading-relaxed font-light text-navy-700 [&_p]:mt-0">
-                    <s.Content />
+        <div class="mx-auto max-w-6xl px-6">
+          <ol class="divide-y divide-arena border-y border-arena" data-reveal>
+            {
+              servicios.map((s, i) => (
+                <li class="grid gap-x-10 gap-y-4 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_1fr_16rem] lg:items-baseline">
+                  <span class="text-stat font-light leading-none text-navy">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div class="md:col-start-2">
+                    <h2 class="text-h2 font-medium text-navy">{s.data.nombre}</h2>
+                    <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
+                    <div class="mt-4 max-w-[64ch] font-light leading-relaxed text-navy-700 [&_p]:mt-0">
+                      <s.Content />
+                    </div>
                   </div>
-                </div>
-                <ul class="space-y-2 text-sm text-navy-700">
-                  {s.data.incluye.map((item) => (
-                    <li class="flex gap-2.5">
-                      <span aria-hidden="true" class="text-arena-800">
-                        —
-                      </span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))
-          }
+                  <ul class="space-y-2 text-sm text-navy-700 md:col-start-2 lg:col-start-3">
+                    {s.data.incluye.map((item) => (
+                      <li class="flex gap-2.5">
+                        <span aria-hidden="true" class="text-arena-800">
+                          —
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))
+            }
+          </ol>
         </div>
       </section>
     </MarcoSeccion>
@@ -121,25 +142,33 @@ const serviciosLd = entries.map((s) => ({
             <Eyebrow class="mb-2.5">Modalidades</Eyebrow>
             <h2 class="text-h2 font-medium text-navy">Cómo preferís trabajar con nosotros</h2>
           </div>
-          {/* Card GLASS, mismos cuatro valores que el formulario de la Home y que
-              el header scrolleado: `bg-white/70` + `backdrop-blur-md` +
-              `border-navy-200` + la sombra `0_12px_40px_rgba(0,0,0,0.1)`. Es la
-              misma excepción a §3.3 (sin sombras) ya abierta para el header, no
-              una nueva. Sobre sección blanca el blur no tiene nada detrás que
-              difuminar: lo que separa la card del fondo son el borde y la sombra. */}
-          <div class="mt-10 grid gap-8 md:grid-cols-2" data-reveal>
+          {/* Mismo índice tipográfico que los servicios de arriba (16/08/2026,
+              misma pasada). Reemplaza a dos cards glass —borde navy-200, blur y
+              la sombra del header— que eran el único lenguaje de caja que
+              quedaba en la página: con los servicios ya resueltos como renglones
+              con regla, dos tarjetas flotando debajo leían como otro sistema.
+
+              El glass no desaparece del sitio, se queda donde es una SUPERFICIE
+              y no un contenedor de texto: el header scrolleado y la card del
+              formulario de /contacto y de la Sección 9 del Home. */}
+          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
             {
-              modalidades.map((m) => (
-                <div class="border border-navy-200 bg-white/70 p-8 shadow-[0_12px_40px_rgba(0,0,0,0.1)] backdrop-blur-md">
+              modalidades.map((m, i) => (
+                <li class="grid gap-x-10 gap-y-3 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
+                  <span class="text-stat font-light leading-none text-navy">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                   <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">
                     {m.titulo}
                   </h3>
-                  <p class="mt-4 leading-relaxed font-light text-navy-700">{m.texto}</p>
-                  <p class="mt-4 text-sm italic text-navy-700">{m.ideal}</p>
-                </div>
+                  <div class="md:col-start-2 lg:col-start-3">
+                    <p class="max-w-[64ch] font-light leading-relaxed text-navy-700">{m.texto}</p>
+                    <p class="mt-3 max-w-[64ch] text-sm italic text-navy-700">{m.ideal}</p>
+                  </div>
+                </li>
               ))
             }
-          </div>
+          </ol>
         </div>
       </section>
     </MarcoSeccion>

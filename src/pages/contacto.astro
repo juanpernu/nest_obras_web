@@ -55,9 +55,45 @@ const bloques = [
     <MarcoSeccion cierra>
       <section id="contacto" class="bg-white py-20 md:py-[120px]">
         <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
+          {/* Mismo criterio tipográfico que /nosotros y /servicios (16/08/2026,
+              pedido directo): renglones separados por la regla de 1px del
+              sistema y el contraste de escala haciendo el trabajo.
+
+              SIN CIFRA, a diferencia de los otros dos índices. Allá el número es
+              dato —el paso 03 va después del 02, el `orden` del servicio está en
+              el schema—; acá los tres bloques son atributos ("respondemos en el
+              día", "sin costo", "+30 años"), no una secuencia, y numerarlos
+              afirmaría un orden que no existe. Lo que crece entonces es el
+              título, que pasa de `font-medium` a `text-h3`: la misma jerarquía,
+              con el elemento que sí corresponde.
+
+              Los atributos salen de <TimelineContacto> y se renderizan acá, pero
+              el componente SE QUEDA con `atributos={[]}` porque es además el
+              bloque de NAP del sitio: publica teléfono, email y dirección desde
+              site.ts con las píldoras de ícono, y eso no se duplica a mano
+              (§6.7). La Home lo sigue montando entero, con sus tres atributos.
+
+              Nota: el 15/08/2026 se sacaron a pedido las líneas de
+              <TimelineContacto>. No es lo mismo que esto: aquello era un
+              timeline literal —vertical de referencia, horizontales enmascaradas
+              y un nodo en cada cruce— y esto es la regla del sistema de marco,
+              que ese día todavía no existía. Si igual se lee como un retroceso,
+              se revierte sacando las clases `divide-y`/`border-y` del <ul>. */}
           <div data-reveal>
             <h2 class="text-h2 font-medium text-navy">Cómo trabajamos la primera consulta</h2>
-            <TimelineContacto class="mt-8" atributos={bloques} />
+            <ul class="mt-8 divide-y divide-arena border-y border-arena">
+              {
+                bloques.map((b) => (
+                  <li class="py-6">
+                    <h3 class="text-h3 font-medium text-navy">{b.titulo}</h3>
+                    <p class="mt-2 max-w-[64ch] font-light leading-relaxed text-navy-700">
+                      {b.texto}
+                    </p>
+                  </li>
+                ))
+              }
+            </ul>
+            <TimelineContacto class="mt-10" atributos={[]} />
             <div class="mt-8">
               <Boton href={whatsappUrl} variante="secundario">Escribinos por WhatsApp →</Boton>
             </div>
