@@ -363,11 +363,17 @@ const seo = {
       </div>
     </div>
     {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
-        grid de columnas fijas no permite (ver TarjetaObraHover). `mx-auto
-        max-w-6xl px-6` (10/08/2026): antes la fila era full-bleed, ahora
-        respeta el mismo margen que el encabezado de arriba. */}
+        grid de columnas fijas no permite (ver TarjetaObraHover).
+
+        SIN `gap` NI `px` (16/08/2026, pedido directo): las tres tarjetas van
+        pegadas entre sí y llegan hasta el borde de la fila. Cada una ocupa un
+        tercio exacto en reposo — el `flex: 1 1 0` de `article` en
+        TarjetaObraHover reparte el ancho en partes iguales, y ahora que no hay
+        gap ni padding el tercio es del ancho completo del contenedor.
+        Se conserva `mx-auto max-w-6xl`, así la fila sigue alineada con el
+        encabezado de arriba en vez de ser full-bleed. */}
     <div
-      class="obras-fila relative z-10 mx-auto mt-10 flex w-full max-w-6xl flex-col gap-3 px-6 sm:flex-row"
+      class="obras-fila relative z-10 mx-auto mt-10 flex w-full max-w-6xl flex-col sm:flex-row"
       data-reveal
     >
       {
