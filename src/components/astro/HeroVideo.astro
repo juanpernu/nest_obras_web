@@ -22,15 +22,23 @@
  *
  * PRESUPUESTO DE PERFORMANCE. Un embed de YouTube trae más de 1 MB de JS de
  * terceros, así que NO puede estar en el HTML inicial: el LCP tiene que seguir
- * siendo el <h1> (§7.2) y el sitio apunta a Lighthouse mobile ≥95. Por eso esto
- * es una fachada — se pinta el poster, que es lo único que entra en el camino
- * crítico, y el iframe se inyecta recién después de `load` y en el primer hueco
- * de idle. Nada de YouTube compite con el render inicial.
+ * siendo el <h1>. Por eso esto es una fachada — se pinta el poster, que es lo
+ * único que entra en el camino crítico, y el iframe se inyecta recién en `load`.
  *
- * En mobile (<768px) y con `prefers-reduced-motion` el iframe NO se inyecta
- * nunca: no se pide un solo byte a YouTube, igual que antes no se pedía un byte
- * del mp4. La condición se evalúa en JS y no en CSS porque ocultar por CSS
- * descarga igual.
+ * AUTOPLAY EN TODAS LAS CONDICIONES (16/08/2026, decisión explícita del usuario
+ * después de plantearle el costo de cada recorte). Antes el iframe no se
+ * inyectaba en <768px ni con `prefers-reduced-motion`, y esperaba al primer
+ * hueco de idle. Hoy se monta siempre y apenas carga la página. Las
+ * consecuencias asumidas, para que queden a la vista de quien toque esto:
+ *
+ *  - Contradice el §7.2 del plan, que pedía no cargar video bajo 768px y lo
+ *    llamaba "el mayor riesgo de rendimiento del sitio". El objetivo de
+ *    Lighthouse mobile ≥95 pasa a estar en riesgo real y hay que medirlo.
+ *  - El video se reproduce aunque el usuario haya pedido menos movimiento, lo
+ *    que va contra WCAG 2.2.2 y contra el objetivo de a11y 100. Lo único que
+ *    sigue respetando `prefers-reduced-motion` es el fundido de entrada.
+ *
+ * El único recorte que queda es `saveData` / 2g, que es opt-in del usuario.
  *
  * RESOLUCIÓN. El player elige la calidad por ABR según el tamaño renderizado y
  * el ancho de banda; no hay forma soportada de forzarla (`setPlaybackQuality`
@@ -126,17 +134,12 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
 </style>
 
 <script>
-  /* Fachada del hero: inyecta el embed de YouTube después del LCP, solo en
-   * desktop y solo si el usuario no pidió menos movimiento. Ver la nota extensa
-   * del componente. */
+  /* Fachada del hero: inyecta el embed de YouTube apenas termina de cargar la
+   * página, en todos los viewports. Ver la nota extensa del componente. */
   const contenedor = document.querySelector<HTMLElement>('.hero-video');
   const videoId = contenedor?.dataset.yt;
 
   if (contenedor && videoId) {
-    const consulta = window.matchMedia(
-      '(min-width: 768px) and (prefers-reduced-motion: no-preference)',
-    );
-
     /* `playlist` con el propio id es lo que hace que `loop` funcione en un video
      * suelto; sin eso YouTube ignora el loop y cae en la pantalla final. */
     const parametros = new URLSearchParams({
@@ -202,16 +205,10 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
       contenedor.appendChild(iframe);
     };
 
-    /* Después del LCP y en el primer hueco libre. `requestIdleCallback` no está
-     * en Safari, de ahí el fallback. */
-    const cuandoHayaLugar = () => {
-      if ('requestIdleCallback' in window) window.requestIdleCallback(montar, { timeout: 3000 });
-      else setTimeout(montar, 1000);
-    };
-
     /* El video es decorativo: no vale un solo byte si el usuario pidió ahorrar
-     * datos o está en una conexión lenta. `connection` no existe en Safari ni
-     * Firefox, y ahí simplemente no se aplica el recorte. */
+     * datos o está en una conexión lenta. Es el único recorte que queda, y es
+     * opt-in del usuario. `connection` no existe en Safari ni Firefox, y ahí
+     * simplemente no se aplica. */
     const conexion = (
       navigator as Navigator & {
         connection?: { saveData?: boolean; effectiveType?: string };
@@ -221,15 +218,14 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
       conexion?.saveData === true ||
       (conexion?.effectiveType !== undefined && /^(slow-)?2g$/.test(conexion.effectiveType));
 
-    const evaluar = () => {
-      if (conexionPobre || !consulta.matches) return;
-      if (document.readyState === 'complete') cuandoHayaLugar();
-      else window.addEventListener('load', cuandoHayaLugar, { once: true });
-    };
-
-    evaluar();
-    /* Si alguien agranda la ventana desde mobile o desactiva reduced-motion, el
-     * video aparece sin necesidad de recargar. */
-    consulta.addEventListener('change', evaluar);
+    /* En `load` y no en idle: el video tiene que arrancar sin espera perceptible
+     * (pedido directo, 16/08/2026). Sigue después del LCP porque `load` ya
+     * implica que el contenido de la ruta se pintó; lo que se pierde respecto de
+     * `requestIdleCallback` es la garantía de no competir por el hilo principal
+     * con lo que el usuario esté haciendo en ese momento. */
+    if (!conexionPobre) {
+      if (document.readyState === 'complete') montar();
+      else window.addEventListener('load', montar, { once: true });
+    }
   }
 </script>

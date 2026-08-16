@@ -124,10 +124,11 @@ const seo = {
 ---
 
 <Layout title={seo.title} description={seo.description}>
-  {/* Sección 1 — Hero. El LCP es el <h1>; en mobile no se pide un solo byte de
-      video (§7.2). El fondo pasó a ser un embed de YouTube cargado como fachada
-      (16/08/2026, pedido directo) — el porqué y las tres trampas del embed están
-      en HeroVideo.astro.
+  {/* Sección 1 — Hero. El LCP es el <h1>. El fondo pasó a ser un embed de
+      YouTube cargado como fachada (16/08/2026, pedido directo), con autoplay en
+      todos los viewports — el porqué, las tres trampas del embed y el costo
+      asumido al sacar los recortes de mobile y reduced-motion están en
+      HeroVideo.astro.
       El overlay es negro/50 (feedback del cliente, 14/08/2026): antes era
       navy/50 para leer como una sola superficie con el header en reposo
       (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el

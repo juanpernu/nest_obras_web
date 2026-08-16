@@ -160,7 +160,7 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 ## 4. 🟡 Fase 6 — GEO, CI y deploy (pendiente)
 
-- [ ] `scripts/verificar-html.sh` completo y parametrizado (§12) + guarda de acentuación + guarda de "video no se descarga en mobile".
+- [ ] `scripts/verificar-html.sh` completo y parametrizado (§12) + guarda de acentuación + guarda de "el HTML inicial no contiene el iframe de YouTube" (reemplaza a la de "video no se descarga en mobile", que dejó de aplicar el 16/08/2026 — ver §5).
 - [ ] **CI** (`.github/workflows/`): `astro check`, `verificar-html.sh`, **Lighthouse CI mobile** (perf ≥95 / a11y =100), grep `client:`, grep `llms.txt`, **check de tamaño de bundle JS < 5 KB/ruta** (eximir el script de Turnstile). Definir `$BASE_URL` = preview de Vercel.
 - [ ] **Search Console** configurado + sitemap enviado (antes del lanzamiento, §6.11).
 - [ ] **Bing Webmaster Tools** + sitemap (alimenta Copilot — del skill `seo-geo`).
@@ -174,6 +174,7 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 ## 5. 🟢 Deuda menor / decisiones tomadas / known issues
 
+- **Autoplay del hero en todas las condiciones (16/08/2026)** — decisión explícita del usuario, tomada después de plantearle el costo de cada recorte. El embed de YouTube se monta en todos los viewports, sin esperar idle y también con `prefers-reduced-motion`. Deroga la regla del §7.2 del plan, que pedía no cargar video bajo 768 px. **Dos riesgos abiertos, sin medir todavía:** el objetivo de Lighthouse mobile ≥95 (mobile ahora baja el player de YouTube más el stream) y el de a11y 100 (reproducir con `prefers-reduced-motion` va contra WCAG 2.2.2). El único recorte que sobrevive es `saveData` / 2g. Para revertir cualquiera de los dos, la condición está en un solo lugar: el bloque `<script>` de `HeroVideo.astro`.
 - **Fallback tipográfico métrico (CLS)** — hoy stopgap `"Arial Narrow"` en el stack. El fallback métrico definitivo (`@font-face` con `size-adjust`/`ascent-override`) quedó diferido; ahora que el hero real existe (Fase 4) se puede medir CLS e implementarlo. `fontaine` no sirve (no inyecta en la CSS-var de Tailwind v4).
 - **El content store NO purga una colección que queda en cero** — al borrar el último `.md` de una colección, el glob loader avisa `No files found matching` pero las entradas ya sincronizadas **siguen renderizando**. `rm -rf .astro dist` no alcanza: el store persistente vive en **`node_modules/.astro/data-store.json`**. Verificado 2026-08-04 (dos testimonios de prueba sobrevivieron a tres builds limpios). Importa porque la caché de build de Vercel puede incluir `node_modules`: si algún día se despublican los testimonios, hay que borrar ese archivo o el deploy los republica.
 - **`PLAN-EJECUCION.md` dice "Astro 5"** (§2.5/§3) pero se usa **Astro 7** (decisión aprobada). Doc desactualizado — conviene anotar la versión real ahí.
@@ -198,5 +199,5 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 - [ ] **Toda la acentuación correcta** (ningún "anos", "mas", "gestion" sin tilde)
 - [ ] `<form>` / `<label for>` / `<button type=submit>` reales · form envía sin JS
 - [ ] Canonical autorreferencial + ruta en `sitemap.xml`
-- [ ] **Lighthouse mobile ≥ 95 perf / 100 a11y** · táctiles ≥ 44 px · video no se descarga en mobile
+- [ ] **Lighthouse mobile ≥ 95 perf / 100 a11y** · táctiles ≥ 44 px · **a re-medir**: desde el 16/08/2026 mobile sí descarga el embed (ver §5)
 - [ ] Deployment Protection off en prod · dominio + redirect 308
