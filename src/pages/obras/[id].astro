@@ -4,11 +4,13 @@ import FichaProyecto from '@/components/astro/FichaProyecto.astro';
 import Galeria from '@/components/astro/Galeria.astro';
 import Boton from '@/components/astro/Boton.astro';
 import Eyebrow from '@/components/astro/Eyebrow.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
+import { tipoLabel } from '@/data/obras';
 
 export async function getStaticPaths() {
   const obras = await getCollection('obras', (o) => o.data.paginaPropia);
@@ -19,13 +21,12 @@ const { obra } = Astro.props;
 const d = obra.data;
 const { Content } = await render(obra);
 
-const tipoLabel: Record<string, string> = {
-  vivienda: 'Vivienda',
-  corporativo: 'Corporativo',
-  refaccion: 'Refacción',
-  gastronomia: 'Gastronomía',
-  edificio: 'Edificio',
-};
+/* `headline` y `slug` son opcionales en el schema porque las obras sin página
+ * propia no los llevan, pero el `superRefine` de content.config.ts los exige
+ * cuando `paginaPropia: true` y esta ruta solo se genera para esas. El build
+ * falla en la validación de la colección mucho antes de llegar acá, así que la
+ * aserción es la invariante que Zod ya garantiza y TS no puede inferir. */
+const headline = d.headline!;
 
 const breadcrumb = {
   '@context': 'https://schema.org',
@@ -57,28 +58,20 @@ const breadcrumb = {
     <HojaTecnica>
       <MarcoSeccion>
         <section class="bg-white py-20 md:py-[120px]">
-          {/* Entrada CSS-only y no `data-reveal`: este bloque trae el <h1>, que
-              es el LCP de la ruta. Ver la nota extensa en nosotros.astro —
-              `opacity: 0` gateada por JS lo sacaba de la elegibilidad de LCP y
-              costaba +424 ms medidos en esta página, el peor de las cinco. */}
-          <div
-            class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+          <CabeceraPagina
+            eyebrow={`${tipoLabel[d.tipo]} · ${d.zona}`}
+            titulo={headline}
+            bajada={d.subtitulo}
           >
-            <nav class="text-xs uppercase tracking-[0.08em] text-navy-700" aria-label="Migas de pan">
+            <nav
+              slot="migas"
+              class="text-xs uppercase tracking-[0.08em] text-navy-700"
+              aria-label="Migas de pan"
+            >
               <a href="/obras" class="transition-colors hover:text-navy">Obras</a>
               <span class="mx-2" aria-hidden="true">/</span><span>{d.nombre}</span>
             </nav>
-            <Eyebrow class="mt-6 mb-2.5">{tipoLabel[d.tipo]} · {d.zona}</Eyebrow>
-            <h1 class="max-w-[900px] text-h1 font-medium text-navy">{d.headline}</h1>
-            <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
-            {
-              d.subtitulo && (
-                <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
-                  {d.subtitulo}
-                </p>
-              )
-            }
-          </div>
+          </CabeceraPagina>
         </section>
       </MarcoSeccion>
 

@@ -151,20 +151,33 @@ const grafo = {
     {ogImageUrl && ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
 
     <script type="application/ld+json" is:inline set:html={toSafeJson(grafo)} />
+
+    {/* El estado oculto de `data-reveal` lo activa ESTE script, no el CSS
+        estático (16/08/2026). La diferencia importa: si el estado inicial
+        viviera en la hoja de estilos, cualquier escenario donde el módulo de
+        abajo no llegue a correr —error de red al pedir el .js, CSP, fallo de
+        parseo— dejaría todo el contenido debajo del hero permanentemente
+        invisible, con el HTML presente pero sin pintar. Un <noscript> no cubre
+        nada de eso: solo cubre JS deshabilitado.
+
+        Invirtiendo la lógica, el default del documento es VISIBLE y ocultar es
+        una decisión que toma JS. Va `is:inline` y en el <head> por dos motivos:
+        corre antes del primer paint, así no hay destello de contenido visible
+        que se oculta, y al estar embebido no puede fallar por red.
+
+        El failsafe cubre el caso restante: JS habilitado (así que la clase se
+        aplicó y el contenido está oculto) pero el módulo nunca corre. Si a los
+        2s nadie reclamó el reveal, se destraba solo. */}
+    <script is:inline>
+      document.documentElement.classList.add('js-reveal');
+      setTimeout(function () {
+        if (!document.documentElement.hasAttribute('data-reveal-listo')) {
+          document.documentElement.classList.remove('js-reveal');
+        }
+      }, 2000);
+    </script>
   </head>
   <body class="flex min-h-screen flex-col bg-white">
-    {/* Sin JS los bloques con `data-reveal` nunca recibirían la clase que los
-        hace visibles, así que acá se anula su estado inicial. `is:inline` para
-        que Astro no lo procese y el !important pise la regla global de abajo. */}
-    <noscript>
-      <style is:inline>
-        [data-reveal] {
-          opacity: 1 !important;
-          transform: none !important;
-        }
-      </style>
-    </noscript>
-
     <Nav />
     <main class="flex-1">
       <slot />
@@ -176,16 +189,16 @@ const grafo = {
 
 {/* Entrada escalonada de los bloques de cada sección — el patrón `.reveal` del
     proto (09/08/2026). Nació dentro de index.astro y el 16/08/2026 subió acá,
-    cuando el resto de las páginas adoptó el lenguaje de la Home: son cinco
+    cuando el resto de las páginas adoptó el lenguaje de la Home: son seis
     páginas que necesitan exactamente las mismas 30 líneas, y copiarlas una vez
     por página es la forma segura de que un día dejen de estar sincronizadas.
 
-    index.astro conserva su copia scoped: es idéntica en valores y en efecto
-    (la suya gana por especificidad de scope, ambas terminan poniendo
-    `.visible`), y se dejó intacta a propósito para no tocar la Home en esta
-    pasada. Al unificar, borrar la de index.astro. */}
+    Todo cuelga de `.js-reveal`, que aplica el script inline del <head>. Sin esa
+    clase el contenido está visible y sin transición: es el default del
+    documento, y lo que garantiza que un fallo del módulo no deje la página en
+    blanco. Ver la nota extensa allá arriba. */}
 <style is:global>
-  [data-reveal] {
+  .js-reveal [data-reveal] {
     opacity: 0;
     transform: translateY(10px);
     transition:
@@ -193,13 +206,13 @@ const grafo = {
       transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  [data-reveal].visible {
+  .js-reveal [data-reveal].visible {
     opacity: 1;
     transform: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-reveal] {
+    .js-reveal [data-reveal] {
       opacity: 1;
       transform: none;
       transition: none;
@@ -212,6 +225,11 @@ const grafo = {
    * posición DENTRO de su sección, así agregar o mover bloques no obliga a
    * renumerar nada. El footer y el header quedan afuera por construcción:
    * `data-reveal` solo se marca en el contenido de las páginas. */
+
+  /* Reclama el reveal antes que nada: desarma el failsafe del <head>, que a los
+   * 2s destraba la página asumiendo que este módulo nunca llegó. */
+  document.documentElement.setAttribute('data-reveal-listo', '');
+
   const elementos = document.querySelectorAll<HTMLElement>('[data-reveal]');
 
   const mostrarTodo = () => elementos.forEach((el) => el.classList.add('visible'));

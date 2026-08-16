@@ -3,7 +3,7 @@ import Layout from '@/layouts/main.astro';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
 import TimelineContacto from '@/components/astro/TimelineContacto.astro';
 import Boton from '@/components/astro/Boton.astro';
-import Eyebrow from '@/components/astro/Eyebrow.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import { whatsappUrl } from '@/data/site';
@@ -23,12 +23,12 @@ const bloques = [
     columna editorial con <TimelineContacto> a la izquierda y el formulario como
     card glass protagonista a la derecha.
 
-    Con eso sale <BloqueContacto>, que era la caja navy del NAP: <TimelineContacto>
-    ya publica los mismos tres datos (teléfono, email, dirección) desde site.ts,
-    con las píldoras de ícono del sistema, así que mantener las dos era mostrar
-    el NAP dos veces en la misma pantalla. El componente sigue en el repo, sin
-    usar. También sale la caja navy-50 del CTA de WhatsApp: el botón queda
-    debajo del timeline, con la variante `secundario` (subrayado navy).
+    Con eso se eliminó BloqueContacto.astro, que era la caja navy del NAP:
+    <TimelineContacto> ya publica los mismos tres datos (teléfono, email,
+    dirección) desde site.ts, con las píldoras de ícono del sistema, así que
+    mantener las dos era mostrar el NAP dos veces en la misma pantalla. También
+    sale la caja navy-50 del CTA de WhatsApp: el botón queda debajo del
+    timeline, con la variante `secundario` (subrayado navy).
 
     Dos secciones y no una sola como en la Home: acá el título de la página es un
     <h1>, y meterlo en la columna izquierda dejaría los <h3> del timeline
@@ -40,21 +40,11 @@ const bloques = [
   <HojaTecnica>
     <MarcoSeccion>
       <section class="bg-white py-20 md:py-[120px]">
-        {/* Entrada CSS-only y no `data-reveal`: este bloque trae el <h1>, que
-            es el LCP de la ruta. Ver la nota extensa en nosotros.astro —
-            `opacity: 0` gateada por JS lo sacaba de la elegibilidad de LCP y
-            costaba +352 ms medidos en esta página. */}
-        <div
-          class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
-        >
-          <Eyebrow class="mb-2.5">Contacto</Eyebrow>
-          <h1 class="max-w-[900px] text-h1 font-medium text-navy">Contanos tu proyecto</h1>
-          <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
-          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
-            Respondemos en menos de 24 horas en días hábiles. La primera consulta no tiene costo ni
-            compromiso, y hablás directamente con uno de los socios.
-          </p>
-        </div>
+        <CabeceraPagina
+          eyebrow="Contacto"
+          titulo="Contanos tu proyecto"
+          bajada="Respondemos en menos de 24 horas en días hábiles. La primera consulta no tiene costo ni compromiso, y hablás directamente con uno de los socios."
+        />
       </section>
     </MarcoSeccion>
 

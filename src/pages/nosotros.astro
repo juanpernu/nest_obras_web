@@ -3,6 +3,7 @@ import Layout from '@/layouts/main.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
 import Boton from '@/components/astro/Boton.astro';
 import Eyebrow from '@/components/astro/Eyebrow.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
@@ -80,11 +81,9 @@ const personasLd = [
   jsonLd={personasLd}
 >
   <HojaTecnica>
-    {/* Cabecera de página, IDÉNTICA a la de /servicios (16/08/2026, pedido
-        directo: "ajustá este componente para que tenga el mismo layout que el
-        de servicios"). Mismo contenedor, mismas medidas de columna —h1 en
-        `max-w-[900px]`, bajada en `max-w-[680px]`— y mismo ritmo vertical, así
-        las cinco páginas abren exactamente igual.
+    {/* Cabecera de página: la misma de las cinco páginas internas, extraída a
+        <CabeceraPagina> (16/08/2026). Las decisiones de escala tipográfica y la
+        entrada CSS-only que evita el hit de LCP están documentadas allá.
 
         SIN FOTO. La intro pasó por tres formas en el día: texto a todo el ancho,
         después el bloque partido con foto a la derecha de la Sección 3 del Home,
@@ -93,45 +92,14 @@ const personasLd = [
         acá tenía que leerse igual. Con eso sale de la página la única foto que
         tenía —`el-canton-aerea`, que la Home sigue usando como fondo de una
         destacada—; si más adelante se quiere una imagen en /nosotros, el lugar
-        natural es una banda propia debajo de esta cabecera, no partiendo el h1.
-
-        El <h1> va en `text-h1` y no en el `text-hero` del Home: el hero de la
-        Home ocupa la ventana entera sobre video, acá el título vive dentro de la
-        hoja y `text-hero` lo dejaría fuera de escala respecto de los <h2> que
-        siguen. La regla de arena bajo el título es la misma del Home, sin la
-        animación de entrada (ahí encadena con el reveal del hero; acá lo hace el
-        `data-reveal` del bloque). */}
+        natural es una banda propia debajo de esta cabecera, no partiendo el h1. */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        {/* ENTRADA CSS-ONLY, NO `data-reveal` (16/08/2026, auditoría de
-            performance). Este bloque contiene el <h1>, que es el LCP de la
-            página. Con `data-reveal` arrancaba en `opacity: 0` y solo se hacía
-            visible cuando corría el script del layout: Chrome no considera
-            candidato a LCP a un elemento con opacidad cero, así que el LCP
-            dejaba de coincidir con el FCP y pasaba a depender de la ejecución
-            del módulo más la primera entrega del IntersectionObserver —medido:
-            +356 ms en esta ruta, y entre +140 y +424 ms en las otras cuatro.
-
-            La animación es la misma, pero declarada en CSS: arranca en el
-            primer frame, sin esperar JS, así el elemento es candidato a LCP
-            desde el vamos. Es exactamente el recurso que el hero de la Home ya
-            usaba para su <h1> (index.astro), por el mismo motivo. */}
-        <div
-          class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
-        >
-          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-          <h1 class="max-w-[900px] text-h1 font-medium text-navy">
-            Más de 30 años construyendo lo que prometemos
-          </h1>
-          <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
-          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
-            NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión,
-            rigor técnico y atención al cliente que los proyectos corporativos más exigentes.
-            Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad
-            de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y
-            calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
-          </p>
-        </div>
+        <CabeceraPagina
+          eyebrow="Quiénes somos"
+          titulo="Más de 30 años construyendo lo que prometemos"
+          bajada="NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos."
+        />
       </section>
     </MarcoSeccion>
 
