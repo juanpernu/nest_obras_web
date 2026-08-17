@@ -124,20 +124,11 @@ const seo = {
 ---
 
 <Layout title={seo.title} description={seo.description}>
-  {/* Sin JS los bloques con `data-reveal` nunca recibirían la clase que los
-      hace visibles, así que acá se anula su estado inicial. Va con `is:inline`
-      para que Astro no lo procese ni le aplique el scope del componente: tiene
-      que pisar la regla scopeada del <style> de abajo, de ahí el !important. */}
-  <noscript>
-    <style is:inline>
-      [data-reveal] {
-        opacity: 1 !important;
-        transform: none !important;
-      }
-    </style>
-  </noscript>
-
-  {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2).
+  {/* Sección 1 — Hero. El LCP es el <h1>. El fondo pasó a ser un embed de
+      YouTube cargado como fachada (16/08/2026, pedido directo), con autoplay en
+      todos los viewports — el porqué, las tres trampas del embed y el costo
+      asumido al sacar los recortes de mobile y reduced-motion están en
+      HeroVideo.astro.
       El overlay es negro/50 (feedback del cliente, 14/08/2026): antes era
       navy/50 para leer como una sola superficie con el header en reposo
       (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el
@@ -145,11 +136,7 @@ const seo = {
       sección por la misma razón — es lo que se ve un instante antes de que
       cargue el primer frame del video. */}
   <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-black">
-    <HeroVideo
-      srcDesktop="/hero-video.mp4"
-      poster="/hero-poster.jpg"
-      class="absolute inset-0 -z-20 h-full w-full object-cover"
-    />
+    <HeroVideo youtubeId="7YZh4hHG7OM" poster="/hero-poster.jpg" class="-z-20" />
     <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
       {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
@@ -590,73 +577,7 @@ const seo = {
   </HojaTecnica>
 </Layout>
 
-<script>
-  /* Entrada escalonada de los bloques de cada sección (09/08/2026), el patrón
-   * `.reveal` del proto. El escalonado no se escribe a mano: cada elemento
-   * recibe un delay según su posición DENTRO de su sección, así agregar o
-   * mover bloques no obliga a renumerar nada.
-   *
-   * El footer queda afuera por construcción: vive en el layout, no en esta
-   * página, y `data-reveal` solo se marca acá.
-   */
-  const elementos = document.querySelectorAll<HTMLElement>('[data-reveal]');
-
-  const mostrarTodo = () => elementos.forEach((el) => el.classList.add('visible'));
-
-  if (elementos.length) {
-    if (
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      !('IntersectionObserver' in window)
-    ) {
-      mostrarTodo();
-    } else {
-      for (const seccion of document.querySelectorAll('section')) {
-        seccion
-          .querySelectorAll<HTMLElement>('[data-reveal]')
-          .forEach((el, i) => (el.style.transitionDelay = `${i * 90}ms`));
-      }
-
-      const observador = new IntersectionObserver(
-        (entradas) => {
-          for (const entrada of entradas) {
-            if (!entrada.isIntersecting) continue;
-            entrada.target.classList.add('visible');
-            observador.unobserve(entrada.target);
-          }
-        },
-        // El margen inferior negativo evita que algo "entre" cuando apenas
-        // asoma un píxel al borde de la ventana.
-        { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
-      );
-      elementos.forEach((el) => observador.observe(el));
-    }
-  }
-</script>
-
 <style>
-  /* Estado inicial de la entrada escalonada. Si el JS no corre, el <noscript>
-   * de arriba lo neutraliza y todo queda visible. */
-  [data-reveal] {
-    opacity: 0;
-    transform: translateY(10px);
-    transition:
-      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  [data-reveal].visible {
-    opacity: 1;
-    transform: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    [data-reveal] {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-  }
-
   /* Subrayado que se dibuja bajo el cierre del <h1> (07/08/2026). Va en un
    * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
    * porque acá el trazo no responde a hover: se anima al cargar, reusando el

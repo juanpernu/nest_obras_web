@@ -2,37 +2,260 @@
 /**
  * Video de fondo del hero (docs/PLAN-EJECUCION.md §7.2).
  *
- * Vuelve a <video> nativo (revertido el embed de YouTube, 14/08/2026): el
- * embed mostraba su propia UI —título, controles, tarjeta "más videos"— en
- * cada ciclo del loop y no hay parámetro que la elimine, así que rompía el
- * efecto de fondo continuo. El archivo es propio (public/hero-video.mp4).
+ * EMBED DE YOUTUBE, cargado como fachada (16/08/2026, pedido directo). Sustituye
+ * al <video> con `public/hero-video.mp4` propio, que a su vez había reemplazado
+ * a un primer embed el 14/08/2026. Aquel embed se revirtió porque el player
+ * mostraba su UI —título, controles, tarjeta de "más videos"— en cada ciclo del
+ * loop y rompía el efecto de fondo continuo. Los tres motivos están atacados acá
+ * y ninguno depende de que YouTube no cambie de opinión sobre `rel` o
+ * `modestbranding`, que es lo que falló la vez pasada:
  *
- * El <source> matchea solo en ≥768px Y sin prefers-reduced-motion: en mobile o
- * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de
- * video, solo pinta el poster. Se resuelve en el media del <source>, no con CSS
- * (ocultar por CSS descarga igual). El LCP es el <h1>: `preload="none"` + poster.
+ *  - Controles: `controls=0`, y además el iframe entero va con
+ *    `pointer-events: none`. El chrome de YouTube aparece al hover; si el
+ *    puntero no puede alcanzar el iframe, no hay hover que lo dispare. Eso
+ *    también evita que un click abra youtube.com encima del hero.
+ *  - Tarjeta de "más videos": es la pantalla final, y solo existe si el video
+ *    llega al final. `loop=1&playlist=<id>` hace que YouTube reinicie solo, y
+ *    por las dudas hay una red de seguridad por postMessage que rebobina si el
+ *    player llega a reportar ENDED.
+ *  - Título: se pinta al hover, ya cubierto por `pointer-events: none`.
+ *
+ * PRESUPUESTO DE PERFORMANCE. Un embed de YouTube trae más de 1 MB de JS de
+ * terceros, así que NO puede estar en el HTML inicial: el LCP tiene que seguir
+ * siendo el <h1>. Por eso esto es una fachada — se pinta el poster, que es lo
+ * único que entra en el camino crítico, y el iframe se inyecta recién en `load`.
+ *
+ * AUTOPLAY EN TODAS LAS CONDICIONES (16/08/2026, decisión explícita del usuario
+ * después de plantearle el costo de cada recorte). Antes el iframe no se
+ * inyectaba en <768px ni con `prefers-reduced-motion`, y esperaba al primer
+ * hueco de idle. Hoy se monta siempre y apenas carga la página. Las
+ * consecuencias asumidas, para que queden a la vista de quien toque esto:
+ *
+ *  - Contradice el §7.2 del plan, que pedía no cargar video bajo 768px y lo
+ *    llamaba "el mayor riesgo de rendimiento del sitio". El objetivo de
+ *    Lighthouse mobile ≥95 pasa a estar en riesgo real y hay que medirlo.
+ *  - El video se reproduce aunque el usuario haya pedido menos movimiento, lo
+ *    que va contra WCAG 2.2.2 y contra el objetivo de a11y 100. Lo único que
+ *    sigue respetando `prefers-reduced-motion` es el fundido de entrada.
+ *
+ * El único recorte que queda es `saveData` / 2g, que es opt-in del usuario.
+ *
+ * RESOLUCIÓN. El player elige la calidad por ABR según el tamaño renderizado y
+ * el ancho de banda; no hay forma soportada de forzarla (`setPlaybackQuality`
+ * está deprecado y el player lo ignora, y `vq` nunca fue un parámetro público
+ * del iframe). La palanca real es el tamaño en píxeles del iframe, así que se
+ * dimensiona a cubrir el viewport completo —nunca a una caja chica— y se le dan
+ * atributos `width`/`height` grandes para que la primera decisión de calidad no
+ * se tome sobre un elemento diminuto.
+ *
+ * Dominio `youtube-nocookie.com`: mismo player, sin cookies de tracking hasta
+ * que hay interacción — y acá no puede haberla.
  */
 interface Props {
-  srcDesktop: string;
+  /** ID del video (la `v=` de la URL de YouTube). */
+  youtubeId: string;
+  /** Imagen que se ve siempre: en mobile es lo único, en desktop es la fachada. */
   poster: string;
   class?: string;
 }
-const { srcDesktop, poster, class: className } = Astro.props as Props;
+const { youtubeId, poster, class: className } = Astro.props as Props;
 ---
 
-<video
-  poster={poster}
-  preload="none"
-  autoplay
-  muted
-  playsinline
-  loop
-  aria-hidden="true"
-  class:list={['hero-video', className]}
->
-  <source
-    media="(min-width: 768px) and (prefers-reduced-motion: no-preference)"
-    src={srcDesktop}
-    type="video/mp4"
+<div class:list={['hero-video', className]} aria-hidden="true" data-yt={youtubeId}>
+  {/* Prioridad alta y no lazy: el poster ocupa el viewport entero arriba de
+      todo y es el candidato a LCP más grande de la ruta —el <h1> es texto sobre
+      él—, así que retrasarlo empuja el LCP directamente. Es además lo único que
+      ve mobile. Compite solo con el preload de la fuente, que ya va en el head. */}
+  <img
+    class="hero-video-poster"
+    src={poster}
+    alt=""
+    width="1920"
+    height="1080"
+    fetchpriority="high"
+    decoding="async"
   />
-</video>
+</div>
+
+<style>
+  /* El componente es dueño de su geometría: se estira sobre el contenedor
+     posicionado más cercano —el <section> del hero— y recorta lo que sobra del
+     video. El consumidor solo decide el stacking (la `-z-20` de index.astro).
+     Va acá y no en clases de utilidad porque el scope de Astro suma un atributo
+     al selector: `.hero-video[data-astro-cid-…]` le gana en especificidad a
+     `.absolute` de Tailwind, así que las dos fuentes de verdad no pueden
+     convivir sin que una pise a la otra en silencio. */
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background-color: #000;
+  }
+
+  .hero-video-poster {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  /* Cobertura del viewport para un video 16:9: se toma el mayor entre "ancho
+     completo" y "alto completo × 16/9", así nunca quedan bandas. El hero mide
+     min-h-dvh, por eso las unidades de viewport describen bien su caja. */
+  .hero-video :global(iframe) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 100vw;
+    height: 56.25vw;
+    min-width: 177.7778vh;
+    min-height: 100vh;
+    border: 0;
+    /* El chrome de YouTube se dispara al hover. Sin puntero no hay chrome, y
+       además ningún click puede escaparse a youtube.com. */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  /* La clase la pone el `load` del iframe (ver el script): no puede depender de
+     que YouTube conteste el handshake, o el video queda invisible para siempre. */
+  .hero-video :global(iframe.visible) {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-video :global(iframe) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /* Fachada del hero: inyecta el embed de YouTube apenas termina de cargar la
+   * página, en todos los viewports. Ver la nota extensa del componente. */
+  const contenedor = document.querySelector<HTMLElement>('.hero-video');
+  const videoId = contenedor?.dataset.yt;
+
+  if (contenedor && videoId) {
+    /* `playlist` con el propio id es lo que hace que `loop` funcione en un video
+     * suelto; sin eso YouTube ignora el loop y cae en la pantalla final. */
+    const parametros = new URLSearchParams({
+      autoplay: '1',
+      mute: '1',
+      loop: '1',
+      playlist: videoId,
+      controls: '0',
+      disablekb: '1',
+      fs: '0',
+      rel: '0',
+      modestbranding: '1',
+      iv_load_policy: '3',
+      playsinline: '1',
+      enablejsapi: '1',
+      origin: window.location.origin,
+    });
+
+    const enviar = (iframe: HTMLIFrameElement, mensaje: Record<string, unknown>) =>
+      iframe.contentWindow?.postMessage(JSON.stringify(mensaje), '*');
+
+    const montar = () => {
+      if (contenedor.querySelector('iframe')) return;
+
+      const iframe = document.createElement('iframe');
+      /* Atributos grandes a propósito: la primera decisión de calidad del ABR se
+       * toma sobre el tamaño del player, y el CSS de cobertura lo estira igual. */
+      iframe.width = '1920';
+      iframe.height = '1080';
+      iframe.title = 'Video institucional de NEST';
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+      iframe.setAttribute('frameborder', '0');
+      iframe.setAttribute('tabindex', '-1');
+      iframe.setAttribute('aria-hidden', 'true');
+      iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?${parametros}`;
+
+      /* LA VISIBILIDAD NO DEPENDE DE YOUTUBE (16/08/2026). La primera versión
+       * revelaba el iframe recién cuando el player avisaba "reproduciendo" por
+       * postMessage. Medido en local: el handshake no contesta nunca —cero
+       * mensajes de vuelta— así que el video cargaba y se reproducía detrás de
+       * un `opacity: 0` permanente. Es el mismo error que el `data-reveal`
+       * gateado por JS que se arregló en el layout, y acá es peor porque el JS
+       * del que dependía es de un tercero. Ahora revela el `load` del propio
+       * iframe, que siempre dispara; el evento del player, si llega, solo
+       * adelanta el fundido. */
+      let revelado = false;
+      const revelar = () => {
+        if (revelado) return;
+        revelado = true;
+        iframe.classList.add('visible');
+      };
+
+      /* El `listening` se pierde si se manda antes de que el player arranque por
+       * dentro, y no hay evento que avise cuándo está listo: se reintenta. Es la
+       * red del loop, no de la visibilidad, así que si no engancha no se rompe
+       * nada visible. */
+      let respondio = false;
+      let intentos = 0;
+      const pedirEventos = () => {
+        if (respondio || intentos >= 6) return;
+        intentos++;
+        enviar(iframe, { event: 'listening', id: 1, channel: 'widget' });
+        setTimeout(pedirEventos, 400);
+      };
+
+      iframe.addEventListener('load', () => {
+        pedirEventos();
+        /* Margen para que el player pinte el primer frame y no se vea el
+         * rectángulo negro del iframe encima del poster. */
+        setTimeout(revelar, 1000);
+      });
+
+      window.addEventListener('message', (evento) => {
+        if (evento.source !== iframe.contentWindow) return;
+
+        let datos: { event?: string; info?: unknown };
+        try {
+          datos = JSON.parse(evento.data);
+        } catch {
+          return;
+        }
+        respondio = true;
+        if (datos.event !== 'onStateChange') return;
+
+        // 1 = reproduciendo, 0 = terminado.
+        if (datos.info === 1) revelar();
+        if (datos.info === 0) {
+          enviar(iframe, { event: 'command', func: 'seekTo', args: [0, true] });
+          enviar(iframe, { event: 'command', func: 'playVideo', args: [] });
+        }
+      });
+
+      contenedor.appendChild(iframe);
+    };
+
+    /* El video es decorativo: no vale un solo byte si el usuario pidió ahorrar
+     * datos o está en una conexión lenta. Es el único recorte que queda, y es
+     * opt-in del usuario. `connection` no existe en Safari ni Firefox, y ahí
+     * simplemente no se aplica. */
+    const conexion = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    const conexionPobre =
+      conexion?.saveData === true ||
+      (conexion?.effectiveType !== undefined && /^(slow-)?2g$/.test(conexion.effectiveType));
+
+    /* En `load` y no en idle: el video tiene que arrancar sin espera perceptible
+     * (pedido directo, 16/08/2026). Sigue después del LCP porque `load` ya
+     * implica que el contenido de la ruta se pintó; lo que se pierde respecto de
+     * `requestIdleCallback` es la garantía de no competir por el hilo principal
+     * con lo que el usuario esté haciendo en ese momento. */
+    if (!conexionPobre) {
+      if (document.readyState === 'complete') montar();
+      else window.addEventListener('load', montar, { once: true });
+    }
+  }
+</script>

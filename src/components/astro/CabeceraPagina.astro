@@ -1,0 +1,53 @@
+---
+/**
+ * Cabecera de página: Eyebrow + h1 + regla de arena + bajada.
+ *
+ * Las cinco páginas internas abren exactamente igual (16/08/2026). Estaba
+ * copiada textual en las cinco, incluido el string de la animación de entrada,
+ * que es la parte que no se puede desincronizar sin romper el LCP:
+ *
+ * ENTRADA CSS-ONLY, NO `data-reveal`. Este bloque contiene el <h1>, que es el
+ * LCP de todas estas rutas. Con `data-reveal` arrancaba en `opacity: 0` y solo
+ * se hacía visible cuando corría el script del layout; Chrome no considera
+ * candidato a LCP a un elemento con opacidad cero, así que el LCP dejaba de
+ * coincidir con el FCP y pasaba a depender de la ejecución del módulo más la
+ * primera entrega del IntersectionObserver — medido entre +140 ms y +424 ms
+ * según la ruta. Declarada en CSS, la animación arranca en el primer frame y
+ * el elemento es candidato desde el vamos. Es el mismo recurso que el hero de
+ * la Home usa para su <h1>, por el mismo motivo.
+ *
+ * El <h1> va en `text-h1` y no en el `text-hero` de la Home: allá el hero ocupa
+ * la ventana entera sobre video, acá el título vive dentro de la hoja técnica y
+ * `text-hero` lo dejaría fuera de escala respecto de los <h2> que siguen.
+ */
+import Eyebrow from '@/components/astro/Eyebrow.astro';
+
+interface Props {
+  /** Texto del Eyebrow: la sección del sitio a la que pertenece la página. */
+  eyebrow: string;
+  /** Contenido del <h1>. Uno solo por ruta. */
+  titulo: string;
+  /** Bajada opcional. `/obras/[id]` la toma de `subtitulo`, que no es requerido. */
+  bajada?: string;
+}
+
+const { eyebrow, titulo, bajada } = Astro.props as Props;
+
+/** `/obras/[id]` antepone migas de pan; el resto de las páginas no. */
+const conMigas = Astro.slots.has('migas');
+const claseEyebrow = conMigas ? 'mt-6 mb-2.5' : 'mb-2.5';
+---
+
+<div
+  class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+>
+  <slot name="migas" />
+  <Eyebrow class={claseEyebrow}>{eyebrow}</Eyebrow>
+  <h1 class="max-w-[900px] text-h1 font-medium text-navy">{titulo}</h1>
+  <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
+  {
+    bajada && (
+      <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">{bajada}</p>
+    )
+  }
+</div>
