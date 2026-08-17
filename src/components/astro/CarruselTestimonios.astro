@@ -1,10 +1,9 @@
 ---
 /**
  * Carrusel de testimonios (§5.1 Sección 7) — layout asimétrico portado del
- * proto Glass (decisión del 07/08/2026): número gigante de fondo, cita que se
- * revela palabra por palabra y botones circulares que se rellenan desde el lado
- * de su flecha. El riel izquierdo que completaba el layout se eliminó el
- * 15/08/2026 (ver el comentario del markup).
+ * proto Glass (decisión del 07/08/2026): número gigante de fondo, riel
+ * izquierdo, cita que se revela palabra por palabra y botones circulares que
+ * se rellenan desde el lado de su flecha.
  *
  * Cromática adaptada al local: el proto vive sobre navy oscuro y esta sección
  * es clara (arena-200), así que el acento es NAVY y no arena (§1.2: la arena
@@ -36,35 +35,46 @@ const { testimonios, class: className } = Astro.props as Props;
     01
   </div>
 
-  {/* El riel —el trazo vertical de 1px que corría a la izquierda de la cita, con
-      su sangría de 8/14 en desktop— se eliminó el 15/08/2026 por pedido
-      directo, en la misma pasada que vació de líneas a GrillaServicios,
-      GrillaLogos y TimelineContacto. Sin él la cita arranca contra el borde de
-      la columna y el flex queda con un solo hijo; se conserva igual porque
-      `.tst-main` necesita ser el contexto posicionado del `.tst-nav` absoluto. */}
   <div class="relative z-10 flex">
-    <div class="tst-main relative min-w-0 flex-1 py-8 md:py-12">
-      {
-        testimonios.map(({ entry, Contenido }, i) => (
-          <div class:list={['tst-slide', i === 0 && 'is-active']} data-i={i}>
-            <span class="mb-8 inline-flex items-center gap-2 text-[0.825rem] tracking-[0.12em] text-navy-700 uppercase">
-              <i class="h-1.5 w-1.5 bg-navy" aria-hidden="true" />
-              {entry.data.zona}
-            </span>
+    {/* Riel sacado (16/08/2026, pedido explícito de la usuaria): antes había
+        acá un trazo vertical decorativo (`.tst-riel`) — se retira por completo,
+        elemento y CSS. El `md:pl-8 lg:pl-14` de `.tst-main` se deja igual: el
+        espacio que compensaba no se lee como un hueco vacío sino como aire
+        coherente con el resto del layout (mismo margen izquierdo relativo al
+        número de fondo que ya tenían las demás secciones). */}
+    <div class="tst-main relative min-w-0 flex-1 py-8 md:py-12 md:pl-8 lg:pl-14">
+      {/* `tst-slides` (16/08/2026, pedido explícito): antes cada slide entraba
+          y salía del flujo normal con `display:none`, así que el contenedor
+          medía la altura de la que estuviera activa — si un testimonio era
+          más corto que otro, el layout saltaba al cambiar de slide. Ahora
+          todas las slides se apilan en la misma celda de grid (`grid-area:
+          1/1`) y la inactiva se oculta con `visibility:hidden` en vez de
+          `display:none`: sigue ocupando su lugar en el cálculo de alto del
+          grid, así que el contenedor siempre mide lo que mide la más alta de
+          todas, sin importar cuál esté activa. */}
+      <div class="tst-slides">
+        {
+          testimonios.map(({ entry, Contenido }, i) => (
+            <div class:list={['tst-slide', i === 0 && 'is-active']} data-i={i}>
+              <span class="mb-8 inline-flex items-center gap-2 text-[0.825rem] tracking-[0.12em] text-navy-700 uppercase">
+                <i class="h-1.5 w-1.5 bg-navy" aria-hidden="true" />
+                {entry.data.zona}
+              </span>
 
-            <blockquote class="tst-quote text-h1 font-light text-navy [&_p]:mt-0">
-              <Contenido />
-            </blockquote>
+              <blockquote class="tst-quote text-h1 font-light text-navy [&_p]:mt-0">
+                <Contenido />
+              </blockquote>
 
-            <div class="mt-10 flex items-end gap-6">
-              <div class="flex items-center gap-4">
-                <span class="tst-line h-px w-8 origin-left bg-navy" aria-hidden="true" />
-                <span class="block font-medium text-navy">{entry.data.nombre}</span>
+              <div class="mt-10 flex items-end gap-6">
+                <div class="flex items-center gap-4">
+                  <span class="tst-line h-px w-8 origin-left bg-navy" aria-hidden="true" />
+                  <span class="block font-medium text-navy">{entry.data.nombre}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))
-      }
+          ))
+        }
+      </div>
 
       <div class="tst-nav mt-8 flex items-center gap-3.5 md:absolute md:right-0 md:bottom-12 md:mt-0">
         <button
@@ -113,8 +123,17 @@ const { testimonios, class: className } = Astro.props as Props;
 <style>
   /* Las slides solo se ocultan si el JS tomó el control: sin JS se ven todas
    * apiladas y los controles no aparecen. */
+  .tst[data-js] .tst-slides {
+    display: grid;
+  }
+  .tst[data-js] .tst-slides > .tst-slide {
+    grid-area: 1 / 1;
+  }
+  /* `visibility`, no `display: none` (16/08/2026): la inactiva sigue en el
+   * flujo del grid para que su altura cuente en el cálculo del contenedor —
+   * ver comentario de `.tst-slides` en el markup. */
   .tst[data-js] .tst-slide:not(.is-active) {
-    display: none;
+    visibility: hidden;
   }
   .tst:not([data-js]) .tst-nav {
     display: none;
