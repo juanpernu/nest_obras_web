@@ -1,21 +1,211 @@
 ---
 /**
- * Clientes corporativos como TEXTO (§6.5): cada nombre es un elemento propio, no
- * una imagen única. Fallback texto-solo mientras no haya assets de logo.
+ * Clientes corporativos como logos (§5.1 Sección 6). Marco "blueprint": el
+ * reticulado completo de la grilla dibujado con líneas finas continuas —una
+ * por cada límite de columna y de fila, incluidos los exteriores— rodeando
+ * cada logo, de punta a punta y sin cortes en las uniones (16/08/2026: antes
+ * las líneas se interrumpían para dejarle lugar a un punto en cada cruce;
+ * al sacar los puntos, se sacó también el corte, que quedaba como un hueco
+ * vacío sin nada que lo justifique).
+ *
+ * Se renderiza dos veces con distinta geometría (2 columnas en mobile, 4 en
+ * desktop) porque el reticulado cambia con el breakpoint: mismas celdas, otra
+ * cantidad de filas y columnas.
+ *
+ * Esquinas exteriores en L (16/08/2026, unificación con el marco de página):
+ * las 4 intersecciones exteriores del reticulado (0%/0%, 100%/0%, 0%/100%,
+ * 100%/100%) llevan la misma escuadra en L de 9px con borde 1.5px navy que
+ * usan `.bp-esq` (GrillaServicios) y `.marco-esq` (MarcoSeccion) — mismo
+ * estilo de líneas y esquinas que el marco general de la página. El resto de
+ * las intersecciones (internas, y las de borde-pero-no-esquina) no lleva
+ * ninguna marca: el sistema general tampoco marca cruces que no son una
+ * esquina real, solo los 4 extremos de un rectángulo.
  */
-import { clientes } from '@/data/clientes';
-
 interface Props {
   class?: string;
 }
 const { class: className } = Astro.props as Props;
+
+/** Logos que no se muestran, por número de archivo (decisión del 07/08/2026).
+ * El asset sigue en /public/logos: se oculta, no se borra. */
+const ocultos = new Set(['08']);
+
+const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, '0'))
+  .filter((n) => !ocultos.has(n))
+  .map((n) => ({
+    src: `/logos/logo_${n}.svg`,
+    alt: `Logo de cliente corporativo de NEST (${n})`,
+  }));
+logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
+
+/* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
+ * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
+ * mide solo su padding, así que las filas dejaban de ser uniformes y el
+ * reticulado —que reparte porcentajes iguales— se desalineaba de los logos.
+ * Con las celdas justas, mobile da 5 filas exactas (10/2) y desktop 3 (⌈10/4⌉),
+ * y `auto-rows-fr` en la grilla garantiza que todas midan igual. */
+const celdas = logosReales;
+
+/* Las dos extensiones que salen de la grilla se difuminan hacia el borde del
+ * viewport: arrancan opacas contra la grilla y llegan 100% transparentes justo
+ * al llegar al margen, en vez de cortarse en seco.
+ *
+ * MARGEN (16/08/2026, fix de scroll horizontal + alineación con el marco de
+ * página): en `index.astro`, `GrillaLogos` ya no vive dentro de su propio
+ * `px-6` — el contenedor que la envuelve usa `padding-inline: var(--marco-x)`
+ * directo (mismo margen que las escuadras de `MarcoSeccion`), así que el
+ * borde 0%/100% de esta grilla YA ES el borde del marco de la sección. La
+ * distancia de ahí al borde real de pantalla es, entonces, exactamente
+ * `--marco-x` — sin sumarle nada, a diferencia de una versión anterior de
+ * este cálculo que compensaba un nivel de `px-6` que ya no existe.
+ *
+ * El fallback dentro de `var()` sólo corre si NO hay un `<MarcoSeccion>`
+ * ancestro que defina `--marco-x` — es el caso de `servicios.astro`, que usa
+ * `GrillaLogos` dentro de una `<section class="bg-navy">` simple con su
+ * propio `px-6` sin tocar (fuera del alcance de este fix). Ahí el fallback
+ * reproduce la fórmula vieja tal cual, `(100vw - 100%) / 2` — mismo anti-
+ * patrón ya corregido en HojaTecnica/MarcoSeccion/GrillaServicios (`100vw`
+ * cuenta el ancho de la scrollbar y `100%` no), pero `servicios.astro` sigue
+ * con ese bug de scroll conocido, sin cambios, pendiente si se decide
+ * envolver esa sección en `<MarcoSeccion>` también.
+ *
+ * El fundido va por `mask-image` y no por un degradé de color: la máscara es
+ * independiente del pintado del trazo, así que el mismo recurso sirvió cuando
+ * la línea era dasheada y sigue sirviendo ahora que es sólida. */
+const MARGEN = 'var(--marco-x, calc((100vw - 100%) / 2))';
+
+const reticulados = [
+  { cols: 2, visibilidad: 'md:hidden' },
+  { cols: 4, visibilidad: 'hidden md:block' },
+].map(({ cols, visibilidad }) => {
+  const filas = Math.ceil(celdas.length / cols);
+  const anchoCol = 100 / cols;
+  const altoFila = 100 / filas;
+
+  return {
+    visibilidad,
+    /** Una vertical continua por cada límite de columna, sin cortes por fila
+     * (16/08/2026): sin los puntos en los cruces, el corte por GAP dejaba un
+     * hueco visible en cada intersección. */
+    segmentosV: Array.from({ length: cols + 1 }, (_, c) => ({
+      left: `${c * anchoCol}%`,
+      top: '0%',
+      height: '100%',
+    })),
+    /** Una horizontal continua por fila, de punta a punta (con sus dos
+     * extensiones que se funden hacia el borde real de pantalla), sin cortes
+     * por columna. */
+    segmentosH: Array.from({ length: filas + 1 }, (_, f) => {
+      const top = `${f * altoFila}%`;
+      return [
+        { estilo: { top, left: `calc(-1 * ${MARGEN})`, width: MARGEN }, clase: 'funde-izq' },
+        { estilo: { top, left: '0%', width: '100%' }, clase: '' },
+        { estilo: { top, left: '100%', width: MARGEN }, clase: 'funde-der' },
+      ];
+    }).flat(),
+  };
+});
 ---
 
-<ul class:list={['flex flex-wrap items-center justify-center gap-x-10 gap-y-6', className]}>
+<div class:list={['relative', className]}>
+  <div class="relative grid auto-rows-fr grid-cols-2 md:grid-cols-4">
+    {
+      celdas.map((logo) => (
+        <div class="flex items-center justify-center py-6">
+          <img
+            src={logo.src}
+            alt={logo.alt}
+            loading="lazy"
+            decoding="async"
+            class="h-12 w-auto max-w-[140px] object-contain grayscale transition-[filter] duration-300 hover:grayscale-0"
+          />
+        </div>
+      ))
+    }
+  </div>
+
   {
-    /* Sin color propio: hereda del contexto (navy sobre blanco, blanco sobre navy). */
-    clientes.map((c) => (
-      <li class="text-lg font-medium uppercase tracking-[0.08em]">{c.nombre}</li>
+    reticulados.map(({ visibilidad, segmentosV, segmentosH }) => (
+      <div class:list={['pointer-events-none absolute inset-0', visibilidad]} aria-hidden="true">
+        {segmentosV.map((s) => (
+          <span class="linea-v absolute w-px" style={s} />
+        ))}
+        {segmentosH.map((s) => (
+          <span class:list={['linea-h absolute h-px', s.clase]} style={s.estilo} />
+        ))}
+
+        {/* Sin puntos en las intersecciones internas (16/08/2026, pedido
+            explícito): solo quedan las líneas y las 4 escuadras exteriores,
+            mismo criterio que `.bp-esq`/`.marco-esq`. */}
+        <span class="esq esq--si" aria-hidden="true" />
+        <span class="esq esq--sd" aria-hidden="true" />
+        <span class="esq esq--ii" aria-hidden="true" />
+        <span class="esq esq--id" aria-hidden="true" />
+      </div>
     ))
   }
-</ul>
+</div>
+
+<style>
+  /* Trazo sólido en --color-rule (15/08/2026). Antes era dasheado en
+   * arena-200, vía repeating-linear-gradient. Se sacaron todas las líneas
+   * dasheadas del sitio: el reticulado ahora habla el mismo idioma que las
+   * guías de página y el marco de sección (HojaTecnica / MarcoSeccion), que son
+   * reglas continuas casi subliminales con marcas navy en los cruces. Acá esas
+   * marcas ya existían: los puntos de 3px del markup. */
+  .linea-h,
+  .linea-v {
+    background-color: var(--color-rule);
+  }
+
+  /* El fundido de las extensiones va por máscara y no por un degradé de color,
+   * para no depender de cómo esté pintado el trazo. */
+  .funde-izq {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000);
+    mask-image: linear-gradient(to right, transparent, #000);
+  }
+  .funde-der {
+    -webkit-mask-image: linear-gradient(to left, transparent, #000);
+    mask-image: linear-gradient(to left, transparent, #000);
+  }
+
+  /* Escuadras exteriores (16/08/2026) — mismo criterio que `.bp-esq`
+   * (GrillaServicios) / `.marco-esq` (MarcoSeccion): cuadrado de 9px con dos
+   * lados en navy de 1.5px, ancladas al 0%/100% exacto del reticulado (no a
+   * `--marco-x`: esta grilla no es full-bleed, así que sus esquinas van sobre
+   * su propio borde, no sobre las guías de página). */
+  .esq {
+    position: absolute;
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--color-navy);
+    pointer-events: none;
+  }
+  .esq--si {
+    top: 0;
+    left: 0;
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .esq--sd {
+    top: 0;
+    right: 0;
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+  .esq--ii {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .esq--id {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+</style>

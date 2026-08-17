@@ -162,14 +162,14 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 ## 4. 🟡 Fase 6 — GEO, CI y deploy (pendiente)
 
-- [ ] `scripts/verificar-html.sh` completo y parametrizado (§12) + guarda de acentuación + guarda de "video no se descarga en mobile".
+- [ ] `scripts/verificar-html.sh` completo y parametrizado (§12) + guarda de acentuación + guarda de "video no se descarga en mobile" (el hero sigue en `<video>` propio — ver nota del 17/08/2026 en §5 sobre por qué se revirtió el embed de YouTube que hubo brevemente el 16/08).
 - [ ] **CI** (`.github/workflows/`): `astro check`, `verificar-html.sh`, **`verificar-tracking.sh`**, **Lighthouse CI mobile** (perf ≥95 / a11y =100), grep `client:`, grep `llms.txt`, **check de tamaño de bundle JS < 5 KB/ruta** (eximir el script de Turnstile). Definir `$BASE_URL` = preview de Vercel.
   - ⚠️ **El gate de Lighthouse es la excepción: NO sirve contra un preview.** El tracking solo se activa en el hostname de producción, así que en un `*.vercel.app` el snippet ni se renderiza y Lighthouse devuelve un 100 que no mide nada de los 160 KB de terceros. Ese gate tiene que correr contra `nestobras.com.ar` post-deploy (PageSpeed Insights o LHCI apuntado a producción), mirando **TBT** en particular (§7.1).
 - [ ] **Search Console** configurado + sitemap enviado (antes del lanzamiento, §6.11).
 - [ ] **Bing Webmaster Tools** + sitemap (alimenta Copilot — del skill `seo-geo`).
 - [ ] **Perfil de Negocio de Google** con NAP idéntico carácter por carácter (§6.7) — bloqueado por la dirección física.
 - [ ] **Deployment Protection APAGADA en producción** (con protección, Googlebot/GPTBot reciben 401, §9). Dejarla solo en previews.
-- [ ] **Dominio**: `nestobras.com.ar` principal + redirect **308** desde `www`; confirmar que `archivo.nestobras.com.ar` (video del hero) sigue apuntando tras la migración de DNS.
+- [ ] **Dominio**: `nestobras.com.ar` principal + redirect **308** desde `www`. (El hero volvió a `<video>` propio el 17/08/2026 — ver nota de §5 —, así que ya no depende de `archivo.nestobras.com.ar` ni de YouTube; el archivo se sirve desde `public/hero-video.mp4`.)
 - [ ] **Lighthouse mobile real** ≥95 perf / 100 a11y contra el preview servido (no `astro dev`).
 - [ ] **FAQ + `FAQPage` schema** — recomendación del skill `seo-geo` (mayor palanca GEO). **Es una adición al spec §5 → requiere OK del usuario.** Preguntas candidatas ya armables con contenido real (zonas, proceso, modalidades).
 
@@ -177,6 +177,7 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 ## 5. 🟢 Deuda menor / decisiones tomadas / known issues
 
+- **Embed de YouTube en el hero, probado y revertido dos veces (14/08, 16/08, 17/08/2026)** — se intentó reemplazar el `<video>` propio por un embed de YouTube en al menos dos oportunidades, cada vez atacando los problemas de la vez anterior (superposición de UI del player en cada loop, autoplay poco confiable, visibilidad rota, y por último autoplay forzado en todas las condiciones incluyendo `prefers-reduced-motion`, derogando el §7.2 del plan). El 17/08/2026 se revirtió otra vez a `<video>` nativo con `public/hero-video.mp4`: el problema de fondo (la superposición de UI de YouTube en cada ciclo del loop) nunca se resolvió de forma confiable, y un embed de terceros mete >1 MB de JS que no puede estar en el camino crítico sin comprometer el budget de performance. Si se vuelve a plantear este cambio, revisar primero este historial antes de reintentarlo.
 - **Fallback tipográfico métrico (CLS)** — hoy stopgap `"Arial Narrow"` en el stack. El fallback métrico definitivo (`@font-face` con `size-adjust`/`ascent-override`) quedó diferido; ahora que el hero real existe (Fase 4) se puede medir CLS e implementarlo. `fontaine` no sirve (no inyecta en la CSS-var de Tailwind v4).
 - **El content store NO purga una colección que queda en cero** — al borrar el último `.md` de una colección, el glob loader avisa `No files found matching` pero las entradas ya sincronizadas **siguen renderizando**. `rm -rf .astro dist` no alcanza: el store persistente vive en **`node_modules/.astro/data-store.json`**. Verificado 2026-08-04 (dos testimonios de prueba sobrevivieron a tres builds limpios). Importa porque la caché de build de Vercel puede incluir `node_modules`: si algún día se despublican los testimonios, hay que borrar ese archivo o el deploy los republica.
 - **`PLAN-EJECUCION.md` dice "Astro 5"** (§2.5/§3) pero se usa **Astro 7** (decisión aprobada). Doc desactualizado — conviene anotar la versión real ahí.
@@ -251,7 +252,7 @@ componente se trackea agregando `data-evento="…"` al HTML, sin escribir JS.
 - [ ] **Toda la acentuación correcta** (ningún "anos", "mas", "gestion" sin tilde)
 - [ ] `<form>` / `<label for>` / `<button type=submit>` reales · form envía sin JS
 - [ ] Canonical autorreferencial + ruta en `sitemap.xml`
-- [ ] **Lighthouse mobile ≥ 95 perf / 100 a11y** · táctiles ≥ 44 px · video no se descarga en mobile
+- [ ] **Lighthouse mobile ≥ 95 perf / 100 a11y** · táctiles ≥ 44 px · **a re-medir**: desde el 16/08/2026 mobile sí descarga el embed (ver §5)
 - [ ] Deployment Protection off en prod · dominio + redirect 308
 - [ ] **`/privacidad` validada legalmente** — hoy es un borrador de desarrollo (§6.1)
 - [ ] `PUBLIC_GA4_ID` cargada en Vercel **y redeployada** · conversiones marcadas en GA4

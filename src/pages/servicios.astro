@@ -2,6 +2,11 @@
 import Layout from '@/layouts/main.astro';
 import GrillaLogos from '@/components/astro/GrillaLogos.astro';
 import Boton from '@/components/astro/Boton.astro';
+import Eyebrow from '@/components/astro/Eyebrow.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -36,77 +41,171 @@ const serviciosLd = entries.map((s) => ({
 }));
 ---
 
+{/* Alineada al lenguaje de la Home (16/08/2026). Ver la nota extensa de
+    nosotros.astro: mismo criterio y mismas reglas de marco. Específico de esta
+    página:
+
+     - Las dos bandas navy (cabecera y clientes) y la tercera del CTA de cierre
+       pasan a blanco. El navy queda para el footer, como en la Home.
+     - No se monta <GrillaServicios> acá aunque sea el componente de servicios
+       de la Home: sus tres tarjetas son un RESUMEN de esta página, y ponerlas
+       arriba del detalle repetiría el mismo contenido dos veces en el mismo
+       scroll. El lenguaje que sí se trae es el resto del sistema.
+     - Las modalidades pasan de tarjetas planas navy-50 a la card GLASS del
+       sitio: los cuatro valores salen tal cual del formulario de la Sección 9
+       de la Home, que a su vez los tomó del header scrolleado (Nav.astro).
+     - Los subrayados de 4px en arena bajan a la regla de 1px del sistema. */}
 <Layout
   title="Servicios de construcción | NEST Zona Norte y CABA"
   description="Construcción llave en mano, refacciones, proyectos corporativos y dirección de obra. NEST cubre todo el proceso de principio a fin en Zona Norte y CABA."
   jsonLd={serviciosLd}
   evento={{ nombre: 'servicio_view' }}
 >
-  <section class="bg-navy py-16 text-white md:py-20">
-    <div class="mx-auto max-w-6xl px-6">
-      <h1 class="text-hero font-light">Servicios de construcción</h1>
-      <p class="mt-4 max-w-2xl leading-relaxed text-navy-100">
-        Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega.
-      </p>
-    </div>
-  </section>
+  <HojaTecnica>
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <CabeceraPagina
+          eyebrow="Servicios"
+          titulo="Servicios de construcción"
+          bajada="Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega. Con un solo responsable de la obra y un único punto de contacto."
+        />
+      </section>
+    </MarcoSeccion>
 
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl space-y-12 px-6">
-      {
-        servicios.map((s) => (
-          <div class="grid gap-6 border-t-4 border-arena pt-8 md:grid-cols-[2fr_1fr]">
-            <div>
-              <h2 class="text-h2 font-medium text-navy">{s.data.nombre}</h2>
-              <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
-              <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
-                <s.Content />
-              </div>
-            </div>
-            <ul class="space-y-2 text-sm text-navy">
-              {s.data.incluye.map((i) => (
-                <li class="flex gap-2">
-                  <span aria-hidden="true" class="text-navy-700">+</span>
-                  <span>{i}</span>
+    {/* Cierre del capítulo "qué hacemos": lo que sigue es el detalle. */}
+    <FranjaRayado />
+
+    {/* ÍNDICE TIPOGRÁFICO (16/08/2026, pedido directo: "aplicá el mismo criterio
+        tipográfico"). Mismo recurso que el proceso de /nosotros: renglones a
+        todo el ancho separados por la regla de 1px del sistema, y el contraste
+        de escala haciendo el trabajo en vez de una caja. La cifra sube a
+        `text-stat` en peso 300 —el par tamaño/peso del dato editorial de
+        BarraEstadisticas— y queda colgada en su propia columna, como la
+        numeración al margen de un pliego.
+
+        Reemplaza al eyebrow "SERVICIO 01" a 11px, que decía lo mismo en el
+        tamaño más chico del sistema: el número era información de índice
+        tratada como nota al pie.
+
+        `<ol>` y no `<ul>`: el orden es dato real de la colección (`orden` en el
+        schema de `servicios`, por el que se ordena arriba), no una casualidad
+        del markup.
+
+        Tres ejes en desktop —cifra, bloque de texto, lista de `incluye`— con
+        `items-baseline`, así las tres columnas arrancan en la misma línea. En
+        md son dos (la lista baja bajo el texto) y en mobile una: a 375px una
+        columna fija para el número deja el texto partiéndose cada dos palabras. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <ol class="divide-y divide-arena border-y border-arena" data-reveal>
+            {
+              servicios.map((s, i) => (
+                <li class="grid gap-x-10 gap-y-4 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_1fr_16rem] lg:items-baseline">
+                  <span class="text-stat font-light leading-none text-navy">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div class="md:col-start-2">
+                    <h2 class="text-h2 font-normal text-navy">{s.data.nombre}</h2>
+                    <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
+                    <div class="mt-4 max-w-[64ch] font-light leading-relaxed text-navy-700 [&_p]:mt-0">
+                      <s.Content />
+                    </div>
+                  </div>
+                  <ul class="space-y-2 text-sm text-navy-700 md:col-start-2 lg:col-start-3">
+                    {s.data.incluye.map((item) => (
+                      <li class="flex gap-2.5">
+                        <span aria-hidden="true" class="text-arena-800">
+                          —
+                        </span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </li>
-              ))}
-            </ul>
+              ))
+            }
+          </ol>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    {/* Cierre del capítulo: lo que sigue es cómo se contrata. */}
+    <FranjaRayado />
+
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">Modalidades</Eyebrow>
+            <h2 class="text-h2 font-normal text-navy">Cómo preferís trabajar con nosotros</h2>
           </div>
-        ))
-      }
-    </div>
-  </section>
+          {/* Mismo índice tipográfico que los servicios de arriba (16/08/2026,
+              misma pasada). Reemplaza a dos cards glass —borde navy-200, blur y
+              la sombra del header— que eran el único lenguaje de caja que
+              quedaba en la página: con los servicios ya resueltos como renglones
+              con regla, dos tarjetas flotando debajo leían como otro sistema.
 
-  {/* Clientes corporativos (tabla reubicada de la ex-página corporativa, §5.3 / p.14) */}
-  <section class="bg-navy py-16 text-center text-white md:py-20">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium">Empresas que confiaron en NEST</h2>
-      <GrillaLogos class="mt-10" />
-    </div>
-  </section>
+              El glass no desaparece del sitio, se queda donde es una SUPERFICIE
+              y no un contenedor de texto: el header scrolleado y la card del
+              formulario de /contacto y de la Sección 9 del Home. */}
+          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
+            {
+              modalidades.map((m, i) => (
+                <li class="grid gap-x-10 gap-y-3 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
+                  <span class="text-stat font-light leading-none text-navy">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">
+                    {m.titulo}
+                  </h3>
+                  <div class="md:col-start-2 lg:col-start-3">
+                    <p class="max-w-[64ch] font-light leading-relaxed text-navy-700">{m.texto}</p>
+                    <p class="mt-3 max-w-[64ch] text-sm italic text-navy-700">{m.ideal}</p>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </section>
+    </MarcoSeccion>
 
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Modalidades de contratación</h2>
-      <p class="mt-2 text-navy-700">Cómo preferís trabajar con nosotros.</p>
-      <div class="mt-10 grid gap-8 md:grid-cols-2">
-        {
-          modalidades.map((m) => (
-            <div class="bg-navy-50 p-8">
-              <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">{m.titulo}</h3>
-              <p class="mt-4 leading-relaxed text-navy">{m.texto}</p>
-              <p class="mt-4 text-sm italic text-navy-700">{m.ideal}</p>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+    {/* Clientes corporativos (tabla reubicada de la ex-página corporativa,
+        §5.3 / p.14). Mismo tratamiento que la Sección 6 de la Home: centrado,
+        fondo blanco, logos en escala de grises que vuelven a color en hover. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6 text-center">
+          <h2 class="text-h2 font-normal text-navy" data-reveal>Empresas que confiaron en NEST</h2>
+          <div data-reveal>
+            <GrillaLogos class="mt-10" />
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
 
-  <section class="bg-navy py-16 text-center text-white md:py-20">
-    <div class="mx-auto max-w-3xl px-6">
-      <h2 class="text-h2 font-medium">Consulta tu proyecto sin compromiso</h2>
-      <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
-    </div>
-  </section>
+    {/* Cierre del capítulo: lo que sigue es la acción. */}
+    <FranjaRayado />
+
+    {/* CTA de cierre en blanco con `secundario`, por el mismo motivo que en
+        /nosotros: `primario` es glass con texto blanco y solo funciona sobre
+        navy, y una banda navy acá se apilaba con el footer. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Contacto</Eyebrow>
+          <h2 class="max-w-[640px] text-h2 font-normal text-navy">
+            Consulta tu proyecto sin compromiso
+          </h2>
+          <p class="mt-3 max-w-[560px] text-navy-700">
+            Respondemos en menos de 24 horas en días hábiles.
+          </p>
+          <div class="mt-6">
+            <Boton href="/contacto" variante="secundario">Consulta tu proyecto →</Boton>
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
 </Layout>

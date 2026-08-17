@@ -184,3 +184,42 @@ Ratios WCAG recalculados (la estimación del doc de identidad estaba mal; el doc
 ## Review (se completa al cierre de cada fase)
 
 - **Fase 1:** _pendiente_
+
+---
+
+## Feedback en página (agentation) — Home, 15/08/2026 — implementado
+
+10 anotaciones sobre `/`, todas verificadas en `pnpm preview` a 1706×1329.
+
+- [x] **1. Logo del header** — `public/logo-nest.svg` pasa a blanco entero (los 3 paths del isotipo iban en arena `#D9C2B6`). Ese archivo lo usa solo el header de Home sin scrollear; el resto usa la variante oscura. Ahora también lo usa el footer.
+- [x] **2. Contador de estadísticas** — el trigger funcionaba, pero por `<dd>` y con `threshold: 0.4`: en mobile (2 columnas) las dos filas contaban desfasadas y en scroll rápido la cuenta arrancaba pasada la mitad. Pasa a un observer por barra (`[data-contadores]`), `threshold: 0` + `rootMargin: 0 0 -10% 0`. Los cuatro números arrancan juntos apenas la barra entra en viewport.
+- [x] **3 y 4. Sección "Quiénes somos"** — en desktop la sección pasa a `min-h-dvh` y la foto ocupa la mitad derecha exacta (576px de 1152) a alto completo, apoyada contra la guía derecha de `HojaTecnica`. `gap`/`px` se mueven a la columna de texto para que la mitad sea 50% real. Mobile intacto (una columna, 4:3). `widths` sube a 1280 y `sizes` declara 70vw: el recorte lo manda el alto de la caja, no su ancho.
+- [x] **5. GrillaServicios** — fuera el marco "blueprint" completo: reglas horizontales con sangrado a viewport, verticales, divisores de 1px entre tarjetas y las 8 marcas de registro. Se conserva la distribución (3 columnas, 44px de aire arriba/abajo). Las columnas ahora salen de `servicios.length` en vez del `1fr auto 1fr auto 1fr` fijo.
+- [x] **6. Velo de las tarjetas de obra** — `color-mix(navy 70%)` → `rgb(0 0 0 / 0.7)`. Misma transparencia, tinta neutra. Contraste contra el texto blanco sube de 5.41 a 8.5 en el peor caso.
+- [x] **7. GrillaLogos** — fuera el reticulado entero (segmentos, extensiones difuminadas y puntos de cruce). La grilla queda igual: 2 cols en mobile, 4 en desktop, `auto-rows-fr`. Afecta también a `/servicios`.
+- [x] **8. CarruselTestimonios** — eliminado el `.tst-riel` y su sangría; la cita arranca contra el borde de la columna.
+- [x] **9. TimelineContacto** — fuera la vertical de referencia, las horizontales por fila y los nodos. Sin líneas los nodos quedaban sueltos, así que se van con ellas, y con ellas la sangría que existía para dejarles lugar. Se conservan las cajas de ícono (son la píldora del sistema, no una línea del marco).
+- [x] **10. Footer** — fondo navy, tipografía blanca. Croma invertida entera porque sobre navy los tonos de fondo claro fallan (arena-800 2.53, navy-700 2.51): cuerpo y links en navy-100 (11.24), títulos de columna en arena de marca (7.99), íconos en blanco con borde blanco/30 y hover a arena. Logo → `/logo-nest.svg`.
+
+**No se tocó** el sistema de marco "hoja técnica" (guías de página de `HojaTecnica`, reglas y escuadras de `MarcoSeccion`, `FranjaRayado`): las anotaciones apuntaban a los items dentro de los contenedores, no al marco del documento.
+
+**Verificación:** `astro check` 0 errores / 0 warnings, `pnpm build` OK (6 páginas), `prune-orphan-js` sigue eliminando los 3 chunks de React → cero hidratación intacta. Recorrido visual de `/` y `/servicios` en preview.
+
+### Segunda ronda de feedback (agentation) — Home, 15/08/2026
+
+- [x] **1. Card del formulario → glass** — el navy sólido pasa al mismo tratamiento del header scrolleado, con los cuatro valores copiados de `Nav.astro`: `bg-white/70` + `backdrop-blur-md` + `border-navy-200` + `shadow-[0_12px_40px_rgba(0,0,0,0.1)]`. Al invertirse el fondo, `FormularioConsulta` deja de recibir `sobreNavy` y vuelve a su cromática clara (labels navy, campos con borde navy-600, botón arena sólido). Sobre una sección blanca lisa el blur no tiene nada que difuminar: lo que separa la card son el borde y la sombra.
+- [x] **3. Logo oscuro → full navy** — `public/logo-nest-oscuro.svg`: el isotipo iba en arena-800 `#865C46` → navy `#003057`. Ahora las dos variantes del logo son de una sola tinta (blanca la del hero/footer, navy ésta).
+- [x] **5. CTA del navbar** — `!text-[1.1rem]` → `!text-[0.9625rem]`, el mismo tamaño que los links del header. Verificado: los dos computan 15.4px.
+- [x] **4. Grilla de logos "a todo el ancho"** — la grilla YA medía 1104px = 100% de su padre; lo que no llegaba a los bordes era el contenido. Dos cambios: (a) los logos pasan de `h-12` + `max-w-[140px]` a caja `h-16 w-full` con `object-contain`, y el padding lateral de celda de 24px a 16px; (b) desktop pasa de 4 a **5 columnas** (decisión de la usuaria): 10 logos dan 2 filas exactas y desaparece la fila huérfana que usaba 2 de 4 celdas. Mobile sigue en 2 (5 filas exactas). Techo real documentado en el componente: los 10 SVG tienen ratios de 1.11 a 2.96 y la celda es más ancha que alta, así que todos quedan limitados por el alto de 64px — ensanchar la celda no los agranda, manda `h-16`.
+
+### Tercera ronda de feedback (agentation) — Home, 15/08/2026
+
+- [x] **Servicios a 3 columnas de ancho completo** — la grilla ya eran 3 columnas de 368px, pero cada `.srv-card` traía 48px de padding en desktop: el contenido medía 272px y quedaban 48px muertos contra cada borde del contenedor más 96px entre items. La separación pasa a hacerla el `gap` de la grilla (3rem en desktop, 2.5rem apilado) y el padding se va. Medido: 3 columnas de 336px, el texto del primer item arranca en el borde izquierdo de la grilla y el del tercero termina en el derecho — los 1104px completos. El contenido por item crece 272 → 336px (+23%).
+  Se fue con el padding el `background-color: #fff` del hover de la tarjeta, que era letra muerta desde que la Sección 4 pasó a fondo blanco (14/08/2026): pintaba blanco sobre blanco.
+
+### Cuarta ronda de feedback (agentation) — Home, 15/08/2026
+
+- [x] **Píldoras de ícono de Servicios → navy translúcido** — `.srv-ico` pasa del arena-200 plano a la misma receta glass del header scrolleado, en navy en vez de blanco: fill `color-mix(navy 70%, transparent)` + `blur(12px)` (el `backdrop-blur-md` de Tailwind) + el borde navy que ya tenía. Pasó por un paso intermedio de rayado diagonal (mismo día) que se descartó.
+  El ícono TIENE que ir en blanco: navy al 70% sobre el blanco de la sección compone #4D6E89, y el trazo navy anterior daba 2.53 contra eso — desaparecía. En blanco da 5.37 (WCAG 1.4.11 pide 3:1 para gráficos).
+  El `backdrop-filter` hoy es decorativo: la Sección 4 es blanco liso y no hay nada detrás que difuminar. Va igual porque el pedido era replicar el tratamiento del navbar.
+  El patrón `--rayado` queda en `global.css` junto a `--color-hatch`: hoy lo consume solo `FranjaRayado`, pero es un patrón del sistema y ahí está disponible sin volver a copiarlo.

@@ -2,22 +2,122 @@
 /**
  * Barra de estadísticas (§5.1 Sección 2). Texto, no imágenes (§6.4). Peso 300 a
  * gran tamaño: dato editorial, no cartel (identidad §2.4).
+ *
+ * Animación de conteo (decisión del 06/08/2026): al entrar la barra en
+ * viewport, los números cuentan desde 0 hasta su valor real, todos a la vez
+ * (ver el detalle del disparador en el <script>). Progresiva: sin JS o con
+ * prefers-reduced-motion queda el `e.valor` estático que ya está en el HTML
+ * (§7.1, sin client:*). `parseValor` separa el prefijo/sufijo no numérico
+ * (ej. "+") del número, para poder animar solo la parte numérica y reconstruir
+ * el string exacto al final (mismo formato es-AR con "." de miles).
+ *
+ * `sobreBlanco` (14/08/2026): variante para fondo blanco, usada en la Sección 2
+ * del Home tras unificar todos los fondos de sección a blanco excepto el hero.
+ * `/nosotros` sigue montando el componente sin el prop, sobre su banda navy
+ * original — por eso esto es un prop y no un cambio directo de color: la arena
+ * y el navy-200 siguen siendo correctos ahí.
  */
 import { estadisticas } from '@/data/estadisticas';
 
 interface Props {
   class?: string;
+  /** true cuando el componente va sobre fondo blanco en vez de navy. */
+  sobreBlanco?: boolean;
 }
-const { class: className } = Astro.props as Props;
+const { class: className, sobreBlanco = false } = Astro.props as Props;
+
+const parseValor = (valor: string) => {
+  const match = valor.match(/^(\D*)([\d.]+)(\D*)$/);
+  if (!match) return null;
+  const [, prefijo, numero, sufijo] = match;
+  return { prefijo, sufijo, target: Number(numero.replace(/\./g, '')) };
+};
 ---
 
-<dl class:list={['grid grid-cols-2 gap-8 sm:grid-cols-4', className]}>
+<dl data-contadores class:list={['grid grid-cols-2 gap-8 sm:grid-cols-4', className]}>
   {
-    estadisticas.map((e) => (
-      <div class="flex flex-col text-center">
-        <dt class="order-2 mt-2 text-sm uppercase tracking-[0.08em] text-navy-200">{e.etiqueta}</dt>
-        <dd class="order-1 text-stat font-light text-arena">{e.valor}</dd>
-      </div>
-    ))
+    estadisticas.map((e) => {
+      const parsed = parseValor(e.valor);
+      return (
+        <div class="flex flex-col text-center">
+          <dt
+            class:list={[
+              'order-2 mt-2 text-sm uppercase tracking-[0.08em]',
+              sobreBlanco ? 'text-navy-700' : 'text-navy-200',
+            ]}
+          >
+            {e.etiqueta}
+          </dt>
+          <dd
+            class:list={['order-1 text-stat font-normal', sobreBlanco ? 'text-navy' : 'text-arena']}
+            data-contador={parsed ? '' : undefined}
+            data-target={parsed?.target}
+            data-prefijo={parsed?.prefijo}
+            data-sufijo={parsed?.sufijo}
+          >
+            {e.valor}
+          </dd>
+        </div>
+      );
+    })
   }
 </dl>
+
+<script>
+  const prefiereReducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DURACION_MS = 1400;
+
+  const animar = (el: HTMLElement) => {
+    const destino = Number(el.dataset.target);
+    if (prefiereReducirMovimiento || !Number.isFinite(destino)) return;
+
+    const prefijo = el.dataset.prefijo ?? '';
+    const sufijo = el.dataset.sufijo ?? '';
+    const formatear = (n: number) => `${prefijo}${Math.round(n).toLocaleString('es-AR')}${sufijo}`;
+
+    const inicio = performance.now();
+    const paso = (ahora: number) => {
+      const t = Math.min((ahora - inicio) / DURACION_MS, 1);
+      const avance = 1 - Math.pow(1 - t, 3); // ease-out cúbico
+      el.textContent = formatear(destino * avance);
+      if (t < 1) requestAnimationFrame(paso);
+      else el.textContent = formatear(destino);
+    };
+    requestAnimationFrame(paso);
+  };
+
+  /* El disparador observa la BARRA ENTERA, no cada número por separado
+   * (15/08/2026). Antes cada `<dd>` tenía su propio observer con
+   * `threshold: 0.4`, y eso tenía dos problemas: en mobile la grilla es de 2
+   * columnas, así que la segunda fila arrancaba a contar en otro momento que la
+   * primera —dos animaciones desfasadas donde el diseño pide una—, y el 0.4
+   * exigía que el número estuviera 40% dentro de la ventana, con lo cual en un
+   * scroll rápido la cuenta empezaba ya pasada la mitad del recorrido.
+   *
+   * Ahora: un observer por barra, `threshold: 0` y `rootMargin` con -10% abajo.
+   * Dispara apenas el bloque cruza el borde inferior de la ventana (menos ese
+   * 10% de guarda, para que no cuente por asomar un píxel) y los cuatro números
+   * arrancan juntos. `once` corta cualquier re-disparo.
+   *
+   * Si no hay IntersectionObserver no se anima nada y quedan los valores
+   * estáticos que ya vienen en el HTML — que es el comportamiento correcto
+   * (§7.1): el dato está, la animación es el adorno. */
+  for (const barra of document.querySelectorAll<HTMLElement>('[data-contadores]')) {
+    const contadores = Array.from(barra.querySelectorAll<HTMLElement>('[data-contador]'));
+    if (!contadores.length || !('IntersectionObserver' in window)) continue;
+
+    let disparada = false;
+    const observer = new IntersectionObserver(
+      (entradas) => {
+        for (const entrada of entradas) {
+          if (!entrada.isIntersecting || disparada) continue;
+          disparada = true;
+          observer.disconnect();
+          contadores.forEach(animar);
+        }
+      },
+      { threshold: 0, rootMargin: '0px 0px -10% 0px' },
+    );
+    observer.observe(barra);
+  }
+</script>

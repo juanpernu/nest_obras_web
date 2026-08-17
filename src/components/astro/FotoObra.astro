@@ -22,9 +22,21 @@ interface Props {
 const { src, alt, sizes, prioridad = false, class: className } = Astro.props as Props;
 ---
 
+{/* `widths` es obligatorio para que `sizes` sirva de algo (16/08/2026, auditoría
+    de performance). Sin él, <Picture> emite UNA sola variante por formato y la
+    escribe sin descriptor de ancho; un srcset de un candidato sin descriptor se
+    trata como `1x` y el navegador ignora `sizes` por completo: mandaba el
+    archivo de 1200px a cualquier viewport. Hoy cuesta poco porque las portadas
+    de la colección son placeholders planos de 5-9 KB, pero con las fotos reales
+    un laptop DPR 1 —donde la celda de la grilla mide 475px— se comía 2,5x de
+    más. Se arregla ahora para no rehacer la caché de Sharp dos veces.
+
+    Los tres anchos cubren la grilla de /obras en sus tres breakpoints: 100vw en
+    mobile, 50vw en sm y 33vw en lg. Galeria.astro ya lo hacía bien. */}
 <Picture
   src={src}
   alt={alt}
+  widths={[400, 800, 1200]}
   formats={['avif', 'webp']}
   sizes={sizes}
   loading={prioridad ? 'eager' : 'lazy'}

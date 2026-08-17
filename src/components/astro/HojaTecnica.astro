@@ -1,0 +1,65 @@
+---
+/**
+ * Capa 1 del sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria).
+ *
+ * Envuelve un tramo de página y dibuja dos guías verticales de 1px que lo
+ * recorren de punta a punta, como los márgenes de imprenta de un plano. Todo lo
+ * demás del sistema se alinea contra ellas: las esquinas en L de `MarcoSeccion`
+ * caen exactamente sobre estas dos líneas.
+ *
+ * Es un wrapper y no dos `<span>` sueltos a propósito: las guías necesitan un
+ * contenedor `position: relative` que mida el alto real del contenido, y
+ * dejarlo librado a quien las monte es la forma segura de que un día queden
+ * colgadas del `<body>` sin altura.
+ *
+ * DÓNDE ARRANCA (decisión de criterio): NO envuelve el hero ni el footer.
+ *  - El hero es video full-viewport con overlay negro: una línea #EEEEEE ahí no
+ *    es "casi subliminal", es un trazo blanco de alto contraste sobre oscuro, y
+ *    encima competiría con la ventana del isotipo del overlay. El hero es la
+ *    tapa; el documento empieza después.
+ *  - El footer es navy sólido, mismo problema invertido.
+ * El resultado es que la hoja técnica es exactamente el cuerpo del documento,
+ * de la primera sección a la última. Es una decisión, no una limitación.
+ *
+ * Las guías van en `z-10` porque cada sección trae su propio `bg-white`
+ * opaco: sin z-index quedarían pintadas por debajo y no se verían. Con
+ * `pointer-events: none` no interceptan nada, y viven en el margen exterior de
+ * la columna de contenido, así que no cruzan texto.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props as Props;
+---
+
+<div class:list={['hoja relative', className]}>
+  <span class="hoja-guia hoja-guia--izq" aria-hidden="true"></span>
+  <span class="hoja-guia hoja-guia--der" aria-hidden="true"></span>
+  <slot />
+</div>
+
+<style>
+  .hoja {
+    /* Ver el comentario de --guia-margen en global.css: en desktop esto cae
+     * sobre el borde exterior del contenedor de contenido; en mobile, sobre el
+     * margen fijo. `100%` (y no `100vw`) para no contar la barra de scroll. */
+    --hoja-x: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+  }
+
+  .hoja-guia {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+    width: 1px;
+    background-color: var(--color-rule);
+    pointer-events: none;
+  }
+
+  .hoja-guia--izq {
+    left: var(--hoja-x);
+  }
+  .hoja-guia--der {
+    right: var(--hoja-x);
+  }
+</style>

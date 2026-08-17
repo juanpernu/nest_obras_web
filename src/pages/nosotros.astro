@@ -2,6 +2,16 @@
 import Layout from '@/layouts/main.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
 import Boton from '@/components/astro/Boton.astro';
+import Eyebrow from '@/components/astro/Eyebrow.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
+/* Sin imports de imagen: la cabecera volvió a ser solo texto (16/08/2026, ver la
+ * nota de la sección). Si vuelve una foto a esta página, la única real y
+ * horizontal disponible hoy es `@/assets/obras/el-canton-aerea.jpg` — todas las
+ * `portada` de la colección son placeholders navy con el cartel "REEMPLAZAR CON
+ * FOTO REAL" impreso (ver docs/DEUDA-TECNICA.md). */
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -49,99 +59,210 @@ const personasLd = [
 ];
 ---
 
+{/* Alineada al lenguaje de la Home (16/08/2026). La página estaba escrita antes
+    del sistema "hoja técnica" (15/08/2026) y de la unificación de fondos
+    (14/08/2026): tenía dos bandas navy (estadísticas y CTA de cierre), una
+    banda navy-50, cero eyebrows, cero marco y ninguna entrada escalonada. Ahora
+    monta exactamente los mismos componentes y las mismas reglas que la Home:
+
+     - Todo el cuerpo dentro de un único <HojaTecnica>, así las dos guías
+       verticales son dos elementos únicos que miden el 100% del bloque.
+     - Cada sección envuelta en <MarcoSeccion>; `cierra` solo donde la cadena se
+       interrumpe (antes de una <FranjaRayado> o al final).
+     - Tres <FranjaRayado> como cortes de capítulo: quiénes somos → cifras y
+       equipo → cómo trabajamos → contacto.
+     - Fondo blanco en todas las secciones (el navy queda para el footer) y
+       ritmo vertical py-20 / md:py-[120px].
+     - Los subrayados de 4px en arena que separaban las fichas bajan a la regla
+       de 1px del sistema: el trazo grueso competía con las reglas del marco. */}
 <Layout
   title="Quiénes somos | NEST Constructora Zona Norte y CABA"
   description="Conocé al equipo de NEST: Arq. Morena Alegre (MBA IAE, ex WeWork) e Ing. Carlos Alegre (Ing. Civil UBA, ex Benito Roggio). +30 años en Zona Norte y CABA."
   jsonLd={personasLd}
 >
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-3xl px-6">
-      <h1 class="text-h1 font-medium text-navy">Más de 30 años construyendo lo que prometemos</h1>
-      <p class="mt-6 leading-relaxed text-navy">
-        NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor
-        técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más
-        de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura
-        para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos
-        promesas que no podemos cumplir. Y lo que prometemos, lo entregamos.
-      </p>
-    </div>
-  </section>
+  <HojaTecnica>
+    {/* Cabecera de página: la misma de las cinco páginas internas, extraída a
+        <CabeceraPagina> (16/08/2026). Las decisiones de escala tipográfica y la
+        entrada CSS-only que evita el hit de LCP están documentadas allá.
 
-  <section class="bg-navy py-14">
-    <div class="mx-auto max-w-6xl px-6"><BarraEstadisticas /></div>
-  </section>
+        SIN FOTO. La intro pasó por tres formas en el día: texto a todo el ancho,
+        después el bloque partido con foto a la derecha de la Sección 3 del Home,
+        después ese mismo bloque con la foto topeada en 500px. Vuelve a ser solo
+        texto por decisión directa: la apertura de /servicios no lleva imagen y
+        acá tenía que leerse igual. Con eso sale de la página la única foto que
+        tenía —`el-canton-aerea`, que la Home sigue usando como fondo de una
+        destacada—; si más adelante se quiere una imagen en /nosotros, el lugar
+        natural es una banda propia debajo de esta cabecera, no partiendo el h1. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <CabeceraPagina
+          eyebrow="Quiénes somos"
+          titulo="Más de 30 años construyendo lo que prometemos"
+          bajada="NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos."
+        />
+      </section>
+    </MarcoSeccion>
 
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Las personas que están detrás de tu obra</h2>
-      <div class="mt-10 grid gap-10 md:grid-cols-2">
-        {
-          equipo.map((m) => (
-            <div class="border-t-4 border-arena pt-6">
-              <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
-              <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
-                {m.data.rolDetalle ?? m.data.rol}
-              </p>
-              <div class="mt-4 leading-relaxed text-navy [&_p]:mt-0">
-                <m.Content />
-              </div>
-              {/* Acá las credenciales van en lista vertical, no en una línea con `·`
-                  como en el preview de la Home: son los nombres completos y en una
-                  sola línea se leen como un bloque indistinto. */}
-              <ul class="mt-5 space-y-1.5 text-sm text-navy-700">
-                {(m.data.credencialesDetalle ?? m.data.credenciales).map((c) => (
-                  <li class="flex gap-2.5">
-                    <span aria-hidden="true" class="text-arena-800">
-                      —
-                    </span>
-                    <span>{c}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+    {/* Cierre del capítulo "quiénes somos". */}
+    <FranjaRayado />
 
-  <section class="bg-navy-50 py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Cómo trabajamos, paso a paso</h2>
-      <ol class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {
-          proceso.map((p) => (
-            <li>
-              <span class="text-stat font-light text-navy-700">{p.n}</span>
-              <h3 class="mt-2 text-h3 font-medium text-navy">{p.titulo}</h3>
-              <p class="mt-2 leading-relaxed text-navy">{p.texto}</p>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-  </section>
+    {/* Estadísticas. `sobreBlanco` adapta la croma interna del componente al
+        fondo claro (el valor destacado pasa de arena a navy —arena sobre blanco
+        falla WCAG, §1.2— y la etiqueta de navy-200 a navy-700). Antes esta
+        página era el último lugar del sitio con la banda navy original. */}
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <BarraEstadisticas sobreBlanco />
+        </div>
+      </section>
+    </MarcoSeccion>
 
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h2 class="text-h2 font-medium text-navy">Nuestros valores</h2>
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
-        {
-          valores.map((v) => (
-            <div class="border-t-4 border-arena pt-6">
-              <h3 class="text-h3 font-medium text-navy">{v.titulo}</h3>
-              <p class="mt-3 leading-relaxed text-navy">{v.texto}</p>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          {/* Mismos estilos que la Sección 8 del Home (16/08/2026, pedido
+              directo), con el contenido completo de esta página: el preview de
+              la Home muestra nombre + rol + credenciales en una línea, acá va
+              además la bio del .md y las credenciales largas.
 
-  <section class="bg-navy py-16 text-center text-white md:py-20">
-    <div class="mx-auto max-w-3xl px-6">
-      <h2 class="text-h2 font-medium">Contá con NEST para tu proyecto</h2>
-      <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
-    </div>
-  </section>
+              De la Home se toma exactamente: `Eyebrow` + `h2`, la grilla
+              `mt-10 grid gap-8 sm:grid-cols-2` y la escala tipográfica de cada
+              ficha —`text-h3 font-medium text-navy` el nombre, `mt-1 text-sm
+              uppercase tracking-[0.06em] text-navy-700` el rol, `text-sm
+              text-navy-700` las credenciales. Se va la regla de 1px que cada
+              ficha tenía arriba: en la Home el bloque no lleva ningún trazo, la
+              separación la hace el `gap`, y era el último resto del
+              `border-t-4` original de esta página. */}
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+            <h2 class="text-h2 font-normal text-navy">Las personas que están detrás de tu obra</h2>
+          </div>
+          <div class="mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
+            {
+              equipo.map((m) => (
+                <div>
+                  <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
+                  <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
+                    {m.data.rolDetalle ?? m.data.rol}
+                  </p>
+                  <div class="mt-4 font-light leading-relaxed text-navy-700 [&_p]:mt-0">
+                    <m.Content />
+                  </div>
+                  {/* Acá las credenciales van en lista vertical, no en una línea con `·`
+                      como en el preview de la Home: son los nombres completos y en una
+                      sola línea se leen como un bloque indistinto. */}
+                  <ul class="mt-5 space-y-1.5 text-sm text-navy-700">
+                    {(m.data.credencialesDetalle ?? m.data.credenciales).map((c) => (
+                      <li class="flex gap-2.5">
+                        <span aria-hidden="true" class="text-arena-800">
+                          —
+                        </span>
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    {/* Cierre del capítulo "con quiénes": lo que sigue es el método. */}
+    <FranjaRayado />
+
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">Proceso</Eyebrow>
+            <h2 class="text-h2 font-normal text-navy">Cómo trabajamos, paso a paso</h2>
+          </div>
+          {/* ÍNDICE TIPOGRÁFICO (16/08/2026, pedido directo: "redisñá esto para
+              que quede más tipográfico, manteniendo el contenido"). Los cinco
+              pasos eran tarjetas en una grilla de 3×2, con la última fila
+              incompleta y cada paso encerrado en su propia caja. Ahora son cinco
+              renglones a todo el ancho separados por la regla de 1px del
+              sistema: el mismo recurso con el que la hoja técnica dibuja sus
+              juntas, aplicado al ritmo de lectura.
+
+              Lo que hace el trabajo es el contraste de escala, no una caja: la
+              cifra sube a `text-stat` en peso 300 —el mismo par tamaño/peso del
+              dato editorial de BarraEstadisticas— y queda colgada en su propia
+              columna a la izquierda, como la numeración al margen de un pliego.
+              El título y el texto se reparten las dos columnas restantes, así el
+              ojo baja por tres ejes verticales fijos y los renglones se leen
+              como un índice y no como cinco párrafos sueltos.
+
+              En mobile la grilla colapsa a una columna y la cifra queda arriba
+              de su título: a 375px una columna de 5rem para el número deja el
+              texto en ~200px y se parte cada dos palabras. */}
+          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
+            {
+              proceso.map((p) => (
+                <li class="grid gap-x-10 gap-y-2 py-8 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
+                  <span class="text-stat font-light leading-none text-navy">{p.n}</span>
+                  <h3 class="text-h3 font-medium text-navy">{p.titulo}</h3>
+                  {/* `ch` en Roboto Condensed rinde ~6.4px, así que 64ch ≈ 410px:
+                      medida de lectura cómoda sin dejar la columna a medio usar
+                      (con 52ch el renglón cortaba en 330px y sobraban 190px). */}
+                  <p class="max-w-[64ch] font-light leading-relaxed text-navy-700 md:col-start-2 lg:col-start-3">
+                    {p.texto}
+                  </p>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6">
+          <div data-reveal>
+            <Eyebrow class="mb-2.5">Valores</Eyebrow>
+            <h2 class="text-h2 font-normal text-navy">Lo que no negociamos</h2>
+          </div>
+          <div class="mt-10 grid gap-8 md:grid-cols-3" data-reveal>
+            {
+              valores.map((v) => (
+                <div class="border-t border-arena pt-6">
+                  <h3 class="text-h3 font-medium text-navy">{v.titulo}</h3>
+                  <p class="mt-3 leading-relaxed font-light text-navy-700">{v.texto}</p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+
+    {/* Cierre del capítulo: lo que sigue es la acción. */}
+    <FranjaRayado />
+
+    {/* CTA de cierre. Blanco y `secundario` (subrayado navy que crece en hover),
+        no la banda navy con botón `primario` que tenía antes: `primario` es
+        glass con texto blanco y solo funciona sobre navy, y una banda navy acá
+        se pegaba con el footer —también navy— formando un único bloque oscuro
+        de doble alto al final de la página. */}
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto max-w-6xl px-6" data-reveal>
+          <Eyebrow class="mb-2.5">Contacto</Eyebrow>
+          <h2 class="max-w-[640px] text-h2 font-normal text-navy">
+            Contá con NEST para tu proyecto
+          </h2>
+          <p class="mt-3 max-w-[560px] text-navy-700">
+            Respondemos en menos de 24 horas en días hábiles. Sin compromiso.
+          </p>
+          <div class="mt-6">
+            <Boton href="/contacto" variante="secundario">Consulta tu proyecto →</Boton>
+          </div>
+        </div>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
 </Layout>

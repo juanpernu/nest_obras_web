@@ -1,0 +1,123 @@
+---
+/**
+ * Capa 2 del sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria).
+ *
+ * Envuelve un bloque de contenido y le dibuja un marco que NO es un `border`:
+ * dos reglas horizontales de 1px que cruzan todo el ancho de pantalla, más
+ * cuatro escuadras de 9×9px con solo dos de sus cuatro lados activos (la "L" de
+ * cada esquina). La jerarquía es intencional y es todo el truco del recurso:
+ * las reglas van en `--color-rule` (casi subliminal, 1.70 sobre blanco) y las
+ * escuadras en NAVY, el color de texto del sitio. Las líneas rectas apenas se
+ * insinúan; lo que ancla el ojo son las cuatro esquinas.
+ *
+ * SANGRADO A PANTALLA COMPLETA: la spec de referencia usaba
+ * `w-screen -translate-x-1/2`, que no centra nada (le falta el `left-1/2`) y
+ * que, aun corregido, mete scroll horizontal porque `100vw` cuenta la barra de
+ * scroll y el contenedor no — es exactamente el bug que ya habían tenido
+ * GrillaServicios y GrillaLogos (ver sus comentarios). Acá no hace falta nada
+ * de eso: este componente envuelve la `<section>` entera, que ya es un bloque
+ * de ancho completo, así que `left: 0; right: 0` sangra hasta los bordes por
+ * construcción y no puede desbordar. Cero `100vw` en todo el archivo.
+ *
+ * Las escuadras se posicionan con el MISMO cálculo que las guías verticales de
+ * `HojaTecnica`, así que caen exactamente encima de ellas: cada sección
+ * "clipea" sus cuatro esquinas sobre los dos márgenes de imprenta. Ese es el
+ * elemento firma del sistema.
+ *
+ * REGLA COMPARTIDA ENTRE SECCIONES (clave para que el contorno se lea continuo):
+ * la regla horizontal pertenece SIEMPRE al borde superior del bloque. Si cada
+ * sección dibujara también la inferior, en cada junta habría dos líneas de 1px
+ * apiladas —la de abajo de una y la de arriba de la siguiente— y el trazo se
+ * vería de 2px justo en las juntas y de 1px en el resto: un contorno desparejo.
+ * Por eso el borde inferior solo se dibuja cuando el bloque efectivamente
+ * CIERRA una cadena de secciones pegadas: la última de la página, o la anterior
+ * a una `FranjaRayado`. Se marca con la prop `cierra`.
+ *
+ * Las escuadras, en cambio, van siempre las cuatro. En una junta interna, las
+ * dos de abajo de una sección y las dos de arriba de la siguiente se encuentran
+ * sobre la misma regla y forman una marca de registro completa. Es deliberado:
+ * así se leen las cajas encadenadas de un plano.
+ */
+interface Props {
+  /** true si abajo de este bloque no hay otra sección con marco pegada:
+   * la última de la página, o la que precede a una FranjaRayado. */
+  cierra?: boolean;
+  class?: string;
+}
+const { cierra = false, class: className } = Astro.props as Props;
+---
+
+<div class:list={['marco relative', className]}>
+  <span class="marco-regla marco-regla--sup" aria-hidden="true"></span>
+  {cierra && <span class="marco-regla marco-regla--inf" aria-hidden="true" />}
+  <span class="marco-esq marco-esq--si" aria-hidden="true"></span>
+  <span class="marco-esq marco-esq--sd" aria-hidden="true"></span>
+  <span class="marco-esq marco-esq--ii" aria-hidden="true"></span>
+  <span class="marco-esq marco-esq--id" aria-hidden="true"></span>
+  <slot />
+</div>
+
+<style>
+  .marco {
+    /* Idéntico a --hoja-x de HojaTecnica: las escuadras caen sobre las guías. */
+    --marco-x: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+  }
+
+  /* Reglas horizontales. z-index por encima del `bg-white` de la sección
+   * envuelta y de las guías verticales (z-10), para que el cruce lo resuelva
+   * siempre la misma capa. */
+  .marco-regla {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 11;
+    height: 1px;
+    background-color: var(--color-rule);
+    pointer-events: none;
+  }
+  .marco-regla--sup {
+    top: 0;
+  }
+  .marco-regla--inf {
+    bottom: 0;
+  }
+
+  /* Escuadras: cuadrado de 9px con dos lados. El grosor de 1.5px contra el 1px
+   * de las reglas es lo que las hace leer como una marca y no como parte de la
+   * línea. Van por encima de todo el marco (z-12) para que la guía vertical no
+   * les tape el lado corto. */
+  .marco-esq {
+    position: absolute;
+    z-index: 12;
+    width: 9px;
+    height: 9px;
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--color-navy);
+    pointer-events: none;
+  }
+  .marco-esq--si {
+    top: 0;
+    left: var(--marco-x);
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .marco-esq--sd {
+    top: 0;
+    right: var(--marco-x);
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+  .marco-esq--ii {
+    bottom: 0;
+    left: var(--marco-x);
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .marco-esq--id {
+    bottom: 0;
+    right: var(--marco-x);
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+</style>

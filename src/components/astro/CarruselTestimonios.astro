@@ -1,0 +1,273 @@
+---
+/**
+ * Carrusel de testimonios (§5.1 Sección 7) — layout asimétrico portado del
+ * proto Glass (decisión del 07/08/2026): número gigante de fondo, riel
+ * izquierdo, cita que se revela palabra por palabra y botones circulares que
+ * se rellenan desde el lado de su flecha.
+ *
+ * Cromática adaptada al local: el proto vive sobre navy oscuro y esta sección
+ * es clara (arena-200), así que el acento es NAVY y no arena (§1.2: la arena
+ * sobre fondo claro no pasa WCAG). Tipografía: el proto usa peso 800 para el
+ * número, pero el sitio solo carga 300/400/500 (§2.1) — pedir 800 dispararía
+ * bold sintético, así que va en 500.
+ *
+ * Mejora progresiva: sin JS se ven TODOS los testimonios apilados y legibles.
+ * El script marca `data-js` en el contenedor y solo entonces el CSS oculta las
+ * slides inactivas y aparecen los controles. La cita completa vive en el HTML;
+ * el JS la parte en palabras únicamente para animarla.
+ */
+import type { CollectionEntry } from 'astro:content';
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
+
+interface Props {
+  testimonios: { entry: CollectionEntry<'testimonios'>; Contenido: AstroComponentFactory }[];
+  class?: string;
+}
+const { testimonios, class: className } = Astro.props as Props;
+---
+
+<div class:list={['tst relative', className]}>
+  {/* Índice sobredimensionado, sangrando por la izquierda. Decorativo. */}
+  <div
+    class="tst-num pointer-events-none absolute top-1/2 left-[-2vw] z-0 -translate-y-1/2 text-[clamp(240px,36vw,600px)] leading-[0.8] font-medium tracking-[-0.06em] text-navy/[0.07] select-none"
+    aria-hidden="true"
+  >
+    01
+  </div>
+
+  <div class="relative z-10 flex">
+    {/* Riel sacado (16/08/2026, pedido explícito de la usuaria): antes había
+        acá un trazo vertical decorativo (`.tst-riel`) — se retira por completo,
+        elemento y CSS. El `md:pl-8 lg:pl-14` de `.tst-main` se deja igual: el
+        espacio que compensaba no se lee como un hueco vacío sino como aire
+        coherente con el resto del layout (mismo margen izquierdo relativo al
+        número de fondo que ya tenían las demás secciones). */}
+    <div class="tst-main relative min-w-0 flex-1 py-8 md:py-12 md:pl-8 lg:pl-14">
+      {/* `tst-slides` (16/08/2026, pedido explícito): antes cada slide entraba
+          y salía del flujo normal con `display:none`, así que el contenedor
+          medía la altura de la que estuviera activa — si un testimonio era
+          más corto que otro, el layout saltaba al cambiar de slide. Ahora
+          todas las slides se apilan en la misma celda de grid (`grid-area:
+          1/1`) y la inactiva se oculta con `visibility:hidden` en vez de
+          `display:none`: sigue ocupando su lugar en el cálculo de alto del
+          grid, así que el contenedor siempre mide lo que mide la más alta de
+          todas, sin importar cuál esté activa. */}
+      <div class="tst-slides">
+        {
+          testimonios.map(({ entry, Contenido }, i) => (
+            <div class:list={['tst-slide', i === 0 && 'is-active']} data-i={i}>
+              <span class="mb-8 inline-flex items-center gap-2 text-[0.825rem] tracking-[0.12em] text-navy-700 uppercase">
+                <i class="h-1.5 w-1.5 bg-navy" aria-hidden="true" />
+                {entry.data.zona}
+              </span>
+
+              <blockquote class="tst-quote text-h1 font-light text-navy [&_p]:mt-0">
+                <Contenido />
+              </blockquote>
+
+              <div class="mt-10 flex items-end gap-6">
+                <div class="flex items-center gap-4">
+                  <span class="tst-line h-px w-8 origin-left bg-navy" aria-hidden="true" />
+                  <span class="block font-medium text-navy">{entry.data.nombre}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="tst-nav mt-8 flex items-center gap-3.5 md:absolute md:right-0 md:bottom-12 md:mt-0">
+        <button
+          type="button"
+          class="tst-btn tst-btn--prev relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-boton border border-navy/25 text-navy transition-transform active:scale-95"
+          aria-label="Testimonio anterior"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            class="relative z-10 h-[18px] w-[18px]"
+          >
+            <path
+              d="M10 12L6 8L10 4"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="tst-btn tst-btn--next relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-boton border border-navy/25 text-navy transition-transform active:scale-95"
+          aria-label="Testimonio siguiente"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden="true"
+            class="relative z-10 h-[18px] w-[18px]"
+          >
+            <path
+              d="M6 4L10 8L6 12"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Las slides solo se ocultan si el JS tomó el control: sin JS se ven todas
+   * apiladas y los controles no aparecen. */
+  .tst[data-js] .tst-slides {
+    display: grid;
+  }
+  .tst[data-js] .tst-slides > .tst-slide {
+    grid-area: 1 / 1;
+  }
+  /* `visibility`, no `display: none` (16/08/2026): la inactiva sigue en el
+   * flujo del grid para que su altura cuente en el cálculo del contenedor —
+   * ver comentario de `.tst-slides` en el markup. */
+  .tst[data-js] .tst-slide:not(.is-active) {
+    visibility: hidden;
+  }
+  .tst:not([data-js]) .tst-nav {
+    display: none;
+  }
+  .tst:not([data-js]) .tst-slide + .tst-slide {
+    margin-top: 3rem;
+  }
+
+  /* Relleno que entra desde el lado al que apunta cada flecha. */
+  .tst-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-navy);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tst-btn--prev::before {
+    transform: translateX(-100%);
+  }
+  .tst-btn--next::before {
+    transform: translateX(100%);
+  }
+  .tst-btn:hover::before,
+  .tst-btn:focus-visible::before {
+    transform: translateX(0);
+  }
+  .tst-btn:hover,
+  .tst-btn:focus-visible {
+    color: #fff;
+  }
+
+  /* La línea del autor se dibuja al activarse la slide. */
+  .tst-line {
+    transform: scaleX(0);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s;
+  }
+  .tst-slide.is-active .tst-line {
+    transform: scaleX(1);
+  }
+
+  /* `:global` porque estos nodos los crea el JS y no llevan el atributo de
+   * scope que Astro agrega al markup del componente. */
+  .tst-quote :global(.w-anim) {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px) rotateX(90deg);
+  }
+  .tst-quote.is-in :global(.w-anim) {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tst-line,
+    .tst-quote :global(.w-anim) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const tst of document.querySelectorAll<HTMLElement>('.tst')) {
+    const slides = Array.from(tst.querySelectorAll<HTMLElement>('.tst-slide'));
+    if (!slides.length) continue;
+
+    const num = tst.querySelector<HTMLElement>('.tst-num');
+
+    // Recién acá se oculta lo que sobra: hasta este punto la sección es una
+    // lista legible de testimonios.
+    tst.dataset.js = '';
+
+    /* Cada palabra en su propio <span> para el reveal escalonado. Se toma el
+     * texto ya renderizado, así que si esto no corre la cita se lee igual. */
+    for (const slide of slides) {
+      const cita = slide.querySelector<HTMLElement>('.tst-quote');
+      if (!cita) continue;
+      const palabras = (cita.textContent ?? '').trim().split(/\s+/);
+      cita.textContent = '';
+      palabras.forEach((palabra, i) => {
+        const span = document.createElement('span');
+        span.className = 'w-anim';
+        span.textContent = palabra;
+        span.style.transitionDelay = `${i * 0.045}s`;
+        cita.append(span);
+        if (i < palabras.length - 1) cita.append(document.createTextNode(' '));
+      });
+    }
+
+    let indice = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const ir = (n: number, manual = false) => {
+      indice = (n + slides.length) % slides.length;
+
+      slides.forEach((slide, k) => {
+        const activa = k === indice;
+        slide.classList.toggle('is-active', activa);
+        const cita = slide.querySelector<HTMLElement>('.tst-quote');
+        cita?.classList.remove('is-in');
+        // Reflow forzado: sin esto la transición no se reinicia al volver a
+        // una slide ya vista.
+        if (activa && cita) {
+          void cita.offsetWidth;
+          cita.classList.add('is-in');
+        }
+      });
+
+      if (num) num.textContent = String(indice + 1).padStart(2, '0');
+      if (manual) reiniciar();
+    };
+
+    const arrancar = () => {
+      if (!reduce && slides.length > 1) timer = setInterval(() => ir(indice + 1), 6000);
+    };
+    const parar = () => clearInterval(timer);
+    const reiniciar = () => {
+      parar();
+      arrancar();
+    };
+
+    tst.querySelector('.tst-btn--prev')?.addEventListener('click', () => ir(indice - 1, true));
+    tst.querySelector('.tst-btn--next')?.addEventListener('click', () => ir(indice + 1, true));
+    tst.addEventListener('mouseenter', parar);
+    tst.addEventListener('mouseleave', arrancar);
+    tst.addEventListener('focusin', parar);
+
+    // El número queda fijo: el parallax del proto se descartó (07/08/2026).
+
+    ir(0);
+    arrancar();
+  }
+</script>

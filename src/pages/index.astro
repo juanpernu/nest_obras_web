@@ -4,12 +4,23 @@ import HeroVideo from '@/components/astro/HeroVideo.astro';
 import Boton from '@/components/astro/Boton.astro';
 import Eyebrow from '@/components/astro/Eyebrow.astro';
 import BarraEstadisticas from '@/components/astro/BarraEstadisticas.astro';
-import TarjetaObra from '@/components/astro/TarjetaObra.astro';
-import TarjetaTestimonio from '@/components/astro/TarjetaTestimonio.astro';
+import TarjetaObraHover from '@/components/astro/TarjetaObraHover.astro';
+import CarruselTestimonios from '@/components/astro/CarruselTestimonios.astro';
 import GrillaLogos from '@/components/astro/GrillaLogos.astro';
+import GrillaServicios from '@/components/astro/GrillaServicios.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
+import type { Servicio } from '@/components/astro/GrillaServicios.astro';
+import elCantonAerea from '@/assets/obras/el-canton-aerea.jpg';
+import tacuari1 from '../../assets/img/tacuari1.png';
+import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
-import BloqueContacto from '@/components/astro/BloqueContacto.astro';
+import TimelineContacto from '@/components/astro/TimelineContacto.astro';
+import quienesSomosImg from '@/assets/intro/servicios.webp';
+import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
+import type { ImageMetadata } from 'astro';
 
 const destacadas = (await getCollection('obras', (o) => o.data.destacadaEnHome)).sort(
   (a, b) => a.data.orden - b.data.orden,
@@ -26,21 +37,66 @@ const testimonios = await Promise.all(
   testimoniosEntries.map(async (t) => ({ entry: t, Contenido: (await render(t)).Content })),
 );
 
-const serviciosHome = [
+/* Imágenes de fondo propias de algunas destacadas del Home: fotos horizontales
+ * que funcionan mejor en el recorte 4:3 de la tarjeta con hover que la `portada`
+ * de la colección (que se sigue usando en /obras). Es un override opcional —
+ * las obras que no estén acá caen en su propia `portada`, así que agregar una
+ * destacada en el contenido no rompe el build. */
+const fondoDestacada: Record<string, { imagen: ImageMetadata; alt: string }> = {
+  'el-canton': {
+    imagen: elCantonAerea,
+    alt: 'Vista aérea del barrio El Cantón Golf, Escobar, donde NEST construyó una vivienda premium',
+  },
+  'tacuari-1050': {
+    imagen: tacuari1,
+    alt: 'Edificio Tacuarí 1050, obra de NEST en CABA',
+  },
+  prune: {
+    imagen: pruneHome,
+    alt: 'Local de PRUNE terminado por NEST, una de las 10 sucursales de la expansión',
+  },
+};
+
+const tipoLabel: Record<string, string> = {
+  vivienda: 'Vivienda',
+  corporativo: 'Corporativo',
+  refaccion: 'Refacción',
+  gastronomia: 'Gastronomía',
+  edificio: 'Edificio',
+};
+
+const tarjetasDestacadas = destacadas.map((o) => {
+  const fondo = fondoDestacada[o.id];
+  return {
+    nombre: o.data.nombre,
+    tipoLabel: tipoLabel[o.data.tipo],
+    zona: o.data.zona,
+    href: o.data.paginaPropia && o.data.slug ? `/obras/${o.data.slug}` : '/obras',
+    imagen: fondo?.imagen ?? o.data.portada,
+    imagenAlt: fondo?.alt ?? o.data.portadaAlt,
+  };
+});
+
+/* `icono` se agregó con las tarjetas del proto (07/08/2026). Sin `href`: las
+ * tarjetas ya no llevan CTA propio (08/08/2026). */
+const serviciosHome: Servicio[] = [
   {
     titulo: 'Viviendas y Refacciones',
     texto:
       'Casas llave en mano, ampliaciones y refacciones en barrios cerrados y zonas premium. De principio a fin, con un solo responsable.',
+    icono: 'vivienda',
   },
   {
     titulo: 'Proyectos Corporativos',
     texto:
       'Oficinas, locales y desarrollos comerciales. Cumplimos plazos ajustados sin interrumpir tu operación. 10 sucursales PRUNE en 40 días.',
+    icono: 'corporativo',
   },
   {
     titulo: 'Dirección de Obra',
     texto:
       'Asesoramiento técnico, control de presupuesto y gestión integral. Nos hacemos cargo del proceso para que vos te concentres en lo que importa.',
+    icono: 'direccion',
   },
 ];
 
@@ -68,25 +124,56 @@ const seo = {
 ---
 
 <Layout title={seo.title} description={seo.description}>
-  {/* Sección 1 — Hero. El LCP es el <h1>; el video no se descarga en mobile (§7.2). */}
-  <section class="relative isolate flex min-h-[78vh] items-center overflow-hidden bg-navy">
-    <HeroVideo
-      srcDesktop="https://archivo.nestobras.com.ar/archivos/video_nest.mp4"
-      poster="/hero-poster.jpg"
-      class="absolute inset-0 -z-20 h-full w-full object-cover"
-    />
-    <div class="absolute inset-0 -z-10 bg-black/50"></div>
-    <div class="mx-auto w-full max-w-6xl px-6 py-20 text-white">
-      <Eyebrow sobreNavy class="mb-3">Constructora premium · Zona Norte y CABA</Eyebrow>
-      <h1 class="max-w-3xl text-hero font-light">Tu obra en manos expertas, de principio a fin.</h1>
-      <p class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100">
+  {/* Sección 1 — Hero. El LCP es el <h1>. El video del fondo es un <video>
+      nativo propio (public/hero-video.mp4), que no se descarga en mobile ni
+      con `prefers-reduced-motion` (§7.2) — el porqué, incluida la historia de
+      los dos intentos de embed de YouTube que se probaron y revirtieron, está
+      en HeroVideo.astro y en docs/DEUDA-TECNICA.md §5.
+      El overlay es negro/50 (feedback del cliente, 14/08/2026): antes era
+      navy/50 para leer como una sola superficie con el header en reposo
+      (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el
+      video en vez de un tinte de marca. `bg-black` en el fallback de la
+      sección por la misma razón — es lo que se ve un instante antes de que
+      cargue el primer frame del video. */}
+  <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-black">
+    <HeroVideo srcDesktop="/hero-video.mp4" poster="/hero-poster.jpg" class="-z-20" />
+    <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
+    <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
+      {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
+          necesario porque el tamaño base de Eyebrow también es un valor
+          arbitrario: sin él, cuál gana depende del orden del CSS generado. */}
+      <Eyebrow
+        sobreNavy
+        class="mb-3 text-[0.8125rem]! opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        >Constructora premium · Zona Norte y CABA</Eyebrow
+      >
+      <h1
+        class="max-w-3xl text-hero font-normal opacity-0 delay-100 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+      >
+        Tu obra en manos expertas <br class="hidden lg:block" />
+        <span class="subrayado-hero inline-block whitespace-nowrap">de principio a fin.</span>
+      </h1>
+      <div
+        class="mt-4 h-0.5 w-32 origin-left scale-x-0 bg-arena motion-safe:animate-[hero-rule_1s_0.4s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:scale-x-100"
+        aria-hidden="true"
+      >
+      </div>
+      <p
+        class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100 opacity-0 delay-200 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+      >
         30 años construyendo casas y proyectos que cumplen plazo, presupuesto y los más altos
         estándares. Con un equipo que te acompaña desde el primer trazo.
       </p>
-      <div class="mt-8 flex flex-wrap gap-4">
+      <div
+        class="mt-8 flex flex-wrap gap-4 opacity-0 delay-300 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+      >
+        {/* backdrop-blur-md! pisa el backdrop-blur-2xl de la variante primario
+            (Boton.astro): con el `!` de Tailwind, solo para este botón del
+            Hero — el resto de los usos de "primario" quedan en 2xl. */}
         <Boton
           href="/contacto"
           variante="primario"
+          class="backdrop-blur-md!"
           data-evento="cta_contacto"
           data-evento-lugar="home_hero"
         >
@@ -95,112 +182,348 @@ const seo = {
         <Boton href="/obras" variante="sobreNavy">Ver obras</Boton>
       </div>
     </div>
-  </section>
 
-  {/* Sección 2 — Estadísticas (banda navy) */}
-  <section class="bg-navy py-16 md:py-20">
-    <div class="mx-auto max-w-6xl px-6">
-      <BarraEstadisticas />
-    </div>
-  </section>
-
-  {/* Sección 3 — Intro */}
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-3xl px-6 text-center">
-      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-      <h2 class="mx-auto max-w-[640px] text-h2 font-medium text-navy">
-        Más de 30 años construyendo lo que prometemos
-      </h2>
-      <p class="mx-auto mt-6 max-w-[600px] text-h3 font-light leading-relaxed text-navy">
-        NEST es una empresa constructora especializada en viviendas premium, refacciones y proyectos
-        corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel con
-        acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde el
-        primer trazo hasta la llave en la mano.
-      </p>
-    </div>
-  </section>
-
-  {/* Sección 4 — Servicios destacados (3) */}
-  <section class="bg-navy-50 py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <Eyebrow class="mb-2.5">Servicios</Eyebrow>
-      <h2 class="text-h2 font-medium text-navy">Lo que construimos</h2>
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
+    <a
+      href="#stats"
+      aria-label="Desplazate para ver más"
+      class="group absolute inset-x-0 bottom-8 flex justify-center"
+    >
+      <span class="flex flex-col items-center justify-center gap-0.5 text-white transition-colors group-hover:text-arena">
         {
-          serviciosHome.map((s) => (
-            <div class="border-t-4 border-arena bg-white p-6">
-              <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
-              <p class="mt-3 leading-relaxed text-navy">{s.texto}</p>
-            </div>
+          [0, 1].map((i) => (
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              class="motion-safe:animate-[chevron-caida_1.6s_ease-in-out_infinite] motion-reduce:opacity-100"
+              style={{ animationDelay: `${i * 0.3}s` }}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           ))
         }
+      </span>
+    </a>
+  </section>
+
+  {/* Sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria).
+      Todo el cuerpo del documento —de Estadísticas a Contacto— vive dentro de
+      un único <HojaTecnica>, así las dos guías verticales son DOS ELEMENTOS
+      ÚNICOS que miden el 100% del bloque: no se reinician ni se cortan en
+      ninguna junta de sección. El hero queda afuera a propósito (ver
+      HojaTecnica.astro: un trazo #EEEEEE sobre el video oscuro deja de ser una
+      guía subliminal y pasa a ser una línea blanca de alto contraste, además de
+      competir con la ventana del isotipo del overlay). El footer, navy sólido,
+      queda afuera por el motivo simétrico.
+
+      Cada sección va envuelta en <MarcoSeccion>. La regla horizontal es siempre
+      la del borde SUPERIOR; `cierra` agrega la inferior solo donde la cadena de
+      secciones se interrumpe (antes de una franja, o al final). Así cada junta
+      tiene exactamente una línea de 1px y el contorno se lee parejo de punta a
+      punta.
+
+      Las <FranjaRayado> son tres y marcan cambio de capítulo, no separación de
+      sección: quiénes somos → qué hacemos → con quiénes → contacto. */}
+  <HojaTecnica>
+    {/* Sección 2 — Estadísticas. id="stats" es el destino de la flecha del hero.
+      Fondo blanco (14/08/2026, unificación de fondos de sección pedida por la
+      usuaria): antes era una banda navy. `sobreBlanco` en BarraEstadisticas
+      adapta su croma interna (el valor destacado pasa de arena a navy — arena
+      sobre blanco falla WCAG, §1.2 — y la etiqueta de navy-200 a navy-700 para
+      seguir siendo legible). `/nosotros` sigue usando el componente sin el
+      prop, sobre su propia banda navy. */}
+  <MarcoSeccion>
+    <section id="stats" class="bg-white py-20 md:py-[120px]">
+      <div class="mx-auto max-w-6xl px-6" data-reveal>
+        <BarraEstadisticas sobreBlanco />
+      </div>
+    </section>
+  </MarcoSeccion>
+
+  {/* Sección 3 — Intro. El subheader vuelve a ser un eyebrow común (14/08/2026):
+      antes el "Quiénes somos" se repetía gigante y a baja opacidad como fondo
+      decorativo (mismo lenguaje que el número de CarruselTestimonios) y el
+      eyebrow real quedaba sr-only. El cliente pidió sacar ese recurso y tratar
+      el subheader como en el resto del sitio — mismo patrón que usa la
+      Sección 7 (Testimonios): Eyebrow visible + h2 debajo.
+
+      La foto es la protagonista visual de esta sección (spec del cliente,
+      14/08/2026): el párrafo baja de `text-h3` (escala de heading) a `text-lg`,
+      un cuerpo de texto de lectura, para no competirle tamaño a la imagen.
+
+      Fondo blanco (14/08/2026, unificación de fondos): antes era banda navy,
+      con Eyebrow/h2/párrafo en sus variantes claras (sobreNavy, blanco,
+      navy-100). Pasan a las variantes de fondo claro del resto del sitio. */}
+  <MarcoSeccion cierra>
+  <section class="bg-white">
+    {/* `md:pr-0` (16/08/2026, pedido explícito): sin padding derecho en
+        desktop para que la imagen se adhiera al marco de la sección — en
+        mobile (columna única) el `pr-6` normal se mantiene. */}
+    <div class="mx-auto grid max-w-6xl items-stretch gap-12 pl-6 pr-6 md:pr-0 md:grid-cols-2">
+      {/* `self-center` (16/08/2026): con el grid en `items-stretch` la celda de
+          texto mide lo mismo que la imagen (más alta que su propio contenido),
+          y sin esto el bloque Eyebrow+h2+párrafo quedaba pegado arriba. Centra
+          el CONTENIDO dentro de la celda sin tocar `items-stretch` del grid
+          padre — eso volvería a achicar la imagen a la altura del texto. */}
+      <div class="self-center" data-reveal>
+        <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+        <h2 class="max-w-[640px] text-h2 font-normal text-navy">
+          Más de 30 años construyendo lo que prometemos
+        </h2>
+        <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
+          NEST es una empresa constructora especializada en viviendas premium, refacciones y
+          proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
+          con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
+          el primer trazo hasta la llave en la mano.
+        </p>
+      </div>
+
+      {/* Sin `aspect-[4/3]` (16/08/2026): antes la imagen tenía una relación de
+          aspecto fija que, con `items-center` en el grid padre, la dejaba más
+          baja que la columna de texto y centrada con aire arriba/abajo. Ahora
+          el contenedor toma `h-full` y el grid pasa a `items-stretch` (default,
+          pero explícito acá) para que ambas columnas compartan la altura real
+          de la fila — `object-cover` en la imagen interna se encarga del
+          recorte sin distorsión. */}
+      <div class="h-full w-full overflow-hidden rounded-boton" data-reveal>
+        <Image
+          src={quienesSomosImg}
+          alt="Obra de NEST en desarrollo"
+          widths={[400, 640, 960]}
+          sizes="(min-width: 768px) 50vw, 100vw"
+          class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+        />
       </div>
     </div>
   </section>
+  </MarcoSeccion>
 
-  {/* Sección 5 — Obras destacadas (3) */}
-  <section class="py-16 md:py-24">
+  {/* Cierre del capítulo "quiénes somos". */}
+  <FranjaRayado />
+
+  {/* Sección 4 — Servicios destacados (3). El marco de GrillaServicios se
+      unificó (16/08/2026) con el sistema HojaTecnica/MarcoSeccion: reglas y
+      escuadras en `--marco-x` (relativo a 100% de la sección, sin `100vw`),
+      así que ya no sangra por fuera del contenedor y no hace falta
+      `overflow-x-clip` — el bug de scroll horizontal que forzaba a recortar
+      era del sistema viejo (`50vw`/`100vw` fijos).
+
+      Subheader estándar (14/08/2026): antes tenía el mismo recurso
+      tipográfico de fondo que la Sección 3, retirado en toda la Home — ver
+      esa sección para el detalle de la decisión. Mismo patrón que el resto:
+      Eyebrow visible + h2. */}
+  <MarcoSeccion>
+  <section class="bg-white pt-20 md:pt-[120px]">
     <div class="mx-auto max-w-6xl px-6">
-      <div class="flex items-end justify-between gap-4">
-        <div>
-          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
-          <h2 class="text-h2 font-medium text-navy">Obras destacadas</h2>
-        </div>
-        <a
-          href="/obras"
-          class="whitespace-nowrap text-sm uppercase tracking-[0.06em] text-navy-700 hover:text-navy"
-          >Ver todas</a
-        >
-      </div>
-      {/* 1 → 3 columnas sin escala intermedia: con 3 tarjetas, un tramo de 2 deja
-          una huérfana ocupando el ancho completo. */}
-      <div class="mt-10 grid gap-8 md:grid-cols-3">
-        {destacadas.map((o) => <TarjetaObra obra={o} sizes="(min-width: 768px) 33vw, 100vw" />)}
+      {/* Eyebrow y h2 comparten wrapper: `data-reveal` va en elementos del
+          markup de esta página, y Eyebrow es un componente que solo acepta
+          `class`. Entran juntos como un bloque de encabezado. */}
+      <div data-reveal>
+        <Eyebrow class="mb-2.5">Servicios</Eyebrow>
+        <h2 class="text-h2 font-normal text-navy">Lo que construimos</h2>
       </div>
     </div>
+    {/* GrillaServicios queda fuera del contenedor `max-w-6xl px-6`: su propio
+        marco necesita medir 100% contra la sección (full-bleed) para que las
+        escuadras caigan sobre las mismas guías que el resto de la página —
+        el `max-w-6xl` interno para la grilla de tarjetas lo pone el propio
+        componente. Ver comentario de `.bp-frame` en GrillaServicios.astro. */}
+    <div class="mt-4" data-reveal>
+      <GrillaServicios servicios={serviciosHome} />
+    </div>
   </section>
+  </MarcoSeccion>
 
-  {/* Sección 6 — Clientes corporativos (banda navy) */}
-  <section class="bg-navy py-16 text-white md:py-24">
+  {/* Separación con Obras destacadas (16/08/2026, pedido explícito): sin
+      padding inferior propio (arriba, `pt` solo), el corte con la siguiente
+      sección lo marca esta franja de 80px en vez de aire en blanco — mismo
+      recurso que las otras franjas de "cambio de capítulo", con la altura
+      fija en `!h-20` en vez de la escala responsive por defecto del
+      componente (32/48/68px), porque acá se pidió un tamaño concreto. */}
+  <FranjaRayado class="!h-20" />
+
+  {/* Sección 5 — Obras destacadas (3). Subheader estándar (14/08/2026): antes
+      tenía el eyebrow "Portfolio" repetido en gran escala como fondo, retirado
+      en toda la Home — ver Sección 3 para el detalle.
+
+      Fondo blanco (14/08/2026, unificación de fondos): antes era banda navy.
+      Eyebrow, h2 y Boton pasan de sus variantes de fondo oscuro (sobreNavy,
+      blanco) a las de fondo claro — variante "secundario" en vez de
+      "sobreNavy": mismo subrayado de 3px, en navy en vez de arena (arena sobre
+      blanco falla WCAG, §1.2). */}
+  {/* Sin padding vertical propio (16/08/2026, vuelta atrás sobre el `pb`
+      propio del 15/08/2026): pedido explícito de la usuaria de sacar todo el
+      aire vertical de esta sección. El `<MarcoSeccion cierra>` sigue marcando
+      el límite visual con sus reglas/escuadras, así que la sección puede
+      quedar pegada contra las vecinas sin padding propio. */}
+  <MarcoSeccion cierra>
+  <section class="bg-white">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="flex items-end justify-between gap-4" data-reveal>
+        <div class="mt-[120px]">
+          <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
+          <h2 class="text-h2 font-normal text-navy">Obras destacadas</h2>
+        </div>
+        <Boton href="/obras" variante="secundario" class="whitespace-nowrap">Ver todas</Boton>
+      </div>
+    </div>
+    {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
+        grid de columnas fijas no permite (ver TarjetaObraHover). Contenida
+        dentro del marco, sin gap en la fila (16/08/2026, corrección sobre el
+        full-bleed total del 16/08/2026 anterior): las tarjetas siguen
+        pegadas entre sí en el eje de la fila (sin `gap` horizontal), pero la
+        fila ya no llega a los bordes del viewport — el padding lateral usa
+        `var(--marco-x)`, la misma variable que ya calculan las escuadras del
+        `<MarcoSeccion cierra>` que envuelve esta sección (heredada por
+        cascada, sin redefinirla acá), así que el borde de la fila cae
+        exactamente sobre las mismas guías que el resto del sistema de
+        página, en vez del padding fijo `px-6`/`max-w-6xl` del encabezado de
+        arriba. `gap-y-8` es solo vertical: en mobile (`flex-col`) separa las
+        tarjetas apiladas: en desktop (`sm:flex-row`) el `gap` vertical no
+        genera separación horizontal, así que la fila sigue sin gap entre
+        cards en ese eje. */}
+    <div
+      class="obras-fila relative z-10 mt-10 flex w-full flex-col gap-y-8 sm:flex-row sm:gap-y-0"
+      style="padding-inline: var(--marco-x, 0px);"
+      data-reveal
+    >
+      {
+        tarjetasDestacadas.map((t) => (
+          <TarjetaObraHover
+            nombre={t.nombre}
+            tipoLabel={t.tipoLabel}
+            zona={t.zona}
+            href={t.href}
+            imagen={t.imagen}
+            imagenAlt={t.imagenAlt}
+          />
+        ))
+      }
+    </div>
+  </section>
+  </MarcoSeccion>
+
+  {/* Cierre del capítulo "qué hacemos". */}
+  <FranjaRayado />
+
+  {/* Sección 6 — Clientes corporativos. `overflow-x-clip` de vuelta (16/08/2026):
+      el fix de `MARGEN` en `GrillaLogos.astro` (anclado a `--marco-x`) no
+      elimina el desborde en la práctica — verificado con Playwright, sigue
+      habiendo ~20px de scroll horizontal en 375/768px. La causa probable es
+      que `%` dentro de un custom property se resuelve tarde, contra el
+      elemento que lo consume, no contra donde se declaró `--marco-x`: al
+      heredar por cascada a un contexto de ancho distinto, el cálculo no da
+      lo mismo que en `MarcoSeccion`. No vale la pena perseguir esto más —
+      `overflow-x-clip` es la salvaguarda simple y ya probada. */}
+  <MarcoSeccion>
+  <section class="overflow-x-clip bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6 text-center">
-      <h2 class="text-h2 font-medium">Empresas que confiaron en NEST</h2>
-      <GrillaLogos class="mt-10" />
+      <h2 class="text-h2 font-normal text-navy" data-reveal>Empresas que confiaron en NEST</h2>
+    </div>
+    {/* GrillaLogos sin el px-6 fijo de este contenedor (16/08/2026, pedido
+        explícito), pero SIN llegar a pantalla completa: contenida dentro del
+        margen del marco de la sección (`--marco-x`, la misma guía que usan
+        las escuadras de `MarcoSeccion`), igual criterio que `.obras-fila`.
+        El encabezado y el párrafo de abajo siguen con su `mx-auto max-w-6xl
+        px-6` de siempre. */}
+    <div class="mt-10" style={{ paddingInline: 'var(--marco-x, 0px)' }} data-reveal>
+      <GrillaLogos />
+    </div>
+    <div class="mx-auto max-w-6xl px-6 text-center">
       {/* COPY PROVISIONAL — reemplazar por la redacción exacta del PDF p.14 (§5.1 Sección 6). */}
-      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-100">
+      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-700" data-reveal>
         Trabajamos para empresas que no dejan nada librado al azar. Si NEST pasó el filtro de una
         compañía como Google, tu casa está en las mejores manos.
       </p>
     </div>
   </section>
+  </MarcoSeccion>
 
-  {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3) */}
+  {/* Sección 7 — Testimonios: NO se renderiza si la colección está vacía (§6.3).
+      Fondo blanco (14/08/2026, unificación de fondos): antes era arena-200. El
+      texto ya era navy/navy-700 (pensado para fondo claro), así que no hace
+      falta tocar nada más que el fondo — el trazo del riel y de la línea del
+      autor, en navy con opacidad, se sigue leyendo igual sobre blanco. */}
   {
     testimonios.length > 0 && (
-      <section class="bg-arena-200 py-16 md:py-24">
+      <MarcoSeccion>
+      <section class="overflow-hidden bg-white py-20 md:py-[120px]">
         <div class="mx-auto max-w-6xl px-6">
-          <div class="text-center">
+          <div class="text-center" data-reveal>
             <Eyebrow class="mb-2.5">Lo que dicen nuestros clientes</Eyebrow>
-            <h2 class="text-h2 font-medium text-navy">La obra habla, pero el cliente confirma</h2>
+            <h2 class="text-h2 font-normal text-navy">La obra habla, pero el cliente confirma</h2>
           </div>
-          <div class="mt-10 grid gap-8 md:grid-cols-2">
-            {testimonios.map((t) => (
-              <TarjetaTestimonio testimonio={t.entry} Contenido={t.Contenido} />
-            ))}
+          <div data-reveal>
+            <CarruselTestimonios class="mt-12" testimonios={testimonios} />
           </div>
         </div>
       </section>
+      </MarcoSeccion>
     )
   }
 
-  {/* Sección 8 — Equipo (preview) */}
-  <section class="bg-navy-50 py-16 md:py-24">
+  {/* Sección 8 — Equipo (preview). Subheader estándar (14/08/2026): antes
+      tenía el mismo recurso tipográfico de fondo que el resto, retirado en
+      toda la Home — ver Sección 3.
+
+      Fondo blanco (14/08/2026, unificación de fondos): antes era navy, mismo
+      croma que Intro/Portfolio antes de ese cambio. Eyebrow, h2, nombre y
+      Boton pasan a variantes de fondo claro; rol/credenciales suben de
+      navy-200 (ilegible sobre blanco) a navy-700, el piso de texto secundario
+      sobre blanco del sistema. */}
+  <MarcoSeccion cierra>
+  <section class="bg-white py-20 md:py-[120px]">
     <div class="mx-auto max-w-6xl px-6">
-      <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-      <h2 class="text-h2 font-medium text-navy">El equipo detrás de cada obra</h2>
-      <div class="mt-10 grid gap-8 sm:grid-cols-2">
+      {/* Botón al otro extremo del título (16/08/2026, pedido explícito) —
+          mismo patrón `flex items-end justify-between` que ya usa el
+          encabezado de Obras destacadas. */}
+      <div class="flex items-end justify-between gap-4" data-reveal>
+        <div>
+          <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
+          <h2 class="text-h2 font-normal text-navy">El equipo detrás de cada obra</h2>
+        </div>
+        <Boton href="/nosotros" variante="secundario" class="whitespace-nowrap">
+          Ver todo el equipo →
+        </Boton>
+      </div>
+      <div class="mt-10 grid gap-8 sm:grid-cols-2" data-reveal>
         {
           equipo.map((m) => (
             <div>
+              {/* Foto arriba del texto (16/08/2026, pedido explícito). El
+                  schema de `equipo` ya tiene `foto` opcional (§content.config)
+                  pero ninguna entrada la carga todavía: mientras tanto se ve
+                  un placeholder con las iniciales, mismo tratamiento
+                  (blanco y negro / color en hover) que el resto de las fotos
+                  del sitio en cuanto se suba una imagen real. */}
+              <div class="mb-4 aspect-square w-full max-w-[220px] overflow-hidden bg-navy-50">
+                {m.data.foto ? (
+                  <Image
+                    src={m.data.foto}
+                    alt={m.data.nombre}
+                    width={440}
+                    height={440}
+                    class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+                  />
+                ) : (
+                  <div
+                    class="flex h-full w-full items-center justify-center text-h2 font-medium text-navy-200"
+                    aria-hidden="true"
+                  >
+                    {m.data.nombre
+                      .replace(/^(Arq\.|Ing\.)\s*/, '')
+                      .split(' ')
+                      .map((p) => p[0])
+                      .join('')}
+                  </div>
+                )}
+              </div>
               <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
               <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">{m.data.rol}</p>
               <p class="mt-2 text-sm text-navy-700">{m.data.credenciales.join(' · ')}</p>
@@ -208,42 +531,122 @@ const seo = {
           ))
         }
       </div>
-      <a
-        href="/nosotros"
-        class="mt-8 inline-flex min-h-[44px] items-center text-sm uppercase tracking-[0.06em] text-navy hover:text-arena"
-        >Ver todo el equipo →</a
-      >
     </div>
   </section>
+  </MarcoSeccion>
 
-  {/* Sección 9 — Formulario */}
-  <section id="contacto" class="py-16 md:py-24">
-    <div class="mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2">
-      <div>
+  {/* Cierre del capítulo "con quiénes": lo que sigue es la acción. */}
+  <FranjaRayado />
+
+  {/* Sección 9 — Contacto. Reestructurada el 10/08/2026 sobre spec del
+      cliente: columna editorial (timeline de atributos + datos de contacto) a
+      la izquierda, formulario como card protagonista a la derecha — antes era
+      al revés, con el formulario suelto y los bloques de confianza en tarjetas
+      planas. `items-start` porque las dos columnas ya no necesitan alinearse
+      por altura de contenido (antes el padding-top de la derecha compensaba el
+      encabezado de la izquierda; ahora cada una tiene su propio título).
+      El fondo fotográfico agregado el 10/08/2026 se sacó el 14/08/2026 (feedback
+      directo del cliente en la Home): la sección vuelve a ser blanco liso, sin
+      foto de por medio. */}
+  {/* `pb` propio, achicado (16/08/2026): esta es la última sección antes del
+      Footer del layout. Mismo criterio que ya usa Obras destacadas (Sección
+      5): `pt`/`pb` asimétrico en vez del `py` parejo, para que la sección no
+      deje los 120px de aire de siempre justo antes del footer. El `pt` no se
+      toca — es el aire después de la sección anterior. */}
+  <MarcoSeccion cierra>
+  <section id="contacto" class="bg-white pt-20 pb-6 md:pt-[120px] md:pb-10">
+    <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
+      {/* Subheader estándar (14/08/2026): antes tenía el mismo recurso
+          tipográfico de fondo que el resto, retirado en toda la Home — ver
+          Sección 3. */}
+      <div data-reveal>
         <Eyebrow class="mb-2.5">Contacto</Eyebrow>
-        <h2 class="text-h2 font-medium text-navy">Contanos tu proyecto</h2>
+        <h2 class="text-h2 font-normal text-navy">Contanos de tu proyecto</h2>
         <p class="mt-3 text-navy-700">
           Respondemos en menos de 24 horas en días hábiles. Sin compromiso.
         </p>
-        <FormularioConsulta class="mt-8" />
+        <TimelineContacto class="mt-10" atributos={bloquesDeConfianza} />
       </div>
 
-      {/* El padding-top alinea el arranque de esta columna con el primer campo del
-          formulario, que en la izquierda queda debajo del encabezado. Es alineación
-          visual, no una medida exacta: el alto del encabezado depende del texto. */}
-      <div class="md:pt-36">
-        <dl class="space-y-6">
-          {
-            bloquesDeConfianza.map((b) => (
-              <div class="border-t-4 border-arena bg-navy-50 p-6">
-                <dt class="font-medium uppercase tracking-[0.04em] text-navy">{b.titulo}</dt>
-                <dd class="mt-2 leading-relaxed text-navy-700">{b.texto}</dd>
-              </div>
-            ))
-          }
-        </dl>
-        <BloqueContacto class="mt-8" />
+      {/* Card sólido (14/08/2026): sin la foto detrás, el glass (navy
+          translúcido + blur) no tenía nada fotográfico que dejar entrever —
+          quedaba un efecto de vidrio sobre blanco liso, sin justificación.
+          Pasa a navy sólido: mismo acento de color que distingue esta card
+          del resto de la sección (blanca), sin blur ni sombra (`shadow-lg`
+          también se saca acá — la identidad no admite sombras, §3.3).
+          `FormularioConsulta` sigue recibiendo `sobreNavy` porque el fondo
+          sigue siendo oscuro, solo que ahora sólido en vez de translúcido. */}
+      <div class="bg-navy p-6 md:p-10" data-reveal>
+        <FormularioConsulta sobreNavy />
       </div>
     </div>
   </section>
+  </MarcoSeccion>
+  </HojaTecnica>
 </Layout>
+
+<style>
+  /* Subrayado que se dibuja bajo el cierre del <h1> (07/08/2026). Va en un
+   * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
+   * porque acá el trazo no responde a hover: se anima al cargar, reusando el
+   * keyframe `hero-rule` que ya dibuja la línea de abajo. El delay de 0.7s lo
+   * encadena después del reveal del h1 y de esa línea. */
+  .subrayado-hero {
+    position: relative;
+  }
+
+  .subrayado-hero::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    /* Debajo de los descendentes de "principio": la line-height del hero es
+     * 1.1, así que el trazo se apoya afuera de la caja del texto. */
+    bottom: -0.14em;
+    height: 3px;
+    background-color: var(--color-arena);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: hero-rule 1s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .subrayado-hero::after {
+      animation: none;
+      transform: scaleX(1);
+    }
+  }
+
+  /* Máscara del isotipo en el overlay del hero (decisión del 06/08/2026,
+   * replica el proto): dos capas de mask compuestas con "exclude" — la
+   * primera es un degradé sólido que cubre todo el overlay, la segunda es el
+   * isotipo de NEST (mismos 3 paths de public/logo-nest.svg) posicionado a la
+   * derecha. Donde ambas capas se solapan (la silueta de la "N"), "exclude"
+   * las cancela: el overlay no pinta ahí y se ve el video a pleno dentro del
+   * isotipo. mask-composite no tiene shorthand en Tailwind, por eso va en un
+   * <style> scoped en vez de utilities. */
+  .hero-overlay {
+    --iso: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="180 215 745 815"><path fill="%23fff" d="M204.164 494.511C209.186 498.107 230.479 520.19 236.231 525.952L306.802 596.632L571.809 861.605L642.51 790.904V933.292C620.092 955.33 594.332 983.06 571.521 1003.72L204.164 632.966V494.511Z"/><path fill="%23fff" d="M896.61 536.809C897.59 540.188 897.25 571.013 897.25 577.143L897.17 678.634L847.409 728.177C819.159 726.665 788.537 723.688 760.185 721.472L557.15 705.736L475.5 624.086L403.014 551.6C452.349 554.401 505.191 559.491 554.66 563.345L846.936 586.262L896.61 536.809Z"/><path fill="%23fff" d="M458.861 239.706C538.564 317.219 619.614 400.418 698.459 479.256C682.544 478.716 662.419 476.611 646.23 475.343L547.054 467.665L458.832 378.634L458.861 239.706Z"/></svg>');
+
+    -webkit-mask-image: linear-gradient(#000, #000), var(--iso);
+    mask-image: linear-gradient(#000, #000), var(--iso);
+    -webkit-mask-position: 0 0, right max(6vw, calc(50% - 540px)) center;
+    mask-position: 0 0, right max(6vw, calc(50% - 540px)) center;
+    -webkit-mask-size: 100% 100%, auto 52%;
+    mask-size: 100% 100%, auto 52%;
+    -webkit-mask-repeat: no-repeat, no-repeat;
+    mask-repeat: no-repeat, no-repeat;
+    -webkit-mask-composite: xor; /* Safari/WebKit */
+    mask-composite: exclude; /* estándar */
+  }
+
+  /* La ventana del isotipo solo se ve en desktop (decisión del 06/08/2026):
+   * en mobile/tablet el hero es más angosto y la "N" recortada a la derecha
+   * queda encima del texto o casi invisible, así que directamente se apaga y
+   * el overlay vuelve a ser un tono plano de navy/50. */
+  @media (max-width: 1023px) {
+    .hero-overlay {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+</style>

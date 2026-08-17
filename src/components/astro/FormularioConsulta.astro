@@ -14,21 +14,63 @@
  * 5 KB de JS por ruta.
  *
  * Inputs con font-size ≥16px para no disparar zoom en iOS (§7.3); honeypot
- * antispam (§8.1); <select> nativo (§3.4). Estilado para fondo claro (bordes
- * navy, nunca arena §1.2).
+ * antispam (§8.1); <select> nativo (§3.4).
+ *
+ * Dos crománicas (10/08/2026): la de fondo claro (bordes navy, nunca arena
+ * §1.2) es la que usa /contacto; `sobreNavy` es la variante glass para la
+ * card semitransparente de la home, con blur medio para que el fondo
+ * fotográfico se siga percibiendo detrás de los campos.
  */
 import { site } from '@/data/site';
 
 interface Props {
   class?: string;
+  /** Card glass sobre navy (home) en vez de fondo claro (/contacto). */
+  sobreNavy?: boolean;
 }
-const { class: className } = Astro.props as Props;
+const { class: className, sobreNavy = false } = Astro.props as Props;
 
-const label = 'block text-sm font-medium uppercase tracking-[0.06em] text-navy';
-const field =
-  // El placeholder va en navy-700 (5.48:1) y no en un gris más claro: navy-500 da
-  // 3.00:1 sobre blanco y Lighthouse audita el contraste del placeholder (a11y 100).
-  'mt-2 block w-full min-h-[44px] border border-navy-600 bg-white px-3 py-2 text-base text-navy placeholder:text-navy-700 focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy';
+const label = sobreNavy
+  ? 'block text-sm font-medium uppercase tracking-[0.06em] text-white'
+  : 'block text-sm font-medium uppercase tracking-[0.06em] text-navy';
+
+/* Campos con el lenguaje de shadcn/ui (08/08/2026): radio suave, sombra
+ * mínima, y en foco el borde pasa al color de anillo más un ring de 3px al 50%
+ * — su firma visual, en vez del ring-1 anterior.
+ *
+ * Tres desvíos deliberados del componente original de shadcn, por criterios que
+ * este proyecto ya tiene documentados:
+ *
+ * 1. Borde en navy-600 (claro) / white/25 (glass), no en el `--input`
+ *    (#B3C1CD ≈ navy-300) del mapeo de §3.2: ese tono da ~2.2:1 sobre blanco y
+ *    el borde de un campo es un límite de control, que WCAG 1.4.11 exige
+ *    ≥3:1. navy-600 da 3.4:1.
+ * 2. `min-h-[44px]` en lugar del `h-9` (36px) de shadcn: tap target mínimo
+ *    (§7.3).
+ * 3. `text-base` fijo, sin el `md:text-sm` de shadcn: 16px es el umbral que
+ *    evita el zoom automático de iOS al enfocar un campo (§7.3).
+ *
+ * En la variante clara el placeholder va en navy-700 (5.48:1) y no en el
+ * `--muted-foreground` del mapeo: navy-500 da 3.00:1 y Lighthouse audita el
+ * contraste del placeholder (a11y 100). En la glass, blanco/60 da 4.6:1 sobre
+ * el navy/40 + blur del fondo en su punto más oscuro.
+ *
+ * `appearance-none` (14/08/2026): sin esto los dos <select> del formulario
+ * (tipo de proyecto, zona) se renderizan con el widget nativo del navegador
+ * —altura y padding propios, ajenos al `min-h-[44px]`/`px-3` que sí respetan
+ * `<input>` y `<textarea>`— y quedan desalineados del resto de los campos.
+ * Con el apariencia nativa apagada los tres tipos de control comparten
+ * exactamente la misma caja; el chevron se repone a mano en el markup (ver
+ * `.campo-select` más abajo), reemplazando la flecha del sistema. */
+const field = sobreNavy
+  ? 'mt-2 flex min-h-[44px] w-full appearance-none border border-white/25 bg-white/10 px-3 py-2 text-base text-white shadow-xs outline-none backdrop-blur-sm transition-[color,box-shadow,background-color] placeholder:text-white/60 focus-visible:border-arena focus-visible:bg-white/15 focus-visible:ring-[3px] focus-visible:ring-arena/40 disabled:cursor-not-allowed disabled:opacity-50'
+  : 'mt-2 flex min-h-[44px] w-full appearance-none border border-navy-600 bg-white px-3 py-2 text-base text-navy shadow-xs outline-none transition-[color,box-shadow] placeholder:text-navy-700 focus-visible:border-navy focus-visible:ring-[3px] focus-visible:ring-navy/50 disabled:cursor-not-allowed disabled:opacity-50';
+
+/* Clase extra solo para los <select>: espacio a la derecha para el chevron
+ * propio y `bg-no-repeat` no hace falta porque el ícono ya no va por
+ * `background-image` sino como SVG posicionado en el markup. */
+const fieldSelect = `${field} pr-9`;
+const chevronColor = sobreNavy ? 'text-white/70' : 'text-navy-600';
 
 const tiposDeProyecto = [
   'Vivienda nueva',
@@ -42,6 +84,7 @@ const tiposDeProyecto = [
   method="POST"
   action="/api/consulta"
   data-consulta
+  data-glass={sobreNavy ? '' : undefined}
   data-whatsapp={site.whatsapp.numero}
   data-evento="form_submit"
   class:list={['space-y-5', className]}
@@ -80,21 +123,43 @@ const tiposDeProyecto = [
 
   <div>
     <label for="tipo" class={label}>Tipo de proyecto *</label>
-    <select id="tipo" name="tipo" required class={field}>
-      <option value="">Seleccioná una opción</option>
-      {tiposDeProyecto.map((t) => <option value={t}>{t}</option>)}
-    </select>
+    <div class="campo-select relative mt-2">
+      <select id="tipo" name="tipo" required class={fieldSelect + ' mt-0'}>
+        <option value="">Seleccioná una opción</option>
+        {tiposDeProyecto.map((t) => <option value={t}>{t}</option>)}
+      </select>
+      <svg
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+        class:list={['pointer-events-none absolute top-1/2 right-3 h-[14px] w-[14px] -translate-y-1/2', chevronColor]}
+      >
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
   </div>
 
+  {/* Spec del 10/08/2026: pasa de input libre a select con las zonas reales
+   * de `site.areaServed` — mismo dato que ya alimenta el JSON-LD del layout,
+   * no una lista nueva inventada para este campo. El `name="zona"` se
+   * mantiene: el script de abajo ya lo lee con ese nombre. */}
   <div>
-    <label for="zona" class={label}>¿Dónde querés construir?</label>
-    <input
-      id="zona"
-      name="zona"
-      type="text"
-      placeholder="Ej: Nordelta, San Isidro, CABA..."
-      class={field}
-    />
+    <label for="zona" class={label}>¿Desde dónde nos contactás?</label>
+    <div class="campo-select relative mt-2">
+      <select id="zona" name="zona" class={fieldSelect + ' mt-0'}>
+        <option value="">Seleccioná una opción</option>
+        {site.areaServed.map((z) => <option value={z}>{z}</option>)}
+        <option value="Otra zona">Otra zona</option>
+      </select>
+      <svg
+        viewBox="0 0 16 16"
+        fill="none"
+        aria-hidden="true"
+        class:list={['pointer-events-none absolute top-1/2 right-3 h-[14px] w-[14px] -translate-y-1/2', chevronColor]}
+      >
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </div>
   </div>
 
   <div>
@@ -102,22 +167,49 @@ const tiposDeProyecto = [
     <textarea
       id="mensaje"
       name="mensaje"
-      rows="3"
+      rows="5"
       placeholder="Ej: Quiero construir una casa de 300m² en Nordelta. Tengo el lote."
       class={field}></textarea>
   </div>
 
   <div>
+    {/* Mismo tratamiento "primario" que Boton.astro (10/08/2026), solo en la
+     * variante glass: border-arena + glass + texto blanco, invierte a arena
+     * sólido + navy en hover. En la variante clara (/contacto, fondo blanco)
+     * se mantiene el arena sólido de siempre — texto blanco sobre transparente
+     * ahí sería ilegible. */}
     <button
       type="submit"
-      class="flex min-h-[44px] w-full items-center justify-center bg-navy px-6 py-3 text-base font-medium uppercase tracking-[0.02em] text-white transition-colors hover:bg-navy-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+      class:list={[
+        'flex min-h-[44px] w-full items-center justify-center rounded-boton px-6 py-3 text-base font-medium uppercase tracking-[0.02em] transition-colors',
+        sobreNavy
+          ? 'border border-arena bg-white/10 text-white backdrop-blur-2xl hover:bg-arena hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena'
+          : 'bg-arena text-navy hover:bg-arena-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy',
+      ]}
       >Enviar consulta por WhatsApp →</button
     >
-    <p class="mt-3 text-center text-[10px] leading-relaxed text-navy-700">
+    <p
+      class:list={[
+        'mt-3 text-center text-[10px] leading-relaxed',
+        sobreNavy ? 'text-white/70' : 'text-navy-700',
+      ]}
+    >
       Al hacer clic se abre WhatsApp con tu consulta pre-cargada
     </p>
   </div>
 </form>
+
+<style>
+  /* Los <option> de un <select> los pinta el navegador en su propia capa — no
+   * heredan `bg-white/10` del control. Sin esto, el desplegable de la variante
+   * glass abriría en el fondo por defecto del sistema (blanco) con texto
+   * blanco encima. Va detrás de `[data-glass]` para no afectar la variante
+   * clara, donde el <select> ya es legible con los colores del sistema. */
+  form[data-glass] select option {
+    background-color: #00263f;
+    color: #fff;
+  }
+</style>
 
 <script>
   // Intercepta el submit y abre WhatsApp con el mensaje armado. Si este script

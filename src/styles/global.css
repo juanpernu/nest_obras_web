@@ -1,16 +1,32 @@
 @import "tailwindcss";
 
-/* Roboto Condensed self-hosted (Fontsource). Solo pesos 300/400/500 (identidad §2.1)
- * y solo subsets latin + latin-ext (español rioplatense). Importar los CSS
- * all-subset metía cyrillic/greek/vietnamese y base64-inlineaba greek-ext
- * (~62% del presupuesto de CSS) — ver auditoría de performance. Preload del
- * peso 300 (hero/LCP) va en main.astro. */
-@import "@fontsource/roboto-condensed/latin-300.css";
-@import "@fontsource/roboto-condensed/latin-ext-300.css";
-@import "@fontsource/roboto-condensed/latin-400.css";
-@import "@fontsource/roboto-condensed/latin-ext-400.css";
-@import "@fontsource/roboto-condensed/latin-500.css";
-@import "@fontsource/roboto-condensed/latin-ext-500.css";
+/* Roboto Condensed self-hosted (Fontsource). Solo pesos 300/400/500 (identidad §2.1).
+ *
+ * AGREGADOS POR PESO, NO CSS POR SUBSET (16/08/2026, auditoría de performance).
+ * Antes se importaban los seis `latin-*.css` / `latin-ext-*.css` justamente para
+ * no traer cyrillic/greek/vietnamese. El problema es que ESOS ARCHIVOS NO TRAEN
+ * `unicode-range`: sin esa declaración el navegador no puede descartar ninguna
+ * cara y descargaba las seis. Medido en /nosotros, mobile, caché fría:
+ * 106.162 B de woff2 en 6 archivos.
+ *
+ * Los agregados `300.css`/`400.css`/`500.css` sí declaran `unicode-range` por
+ * subset. Declaran más caras —cyrillic, greek, vietnamese—, pero el navegador
+ * resuelve por rango y solo pide las que el texto necesita: 63.369 B en 3
+ * archivos, −42.793 B por ruta (−40% del payload tipográfico). Las caras
+ * `latin-ext` quedan en `unloaded` hasta que aparezca un carácter que las pida.
+ *
+ * Efecto lateral bueno: sin `unicode-range` ganaba la última cara declarada, así
+ * que Chrome elegía `latin-ext` como primaria y el preload de main.astro
+ * apuntaba a una cara que no lo era. Ahora `latin-300` sí es la primaria.
+ *
+ * El costo es ~1 KB de CSS sin comprimir en declaraciones que nunca se
+ * descargan. Verificar al tocar esto que no vuelva el base64-inlining de
+ * greek-ext que hubo en la primera versión (Vite inlinea assets bajo su
+ * `assetsInlineLimit`): si el CSS se dispara, volver a declarar los @font-face
+ * a mano con los `unicode-range` copiados de estos agregados. */
+@import "@fontsource/roboto-condensed/300.css";
+@import "@fontsource/roboto-condensed/400.css";
+@import "@fontsource/roboto-condensed/500.css";
 
 /*
  * Sistema de diseño de Nest Obras — de docs/identidad-visual.md.
@@ -64,7 +80,11 @@
    * no inyecta en la CSS-var de Tailwind v4 y mal-derivó las métricas. */
   --font-sans: "Roboto Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
 
-  --text-hero: clamp(2.125rem, 1.2rem + 4.6vw, 4rem);
+  /* Máximo subido a 70px (4.375rem) — pedido del 16/08/2026. Recalculado para
+   * mantener la misma curva del sitio: el término base+vw sigue tocando el
+   * mínimo en ~320px (mobile) y el máximo en ~960px (donde ya arrancaba a
+   * aplanarse antes), solo que ahora corre hasta 70px en vez de 64px. */
+  --text-hero: clamp(2.125rem, 1rem + 5.6vw, 4.375rem);
   --text-hero--line-height: 1.1;
   --text-hero--letter-spacing: -0.022em;
 
@@ -76,15 +96,92 @@
   --text-h1--line-height: 1.15;
   --text-h1--letter-spacing: -0.01em;
 
-  --text-h2: clamp(1.5rem, 1.3rem + 1.0vw, 2rem);
+  /* Máximo subido a 42px (2.625rem) — pedido del 16/08/2026. Recalculado igual
+   * que --text-hero: toca el mínimo en ~320px y el máximo en ~1120px (mismos
+   * puntos de referencia que antes), para que la curva no dé un salto. */
+  --text-h2: clamp(1.5rem, 1.05rem + 2.25vw, 2.625rem);
   --text-h2--line-height: 1.2;
   --text-h2--letter-spacing: -0.01em;
 
   --text-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
   --text-h3--line-height: 1.3;
 
+  /* ---- Sistema de marco "hoja técnica" (15/08/2026, pedido de la usuaria) ----
+   * Reemplaza todas las líneas dasheadas del sitio por un lenguaje de papel
+   * técnico: guías de página, marco por sección y franja de rayado diagonal.
+   * En ARENA por pedido de la usuaria (15/08/2026); la referencia original
+   * traía dos grises neutros (#EEEEEE y #DEDEDE) y el sistema queda mejor
+   * hablando en color de marca: el papel se lee cálido, no gris de oficina.
+   *
+   * Los dos son ORNAMENTO PURO —líneas y textura de fondo—: nunca texto, nunca
+   * borde estructural, nunca anillo de foco, nunca estado. Por eso pueden ir en
+   * arena sobre blanco (1.70) sin violar §1.2, que es una regla de contraste de
+   * LECTURA. Lo que sí ancla el ojo, y lo que hace que el marco se lea aunque
+   * las líneas sean casi imperceptibles, son las escuadras en NAVY.
+   *
+   * La jerarquía rule < hatch se mantiene bajando un escalón de la escala de
+   * arena: el rayado son trazos de 1px cada 9px, así que a igual color leería
+   * MÁS claro que una línea llena; arena-600 lo compensa y lo deja apenas por
+   * encima de la regla, como en la referencia. */
+  --color-rule: var(--color-arena); /* #D9C2B6 — guías de página y reglas de marco */
+  --color-hatch: var(--color-arena-600); /* #C3AFA4 — rayado de las franjas divisoras */
+
   /* Geometría (EXTRAÍDO §3.3): sin radios, sin sombras, sin degradados. */
   --radius: 0;
+
+  /* La excepción de 4px para la acción primaria (decisión del 03/08/2026) se
+   * revirtió el 14/08/2026: pedido directo de la usuaria de sacar todos los
+   * border-radius del sitio, sin excepciones. El token se mantiene en 0 para
+   * no reescribir cada `rounded-boton` / `var(--radius-boton)` del código. */
+  --radius-boton: 0;
+
+  /* Contenedor ancho (14/08/2026, feedback del cliente): `max-w-6xl` (72rem /
+   * 1152px, default de Tailwind) es el ancho de columna de TODO el sitio —
+   * Nav, Footer y cada sección de esta rama lo comparten. En pantallas
+   * grandes se leía demasiado angosto. Se pisa acá, no en cada componente,
+   * para que el header/footer y el contenido seguido midan siempre lo mismo.
+   * `clamp()` deja el valor intacto hasta que el viewport pasa los 1920px
+   * (60vw = 1152px en ese punto) — mobile y tablet no cambian — y de ahí
+   * escala con el viewport hasta un techo de 96rem (1536px), para no crecer
+   * sin límite en monitores ultra-anchos. */
+  --container-6xl: clamp(72rem, 60vw, 96rem);
+}
+
+/* Margen mínimo de las guías verticales de página (HojaTecnica) y de las
+ * esquinas en L del marco de sección (MarcoSeccion). Va en `:root` y no en
+ * `@theme` porque no genera utilidades: se consume siempre como `var()` dentro
+ * de `calc()`/`max()`, y acá la emisión está garantizada.
+ *
+ * La posición real es `max(--guia-margen, (100% - --container-6xl) / 2)`: en
+ * desktop las guías caen justo sobre el borde exterior de la columna de
+ * contenido (antes del `px-6`), así que todo el sitio se alinea contra ellas;
+ * en pantallas chicas, donde ese cálculo daría negativo, gana el margen fijo y
+ * quedan 12px del borde (16px de aire hasta el texto, que arranca en 24px).
+ * Se usa `100%` y no `100vw` a propósito: `100vw` incluye el ancho de la barra
+ * de scroll y descentraría las dos guías entre sí. */
+:root {
+  --guia-margen: 0.75rem;
+}
+@media (min-width: 640px) {
+  :root {
+    --guia-margen: 1.25rem;
+  }
+}
+
+/* Rayado diagonal del sistema "hoja técnica": el achurado con el que se marca
+ * una zona en un plano. 115°, 8.5px de aire y 1px de trazo.
+ *
+ * Vive acá, junto a `--color-hatch` —que existe solo para esto—, y no dentro de
+ * FranjaRayado, que hoy es su único consumidor: se sacó del componente el
+ * 15/08/2026 cuando las píldoras de ícono de GrillaServicios lo compartieron por
+ * unas horas, y se queda acá como patrón del sistema, disponible para el
+ * próximo que lo necesite sin tener que volver a copiarlo.
+ *
+ * En `:root` y no en `@theme` por el mismo motivo que --guia-margen: no genera
+ * utilidades, se consume siempre como `var()` en un `background-image`, y acá
+ * la emisión está garantizada. */
+:root {
+  --rayado: repeating-linear-gradient(115deg, transparent 0 8.5px, var(--color-hatch) 8.5px 9.5px);
 }
 
 /*
@@ -107,5 +204,44 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+}
+
+/* Keyframes del hero (decisión del 06/08/2026): la sombra/blur del header al
+ * scrollear y la línea que se dibuja bajo el h1 rompen a propósito el "sin
+ * sombras, sin degradados" de §3.3 — el cliente pidió avanzar con este
+ * lenguaje visual en varios componentes, empezando por Header y Hero. */
+@layer utilities {
+  @keyframes hero-rule {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  /* Doble chevron del indicador de scroll del hero: cada flecha "cae" y se
+   * apaga, la siguiente arranca con 0.3s de diferencia — da la sensación de
+   * una cascada continua en vez de un simple rebote. */
+  @keyframes chevron-caida {
+    0% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    50% {
+      opacity: 1;
+      transform: translateY(2px);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
   }
 }

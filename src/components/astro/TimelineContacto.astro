@@ -1,0 +1,155 @@
+---
+/**
+ * Columna editorial de la Sección 9 — Contacto (10/08/2026, spec del cliente).
+ * Timeline de 3 atributos con nodos sobre una línea vertical de referencia,
+ * que interrumpen las líneas horizontales al superponerse (z-index), seguido de
+ * un separador y los datos de contacto con ícono.
+ *
+ * Todas las líneas son sólidas desde el 15/08/2026 (antes eran dasheadas, por
+ * `repeating-linear-gradient`): se sacó el dasheado de todo el sitio a favor
+ * del sistema de marco "hoja técnica". Siguen enmascaradas para desvanecerse en
+ * los extremos en vez de cortar en seco, igual que el reticulado de GrillaLogos
+ * y el marco de GrillaServicios, pero acá puertas adentro de la columna en vez
+ * de sangrando fuera de ella.
+ *
+ * Los dos niveles del sistema se ven bien acá: la vertical es ESTRUCTURA —une
+ * los tres nodos, si no se lee el timeline deja de existir— y por eso va en
+ * navy a baja opacidad; las horizontales son separadores y van en la regla
+ * casi subliminal (`--color-rule`), como el resto del marco.
+ *
+ * El NAP (teléfono, email, dirección) sale de site.ts, nunca hardcodeado, para
+ * ser idéntico carácter por carácter en todos lados (§6.7).
+ */
+import { site, telUrl } from '@/data/site';
+
+interface Atributo {
+  titulo: string;
+  texto: string;
+}
+
+interface Props {
+  atributos: Atributo[];
+  class?: string;
+}
+const { atributos, class: className } = Astro.props as Props;
+---
+
+<div class:list={[className]}>
+  {/* Sin línea vertical, sin líneas horizontales entre filas, sin nodos
+      (16/08/2026, pedido explícito): antes cada fila tenía un separador
+      horizontal con un punto de referencia y una línea vertical de fondo
+      uniéndolos, todo el "timeline" visual. Ahora son bloques de texto
+      apilados en flujo simple, sin ningún trazo decorativo.
+
+      El contenedor solo existe si hay atributos: /contacto monta este
+      componente con `atributos={[]}` —renderiza los suyos aparte y usa esto
+      solo por el bloque de NAP— y sin el guard quedaba un <div> vacío en el
+      HTML, además de sumarle su `mt-8` al margen del uso. */}
+  {
+    atributos.length > 0 && (
+      <div class="flex flex-col gap-5">
+        {atributos.map((a) => (
+          <div>
+            <h3 class="font-medium text-navy">{a.titulo}</h3>
+            <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  <p
+    class:list={[
+      'text-sm font-medium uppercase tracking-[0.06em] text-navy-700',
+      atributos.length > 0 && 'mt-8',
+    ]}
+  >
+    También nos podés contactar por:
+  </p>
+  <address class="mt-4 flex flex-col gap-5 not-italic">
+    <a href={telUrl} class="tl-dato flex items-center gap-3 text-navy">
+      <span class="tl-icono" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M6.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5L16 13l4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 4.5 6a2 2 0 0 1 2-2Z" />
+        </svg>
+      </span>
+      <span class="text-sm">{site.whatsapp.display}</span>
+    </a>
+    <a href={`mailto:${site.email}`} class="tl-dato flex items-center gap-3 text-navy">
+      <span class="tl-icono" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="m3.5 6.5 8.5 6 8.5-6" />
+        </svg>
+      </span>
+      <span class="text-sm">{site.email}</span>
+    </a>
+    {
+      site.direccion && (
+        <div class="flex items-center gap-3 text-navy">
+          <span class="tl-icono" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 21s7-6.5 7-11.5A7 7 0 0 0 5 9.5C5 14.5 12 21 12 21Z" />
+              <circle cx="12" cy="9.5" r="2.25" />
+            </svg>
+          </span>
+          <span class="text-sm">{site.direccion.display}</span>
+        </div>
+      )
+    }
+  </address>
+</div>
+
+<style>
+  /* Contenedor arena para los íconos de contacto, mismo lenguaje que la
+   * píldora de ícono de GrillaServicios (borde navy + fondo arena-200). Más
+   * chico porque acá conviven en una fila junto al texto, no como bloque
+   * destacado. */
+  .tl-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    border-radius: var(--radius-boton);
+    border: 1px solid var(--color-navy);
+    background-color: var(--color-arena-200);
+    color: var(--color-navy);
+  }
+  .tl-icono svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .tl-dato {
+    transition: color 0.2s;
+  }
+  .tl-dato:hover .tl-icono {
+    border-color: var(--color-navy-700);
+  }
+  .tl-dato:hover {
+    color: var(--color-arena-800);
+  }
+</style>
