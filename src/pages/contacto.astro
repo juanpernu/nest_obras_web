@@ -1,8 +1,11 @@
 ---
 import Layout from '@/layouts/main.astro';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
-import BloqueContacto from '@/components/astro/BloqueContacto.astro';
+import TimelineContacto from '@/components/astro/TimelineContacto.astro';
 import Boton from '@/components/astro/Boton.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import { whatsappUrl } from '@/data/site';
 
 // Bloques de confianza PROVISIONALES — reemplazar por el copy del PDF pp.15-17
@@ -14,49 +17,108 @@ const bloques = [
 ];
 ---
 
+{/* Alineada al lenguaje de la Home (16/08/2026). Ver la nota extensa de
+    nosotros.astro: mismo criterio y mismas reglas de marco. Específico de esta
+    página: pasa a ser la MISMA composición que la Sección 9 de la Home —
+    columna editorial con <TimelineContacto> a la izquierda y el formulario como
+    card glass protagonista a la derecha.
+
+    Con eso se eliminó BloqueContacto.astro, que era la caja navy del NAP:
+    <TimelineContacto> ya publica los mismos tres datos (teléfono, email,
+    dirección) desde site.ts, con las píldoras de ícono del sistema, así que
+    mantener las dos era mostrar el NAP dos veces en la misma pantalla. También
+    sale la caja navy-50 del CTA de WhatsApp: el botón queda debajo del
+    timeline, con la variante `secundario` (subrayado navy).
+
+    Dos secciones y no una sola como en la Home: acá el título de la página es un
+    <h1>, y meterlo en la columna izquierda dejaría los <h3> del timeline
+    colgando de un h1 sin h2 en el medio (salto de jerarquía, §6.2). */}
 <Layout
   title="Contacto | NEST Constructora Zona Norte y CABA"
   description="Contanos tu proyecto de vivienda, refacción u obra corporativa. Respondemos en menos de 24 horas hábiles. Zona Norte y CABA."
 >
-  <section class="py-16 md:py-24">
-    <div class="mx-auto max-w-6xl px-6">
-      <h1 class="text-h1 font-medium text-navy">Contanos tu proyecto</h1>
-      <p class="mt-3 text-navy-700">Respondemos en menos de 24 horas en días hábiles.</p>
+  <HojaTecnica>
+    <MarcoSeccion>
+      <section class="bg-white py-20 md:py-[120px]">
+        <CabeceraPagina
+          eyebrow="Contacto"
+          titulo="Contanos tu proyecto"
+          bajada="Respondemos en menos de 24 horas en días hábiles. La primera consulta no tiene costo ni compromiso, y hablás directamente con uno de los socios."
+        />
+      </section>
+    </MarcoSeccion>
 
-      <div class="mt-12 grid gap-12 md:grid-cols-2">
-        <FormularioConsulta />
+    <MarcoSeccion cierra>
+      <section id="contacto" class="bg-white py-20 md:py-[120px]">
+        <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
+          {/* Mismo criterio tipográfico que /nosotros y /servicios (16/08/2026,
+              pedido directo): renglones separados por la regla de 1px del
+              sistema y el contraste de escala haciendo el trabajo.
 
-        <div>
-          {/* Mismo componente que la Home: el NAP visible sale de site.ts en los
-              dos lados, así no puede divergir del footer ni del JSON-LD (§6.7). */}
-          <BloqueContacto />
+              SIN CIFRA, a diferencia de los otros dos índices. Allá el número es
+              dato —el paso 03 va después del 02, el `orden` del servicio está en
+              el schema—; acá los tres bloques son atributos ("respondemos en el
+              día", "sin costo", "+30 años"), no una secuencia, y numerarlos
+              afirmaría un orden que no existe. Lo que crece entonces es el
+              título, que pasa de `font-medium` a `text-h3`: la misma jerarquía,
+              con el elemento que sí corresponde.
 
-          <div class="mt-8 bg-navy-50 p-6">
-            <p class="text-sm uppercase tracking-[0.06em] text-navy-700">¿Preferís escribirnos?</p>
-            <div class="mt-4">
+              Los atributos salen de <TimelineContacto> y se renderizan acá, pero
+              el componente SE QUEDA con `atributos={[]}` porque es además el
+              bloque de NAP del sitio: publica teléfono, email y dirección desde
+              site.ts con las píldoras de ícono, y eso no se duplica a mano
+              (§6.7). La Home lo sigue montando entero, con sus tres atributos.
+
+              Nota: el 15/08/2026 se sacaron a pedido las líneas de
+              <TimelineContacto>. No es lo mismo que esto: aquello era un
+              timeline literal —vertical de referencia, horizontales enmascaradas
+              y un nodo en cada cruce— y esto es la regla del sistema de marco,
+              que ese día todavía no existía. Si igual se lee como un retroceso,
+              se revierte sacando las clases `divide-y`/`border-y` del <ul>. */}
+          <div data-reveal>
+            <h2 class="text-h2 font-normal text-navy">Cómo trabajamos la primera consulta</h2>
+            <ul class="mt-8 divide-y divide-arena border-y border-arena">
+              {
+                bloques.map((b) => (
+                  <li class="py-6">
+                    <h3 class="text-h3 font-medium text-navy">{b.titulo}</h3>
+                    <p class="mt-2 max-w-[64ch] font-light leading-relaxed text-navy-700">
+                      {b.texto}
+                    </p>
+                  </li>
+                ))
+              }
+            </ul>
+            <TimelineContacto class="mt-10" atributos={[]} />
+            <div class="mt-8">
               <Boton
                 href={whatsappUrl}
                 variante="secundario"
                 data-evento="whatsapp_click"
                 data-evento-lugar="contacto_cta"
               >
-                Escribinos por WhatsApp
+                Escribinos por WhatsApp →
               </Boton>
             </div>
           </div>
 
-          <dl class="mt-8 space-y-6">
-            {
-              bloques.map((b) => (
-                <div class="border-t border-navy-200 pt-4">
-                  <dt class="font-medium uppercase tracking-[0.04em] text-navy">{b.titulo}</dt>
-                  <dd class="mt-1 leading-relaxed text-navy-700">{b.texto}</dd>
-                </div>
-              ))
-            }
-          </dl>
+          {/* Card GLASS, los mismos cuatro valores que la Sección 9 de la Home y
+              que el header scrolleado (Nav.astro): `bg-white/70` +
+              `backdrop-blur-md` + `border-navy-200` + la sombra
+              `0_12px_40px_rgba(0,0,0,0.1)`. Como el fondo de la card es claro,
+              <FormularioConsulta> va SIN `sobreNavy`: labels y texto en navy,
+              campos con borde navy-600 (3.4:1, límite de control WCAG 1.4.11).
+              Con `sobreNavy` el formulario es blanco sobre transparente y acá
+              sería ilegible. */}
+          <div
+            class="border border-navy-200 bg-white/70 p-6 shadow-[0_12px_40px_rgba(0,0,0,0.1)] backdrop-blur-md md:p-10"
+            data-reveal
+          >
+            <h2 class="sr-only">Formulario de consulta</h2>
+            <FormularioConsulta />
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
 </Layout>

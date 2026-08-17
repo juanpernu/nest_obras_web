@@ -2,10 +2,16 @@
 /**
  * Video de fondo del hero (docs/PLAN-EJECUCION.md §7.2).
  *
- * Vuelve a <video> nativo (revertido el embed de YouTube, 14/08/2026): el
- * embed mostraba su propia UI —título, controles, tarjeta "más videos"— en
- * cada ciclo del loop y no hay parámetro que la elimine, así que rompía el
- * efecto de fondo continuo. El archivo es propio (public/hero-video.mp4).
+ * Vuelve a <video> nativo (17/08/2026, segunda reversión del embed de
+ * YouTube). Historial completo en docs/DEUDA-TECNICA.md §5: hubo un primer
+ * embed el 14/08/2026, revertido porque el player mostraba su propia UI
+ * —título, controles, tarjeta "más videos"— en cada ciclo del loop; un
+ * segundo intento el 16/08/2026 atacó esos tres puntos (pointer-events: none,
+ * loop por playlist, autoplay forzado en todas las condiciones) pero el
+ * problema de fondo seguía sin resolverse de forma confiable, y un embed de
+ * terceros mete >1 MB de JS que no puede estar en el camino crítico sin
+ * comprometer el budget de performance. El archivo es propio
+ * (public/hero-video.mp4).
  *
  * El <source> matchea solo en ≥768px Y sin prefers-reduced-motion: en mobile o
  * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de

@@ -3,8 +3,14 @@ import Layout from '@/layouts/main.astro';
 import FichaProyecto from '@/components/astro/FichaProyecto.astro';
 import Galeria from '@/components/astro/Galeria.astro';
 import Boton from '@/components/astro/Boton.astro';
+import Eyebrow from '@/components/astro/Eyebrow.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
+import { tipoLabel } from '@/data/obras';
 
 export async function getStaticPaths() {
   const obras = await getCollection('obras', (o) => o.data.paginaPropia);
@@ -14,6 +20,13 @@ export async function getStaticPaths() {
 const { obra } = Astro.props;
 const d = obra.data;
 const { Content } = await render(obra);
+
+/* `headline` y `slug` son opcionales en el schema porque las obras sin página
+ * propia no los llevan, pero el `superRefine` de content.config.ts los exige
+ * cuando `paginaPropia: true` y esta ruta solo se genera para esas. El build
+ * falla en la validación de la colección mucho antes de llegar acá, así que la
+ * aserción es la invariante que Zod ya garantiza y TS no puede inferir. */
+const headline = d.headline!;
 
 const breadcrumb = {
   '@context': 'https://schema.org',
@@ -26,6 +39,20 @@ const breadcrumb = {
 };
 ---
 
+{/* Alineada al lenguaje de la Home (16/08/2026). Ver la nota extensa de
+    nosotros.astro: mismo criterio y mismas reglas de marco.
+
+    NO lleva hero de foto, aunque sea el candidato natural a replicar el hero de
+    la Home: HOY TODAS LAS IMÁGENES DE LA COLECCIÓN `obras` SON PLACEHOLDERS —
+    tarjetas navy con el texto "PLACEHOLDER — REEMPLAZAR CON FOTO REAL"
+    impreso—, portadas y galerías incluidas (ver docs/DEUDA-TECNICA.md). A
+    sangre y bajo un overlay, ese cartel se lee entero y a pantalla completa.
+    Cuando lleguen las fotos reales, el bloque a montar acá es el mismo de la
+    Sección 1 de la Home: <Image> a sangre + `bg-black/50` + eyebrow `sobreNavy`
+    + `text-hero`, y esta cabecera pasa a ser su fallback.
+
+    Mientras tanto usa exactamente la misma cabecera blanca que /nosotros,
+    /servicios, /obras y /contacto, así las cinco páginas abren igual. */}
 <Layout
   title={d.seo?.titulo}
   description={d.seo?.descripcion}
@@ -33,47 +60,73 @@ const breadcrumb = {
   evento={{ nombre: 'obra_view', params: { obra: d.nombre, tipo: d.tipo } }}
 >
   <article>
-    <section class="bg-navy py-16 text-white md:py-24">
-      <div class="mx-auto max-w-6xl px-6">
-        <nav class="text-xs uppercase tracking-[0.08em] text-navy-200" aria-label="Migas de pan">
-          <a href="/obras" class="hover:text-arena">Obras</a>
-          <span class="mx-2">/</span><span>{d.nombre}</span>
-        </nav>
-        <h1 class="mt-6 text-hero font-light">{d.headline}</h1>
-        {d.subtitulo && <p class="mt-4 max-w-2xl text-lg leading-relaxed text-navy-100">{d.subtitulo}</p>}
-      </div>
-    </section>
+    <HojaTecnica>
+      <MarcoSeccion>
+        <section class="bg-white py-20 md:py-[120px]">
+          <CabeceraPagina
+            eyebrow={`${tipoLabel[d.tipo]} · ${d.zona}`}
+            titulo={headline}
+            bajada={d.subtitulo}
+          >
+            <nav
+              slot="migas"
+              class="text-xs uppercase tracking-[0.08em] text-navy-700"
+              aria-label="Migas de pan"
+            >
+              <a href="/obras" class="transition-colors hover:text-navy">Obras</a>
+              <span class="mx-2" aria-hidden="true">/</span><span>{d.nombre}</span>
+            </nav>
+          </CabeceraPagina>
+        </section>
+      </MarcoSeccion>
 
-    <section class="py-16 md:py-24">
-      <div class="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-[1fr_2fr]">
-        <FichaProyecto ficha={d.ficha ?? []} />
-        <div
-          class="max-w-none space-y-4 [&_h2]:mt-10 [&_h2]:text-h2 [&_h2]:font-normal [&_h2]:text-navy [&_h2:first-child]:mt-0 [&_p]:leading-relaxed [&_p]:text-navy"
-        >
-          <Content />
-        </div>
-      </div>
-
-      {
-        d.galeria && (
-          <div class="mx-auto mt-14 max-w-6xl px-6">
-            <h2 class="mb-6 text-h2 font-normal text-navy">Galería</h2>
-            <Galeria galeria={d.galeria} />
+      <MarcoSeccion cierra>
+        <section class="bg-white py-20 md:py-[120px]">
+          <div class="mx-auto grid max-w-6xl gap-12 px-6 lg:grid-cols-[1fr_2fr]">
+            <div data-reveal>
+              <Eyebrow class="mb-4">Ficha técnica</Eyebrow>
+              <FichaProyecto ficha={d.ficha ?? []} />
+            </div>
+            <div
+              class="max-w-none space-y-4 [&_h2]:mt-10 [&_h2]:text-h2 [&_h2]:font-normal [&_h2]:text-navy [&_h2:first-child]:mt-0 [&_p]:font-light [&_p]:leading-relaxed [&_p]:text-navy-700"
+              data-reveal
+            >
+              <Content />
+            </div>
           </div>
-        )
-      }
-    </section>
 
-    {/* Estandarizada a navy (10/08/2026): era la única de las 4 páginas con
-        este mismo bloque de cierre que usaba bg-navy-50 en vez de bg-navy. El
-        botón "primario" ahora es glass con texto blanco, pensado para fondo
-        navy — sobre navy-50 el texto blanco no pasaría contraste. */}
-    <section class="bg-navy py-16 text-center text-white md:py-20">
-      <div class="mx-auto max-w-3xl px-6">
-        <h2 class="text-h2 font-normal">¿Tenés un proyecto así?</h2>
-        <p class="mt-3 text-navy-100">Contanos y te respondemos en menos de 24 horas hábiles.</p>
-        <div class="mt-6"><Boton href="/contacto" variante="primario">Consulta tu proyecto</Boton></div>
-      </div>
-    </section>
+          {
+            d.galeria && (
+              <div class="mx-auto mt-16 max-w-6xl px-6" data-reveal>
+                <Eyebrow class="mb-2.5">Galería</Eyebrow>
+                <h2 class="mb-8 text-h2 font-normal text-navy">La obra terminada</h2>
+                <Galeria galeria={d.galeria} />
+              </div>
+            )
+          }
+        </section>
+      </MarcoSeccion>
+
+      {/* Cierre del capítulo: lo que sigue es la acción. */}
+      <FranjaRayado />
+
+      {/* CTA de cierre en blanco con `secundario`, por el mismo motivo que en el
+          resto de las páginas: `primario` es glass con texto blanco y solo
+          funciona sobre navy, y una banda navy acá se apilaba con el footer. */}
+      <MarcoSeccion cierra>
+        <section class="bg-white py-20 md:py-[120px]">
+          <div class="mx-auto max-w-6xl px-6" data-reveal>
+            <Eyebrow class="mb-2.5">Contacto</Eyebrow>
+            <h2 class="max-w-[640px] text-h2 font-normal text-navy">¿Tenés un proyecto así?</h2>
+            <p class="mt-3 max-w-[560px] text-navy-700">
+              Contanos y te respondemos en menos de 24 horas hábiles.
+            </p>
+            <div class="mt-6">
+              <Boton href="/contacto" variante="secundario">Consulta tu proyecto →</Boton>
+            </div>
+          </div>
+        </section>
+      </MarcoSeccion>
+    </HojaTecnica>
   </article>
 </Layout>

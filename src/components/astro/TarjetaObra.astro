@@ -6,6 +6,7 @@
  *  - resto → no clickeable
  */
 import FotoObra from '@/components/astro/FotoObra.astro';
+import { tipoLabel } from '@/data/obras';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -19,14 +20,6 @@ const d = obra.data;
 
 const href = d.paginaPropia && d.slug ? `/obras/${d.slug}` : d.destacadaEnHome ? '/obras' : null;
 const Tag = href ? 'a' : 'div';
-
-const tipoLabel: Record<string, string> = {
-  vivienda: 'Vivienda',
-  corporativo: 'Corporativo',
-  refaccion: 'Refacción',
-  gastronomia: 'Gastronomía',
-  edificio: 'Edificio',
-};
 ---
 
 <article>

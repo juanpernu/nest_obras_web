@@ -23,10 +23,14 @@ const { galeria } = Astro.props as Props;
             data-gallery-thumb
             aria-label={`Ampliar foto: ${g.alt}`}
           >
+            {/* `widths` llega a 1000 y no a 840 (16/08/2026): a 1440px la celda
+                mide 32vw ≈ 461 CSS px, que en DPR 2 pide ~922 px. Con el techo
+                anterior el candidato más grande se quedaba corto y el navegador
+                escalaba el bitmap hacia arriba. */}
             <Picture
               src={g.src}
               alt={g.alt}
-              widths={[420, 840]}
+              widths={[420, 840, 1000]}
               sizes="(min-width: 1024px) 32vw, 85vw"
               formats={['avif', 'webp']}
               class="aspect-[4/3] w-full object-cover"
