@@ -41,11 +41,22 @@ const navegacion = [
   { href: '/servicios', label: 'Servicios' },
   { href: '/obras', label: 'Obras' },
   { href: '/contacto', label: 'Contacto' },
+  { href: '/privacidad', label: 'Privacidad' },
 ];
 
 const contacto = [
-  { href: `mailto:${site.email}`, label: site.email, externo: false },
-  { href: whatsappUrl, label: `WhatsApp ${site.whatsapp.display}`, externo: true },
+  {
+    href: `mailto:${site.email}`,
+    label: site.email,
+    externo: false,
+    evento: 'email_click',
+  },
+  {
+    href: whatsappUrl,
+    label: `WhatsApp ${site.whatsapp.display}`,
+    externo: true,
+    evento: 'whatsapp_click',
+  },
   { href: site.instagram, label: '@nest.obras', externo: true },
 ];
 
@@ -151,6 +162,7 @@ const link =
                 href={c.href}
                 class={link}
                 {...(c.externo ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                {...(c.evento ? { 'data-evento': c.evento, 'data-evento-lugar': 'footer' } : {})}
               >
                 {c.label}
               </a>

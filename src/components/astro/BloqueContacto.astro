@@ -19,8 +19,22 @@ const enlace = 'flex min-h-[44px] items-center transition-colors hover:text-aren
   <Eyebrow sobreNavy>También podés escribirnos directo</Eyebrow>
 
   <address class="mt-4 not-italic">
-    <a href={telUrl} class={`${enlace} text-lg`}>{site.whatsapp.display}</a>
-    <a href={`mailto:${site.email}`} class={`${enlace} text-navy-100`}>{site.email}</a>
+    <a
+      href={telUrl}
+      class={`${enlace} text-lg`}
+      data-evento="tel_click"
+      data-evento-lugar="bloque_contacto"
+    >
+      {site.whatsapp.display}
+    </a>
+    <a
+      href={`mailto:${site.email}`}
+      class={`${enlace} text-navy-100`}
+      data-evento="email_click"
+      data-evento-lugar="bloque_contacto"
+    >
+      {site.email}
+    </a>
     {
       site.direccion && (
         <p class="mt-2 text-sm leading-relaxed text-navy-100">{site.direccion.display}</p>

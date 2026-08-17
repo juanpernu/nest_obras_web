@@ -183,7 +183,15 @@ const seo = {
         {/* backdrop-blur-md! pisa el backdrop-blur-2xl de la variante primario
             (Boton.astro): con el `!` de Tailwind, solo para este botón del
             Hero — el resto de los usos de "primario" quedan en 2xl. */}
-        <Boton href="/contacto" variante="primario" class="backdrop-blur-md!">Consulta tu proyecto</Boton>
+        <Boton
+          href="/contacto"
+          variante="primario"
+          class="backdrop-blur-md!"
+          data-evento="cta_contacto"
+          data-evento-lugar="home_hero"
+        >
+          Consulta tu proyecto
+        </Boton>
         <Boton href="/obras" variante="sobreNavy">Ver obras</Boton>
       </div>
     </div>

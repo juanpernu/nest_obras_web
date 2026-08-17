@@ -26,7 +26,12 @@ const breadcrumb = {
 };
 ---
 
-<Layout title={d.seo?.titulo} description={d.seo?.descripcion} jsonLd={[breadcrumb]}>
+<Layout
+  title={d.seo?.titulo}
+  description={d.seo?.descripcion}
+  jsonLd={[breadcrumb]}
+  evento={{ nombre: 'obra_view', params: { obra: d.nombre, tipo: d.tipo } }}
+>
   <article>
     <section class="bg-navy py-16 text-white md:py-24">
       <div class="mx-auto max-w-6xl px-6">

@@ -31,8 +31,13 @@ interface Props {
   href: string;
   variante?: 'primario' | 'primarioClaro' | 'secundario' | 'sobreNavy';
   class?: string;
+  /**
+   * Los `data-*` (en particular `data-evento*`) se pasan tal cual al <a>, para
+   * que una página pueda instrumentar un CTA sin tocar este componente.
+   */
+  [dato: `data-${string}`]: string | undefined;
 }
-const { href, variante = 'primario', class: className } = Astro.props as Props;
+const { href, variante = 'primario', class: className, ...rest } = Astro.props as Props;
 
 const base =
   'group inline-flex items-center justify-center min-h-[44px] text-[15px] font-medium uppercase tracking-[0.02em]';
@@ -56,6 +61,6 @@ const internas = {
 };
 ---
 
-<a href={href} class:list={[base, variantes[variante], className]}
+<a href={href} class:list={[base, variantes[variante], className]} {...rest}
   ><span class:list={[internas[variante]]}><slot /></span></a
 >

@@ -86,6 +86,7 @@ const tiposDeProyecto = [
   data-consulta
   data-glass={sobreNavy ? '' : undefined}
   data-whatsapp={site.whatsapp.numero}
+  data-evento="form_submit"
   class:list={['space-y-5', className]}
 >
   {/* Honeypot: los bots lo completan; humanos no lo ven. */}
@@ -223,8 +224,11 @@ const tiposDeProyecto = [
       const valor = (campo: string) => String(datos.get(campo) ?? '').trim();
 
       // Honeypot relleno ⇒ es un bot. Se corta acá, sin POST y sin WhatsApp.
+      // `stopPropagation` además evita que el listener delegado de analítica
+      // (Analytics.astro, escucha 'submit' en document) cuente un Lead falso.
       if (valor('_gotcha')) {
         evento.preventDefault();
+        evento.stopPropagation();
         return;
       }
 

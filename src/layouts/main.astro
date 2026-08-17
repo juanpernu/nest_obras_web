@@ -18,6 +18,8 @@ import Footer from '@/components/astro/Footer.astro';
 // falsa, el island no se renderiza y no se emite JS (verificado con `pnpm build`).
 // No renderizarlo sin el guard — rompe la regla de cero hidratación (§7.1).
 import { Agentation } from 'agentation';
+import Analytics from '@/components/astro/Analytics.astro';
+import type { EventoDePagina } from '@/data/analytics';
 
 interface Props {
   title?: string;
@@ -30,6 +32,12 @@ interface Props {
   noindex?: boolean;
   /** Structured data específico de la página, se agrega al global. */
   jsonLd?: Record<string, unknown>[];
+  /**
+   * Evento de analítica que la página dispara al cargar (una vista de obra o de
+   * servicio, que no nacen de un click). Los eventos de interacción NO van acá:
+   * se instrumentan con `data-evento` en el elemento (ver Analytics.astro).
+   */
+  evento?: EventoDePagina;
 }
 
 // Cast explícito: el binding implícito de `Props` a `Astro.props` no es fiable
@@ -41,6 +49,7 @@ const {
   ogImageAlt,
   noindex = false,
   jsonLd = [],
+  evento,
 } = Astro.props as Props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -159,5 +168,12 @@ const grafo = {
     </main>
     <Footer />
     {import.meta.env.DEV && <Agentation client:only="react" />}
+
+    {/* Va al final del <body>, no en el <head>: Astro inyecta el <link> del CSS
+        al final del <head>, así que un script inline ahí queda por delante del
+        stylesheet que pinta el <h1> (el LCP). Acá no compite con nada, y sigue
+        corriendo mucho antes del `load`, que es cuando se piden los scripts
+        reales — el orden que Consent Mode exige se respeta igual. */}
+    <Analytics evento={evento} />
   </body>
 </html>
