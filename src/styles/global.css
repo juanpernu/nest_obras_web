@@ -123,7 +123,16 @@
    * arena: el rayado son trazos de 1px cada 9px, así que a igual color leería
    * MÁS claro que una línea llena; arena-600 lo compensa y lo deja apenas por
    * encima de la regla, como en la referencia. */
-  --color-rule: var(--color-arena); /* #D9C2B6 — guías de página y reglas de marco */
+  /* 60% de opacidad, no arena sólido (18/08/2026, prueba explícita en Home):
+   * aclara todavía más la línea del marco, siempre dentro del mismo criterio
+   * de arriba (es geometría de plano, no texto — el contraste WCAG no
+   * aplica). Se probó primero al 80%, pero compuesto sobre blanco la
+   * diferencia contra el arena sólido original es de solo ~9/255 por canal
+   * —el salto entre `arena` y `arena-200`— casi imperceptible en un trazo de
+   * 1px. Al 60% la diferencia sube a ~19/255, ya perceptible.
+   * `color-mix` y no un rgba() a mano porque arena vive en una variable: así
+   * si --color-arena cambia, esto sigue el cambio. */
+  --color-rule: color-mix(in srgb, var(--color-arena) 60%, transparent); /* #D9C2B6 al 60% — guías de página y reglas de marco */
   --color-hatch: var(--color-arena-600); /* #C3AFA4 — rayado de las franjas divisoras */
 
   /* Geometría (EXTRAÍDO §3.3): sin radios, sin sombras, sin degradados. */
@@ -165,6 +174,39 @@
 @media (min-width: 640px) {
   :root {
     --guia-margen: 1.25rem;
+  }
+}
+
+/* Cuánto tiene que estirarse un bloque que vive DENTRO de la columna de
+ * contenido (`mx-auto max-w-6xl px-6`) para que su borde caiga exactamente
+ * sobre la guía de página. Lo consumen las líneas de `TimelineContacto` y el
+ * bloque del formulario de la Home (18/08/2026).
+ *
+ * No es un valor único porque la guía no siempre está en el mismo lugar
+ * relativo al contenido — son dos regímenes, y por eso esto existe en vez de
+ * un `-1.5rem` hardcodeado (que fue el bug: 20px de más abajo de 1192px):
+ *
+ *  - ANCHO (≥1192px = 1152 del contenedor + 2×20 de guía): el contenedor es
+ *    más angosto que el viewport, `(100% - --container-6xl)/2` gana el `max()`
+ *    y la guía cae justo sobre el borde exterior del contenedor. La distancia
+ *    al contenido es entonces el `px-6` completo.
+ *  - ANGOSTO: el contenedor ocupa todo el ancho, gana `--guia-margen`, y la
+ *    guía queda ADENTRO del borde del contenedor. La distancia al contenido es
+ *    lo que sobra del `px-6` después de la guía.
+ *
+ * Entre 1152px y 1192px hay una franja de 40px donde el valor real varía de
+ * forma continua (la guía se está "despegando" del borde del contenedor) y
+ * esto la aproxima con el valor angosto: el desvío máximo ahí es de 20px.
+ * Calcularlo exacto necesitaría el ancho de la SECCIÓN, y un `%` dentro de una
+ * custom property se resuelve contra el elemento que la consume —el bloque
+ * angosto—, no contra donde se declara; la alternativa sería `100vw`, que el
+ * sistema evita a propósito porque cuenta la barra de scroll. */
+:root {
+  --sangria-guia: calc(1.5rem - var(--guia-margen));
+}
+@media (min-width: 1192px) {
+  :root {
+    --sangria-guia: 1.5rem;
   }
 }
 
@@ -217,10 +259,14 @@
       transform: scaleX(1);
     }
   }
+  /* 28px de recorrido, no 10 (18/08/2026): el mismo valor que usa el reveal por
+   * scroll de las secciones (`.js-reveal [data-reveal]` en main.astro), para
+   * que la entrada del hero y la del resto del sitio se lean iguales. Con 10px
+   * el movimiento apenas se percibía y la entrada leía como un fundido. */
   @keyframes reveal-up {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(28px);
     }
     to {
       opacity: 1;

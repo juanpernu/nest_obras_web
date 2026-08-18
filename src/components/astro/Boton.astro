@@ -26,6 +26,16 @@
  * El subrayado se dibuja con un gradiente en `currentColor` y se anima por
  * `background-size`, no por `width`: no dispara layout y no necesita pseudo-elemento
  * ni JS. Va en un <span> interno para medir el texto y no el ancho de la caja.
+ *
+ * Relleno de primario/primarioClaro (16/08/2026, pedido explícito): en vez del
+ * `hover:bg-*` instantáneo, el relleno del hover entra de izquierda a derecha,
+ * mismo criterio que `.tst-btn` (los botones de flecha de CarruselTestimonios):
+ * un `::before` en `position: absolute; inset: 0`, arrancando en
+ * `translateX(-100%)` (fuera de la caja, a la izquierda) y animando a
+ * `translateX(0)` en hover/foco. El texto necesita quedar POR ENCIMA de ese
+ * `::before` — por eso el <span> interno lleva `relative z-10` siempre, no solo
+ * en estas dos variantes: es inocuo en `secundario`/`sobreNavy`, que no tienen
+ * ningún `::before` con el que competir.
  */
 interface Props {
   href: string;
@@ -43,9 +53,9 @@ const base =
   'group inline-flex items-center justify-center min-h-[44px] text-[15px] font-medium uppercase tracking-[0.02em]';
 const variantes = {
   primario:
-    'rounded-boton border border-arena bg-white/10 px-2 py-2 text-white backdrop-blur-2xl transition-colors hover:bg-arena hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena',
+    'relative overflow-hidden rounded-boton border border-arena bg-white/10 px-2 py-2 text-white backdrop-blur-2xl transition-colors hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena boton-relleno-arena',
   primarioClaro:
-    'rounded-boton border border-navy bg-transparent px-2 py-2 text-navy transition-colors hover:bg-navy hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy',
+    'relative overflow-hidden rounded-boton border border-navy bg-transparent px-2 py-2 text-navy transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy boton-relleno-navy',
   secundario: 'py-3 text-navy',
   sobreNavy: 'py-3 text-arena',
 };
@@ -62,5 +72,39 @@ const internas = {
 ---
 
 <a href={href} class:list={[base, variantes[variante], className]} {...rest}
-  ><span class:list={[internas[variante]]}><slot /></span></a
+  ><span class:list={['relative z-10', internas[variante]]}><slot /></span></a
 >
+
+<style>
+  /* Relleno de hover que entra de izquierda a derecha (16/08/2026) — mismo
+   * criterio que `.tst-btn` en CarruselTestimonios.astro: mantenerlos
+   * sincronizados si cambia el timing o el easing de uno de los dos. */
+  .boton-relleno-arena::before,
+  .boton-relleno-navy::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .boton-relleno-arena::before {
+    background-color: var(--color-arena);
+  }
+  .boton-relleno-navy::before {
+    background-color: var(--color-navy);
+  }
+  .boton-relleno-arena:hover::before,
+  .boton-relleno-arena:focus-visible::before,
+  .boton-relleno-navy:hover::before,
+  .boton-relleno-navy:focus-visible::before {
+    transform: translateX(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boton-relleno-arena::before,
+    .boton-relleno-navy::before {
+      transition: none;
+    }
+  }
+</style>

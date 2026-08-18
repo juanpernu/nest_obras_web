@@ -47,11 +47,37 @@ const { atributos, class: className } = Astro.props as Props;
       HTML, además de sumarle su `mt-8` al margen del uso. */}
   {
     atributos.length > 0 && (
-      <div class="flex flex-col gap-5">
+      <div class="tl-lista flex flex-col">
+        {/* Líneas horizontales entre filas, no un marco con esquinas
+            (18/08/2026, corregido contra boceto de la usuaria: franjas
+            simples arriba de la primera fila, entre cada fila, y debajo de
+            la última — sin escuadras). `--color-rule`, mismo trazo que el
+            resto del marco de página, vía `border-top` en cada fila +
+            `border-bottom` en el contenedor (el `border-top` de la primera
+            fila hace de línea superior). */}
         {atributos.map((a) => (
-          <div>
-            <h3 class="font-medium text-navy">{a.titulo}</h3>
-            <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
+          <div class="tl-fila flex items-center gap-3 py-4">
+            {/* Check en arena a la izquierda de cada atributo (18/08/2026,
+                pedido explícito), centrado con el bloque de texto
+                (`items-center` en el flex padre). Mismo trazo (viewBox 24,
+                stroke 1.5, puntas redondas) que el resto de los íconos del
+                sitio. */}
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="h-5 w-5 flex-none text-arena"
+              aria-hidden="true"
+            >
+              <path d="M4.5 12.75l5.25 5.25L19.5 6.75" />
+            </svg>
+            <div>
+              <h3 class="font-medium text-navy">{a.titulo}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-navy-700">{a.texto}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -122,9 +148,51 @@ const { atributos, class: className } = Astro.props as Props;
 </div>
 
 <style>
+  /* Líneas entre filas de los atributos (18/08/2026, corregido contra el
+   * boceto de la usuaria): franjas horizontales en `--color-rule`, una arriba
+   * de cada fila más una abajo de la última — no un marco con esquinas.
+   * `border-top` en cada `.tl-fila` + `border-bottom` en el contenedor: la
+   * primera fila aporta la línea superior, cada fila siguiente aporta el
+   * divisor con la anterior, y el contenedor cierra con la inferior.
+   *
+   * SANGRÍA A LOS DOS LADOS — es lo que hace que las líneas se "enganchen" al
+   * marco de página en vez de flotar adentro de la columna, que era el error
+   * de la primera versión. Los dos lados miden distinto porque terminan en
+   * cosas distintas:
+   *
+   *  - A la IZQUIERDA, `--sangria-guia`: la línea tiene que morir sobre la
+   *    guía de página. Ese valor NO es siempre el `px-6` del contenedor —
+   *    abajo de 1192px la guía queda adentro de ese borde— y por eso sale de
+   *    una variable con dos regímenes en vez de un `-1.5rem` fijo, que era el
+   *    bug (20px de más en pantallas medianas). Ver `--sangria-guia` en
+   *    `global.css`.
+   *  - A la DERECHA, `1.5rem` fijo: acá no hay guía de por medio. Con
+   *    `md:grid-cols-2` + `gap-12`, el borde derecho de esta columna cae en
+   *    `50% - 1.5rem` de la sección (la mitad del gap de 3rem), así que
+   *    sangrar exactamente la mitad del gap la lleva al 50%, donde va el
+   *    divisor vertical entre columnas (ver `index.astro`). Es geometría del
+   *    grid, no del marco, y por eso es constante.
+   *
+   * El `padding` compensa el `margin` negativo para que el texto no se mueva:
+   * lo único que se extiende es la caja que dibuja el borde. */
+  .tl-lista,
+  .tl-fila {
+    margin-inline-start: calc(-1 * var(--sangria-guia));
+    padding-inline-start: var(--sangria-guia);
+    margin-inline-end: -1.5rem;
+    padding-inline-end: 1.5rem;
+  }
+  .tl-lista {
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .tl-fila {
+    border-top: 1px solid var(--color-rule);
+  }
+
   /* Contenedor arena para los íconos de contacto, mismo lenguaje que la
-   * píldora de ícono de GrillaServicios (borde navy + fondo arena-200). Más
-   * chico porque acá conviven en una fila junto al texto, no como bloque
+   * píldora de ícono de GrillaServicios — fondo arena-200, sin borde
+   * (18/08/2026, pedido explícito: "quitar el stroke a estos contenedores").
+   * Más chico porque acá conviven en una fila junto al texto, no como bloque
    * destacado. */
   .tl-icono {
     display: flex;
@@ -134,7 +202,6 @@ const { atributos, class: className } = Astro.props as Props;
     height: 2.5rem;
     flex: 0 0 auto;
     border-radius: var(--radius-boton);
-    border: 1px solid var(--color-navy);
     background-color: var(--color-arena-200);
     color: var(--color-navy);
   }
@@ -145,9 +212,6 @@ const { atributos, class: className } = Astro.props as Props;
 
   .tl-dato {
     transition: color 0.2s;
-  }
-  .tl-dato:hover .tl-icono {
-    border-color: var(--color-navy-700);
   }
   .tl-dato:hover {
     color: var(--color-arena-800);

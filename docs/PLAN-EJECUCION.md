@@ -763,13 +763,12 @@ Implementación: `src/components/astro/Analytics.astro`.
 ### 7.2 Video del hero
 Sigue siendo el mayor riesgo de rendimiento del sitio.
 
-Desde el 16/08/2026 el fondo es un embed de YouTube y no un `<video>` propio. Un embed pesa más de 1 MB de JS de terceros, así que **no puede estar en el HTML inicial**: se sirve como fachada — solo el poster entra en el camino crítico — y el iframe se inyecta en `load`.
+El embed de YouTube probado el 14 y el 16/08/2026 se revirtió el 17/08: el player mostraba su propia UI (título, controles, tarjeta "más videos") en cada ciclo del loop y ese problema nunca se resolvió de forma confiable pese a dos intentos. Volvió a ser un `<video>` nativo propio (historial completo en `DEUDA-TECNICA.md` §5).
 
-**Autoplay en todas las condiciones (decisión explícita del usuario, 16/08/2026).** Reemplaza la regla anterior de esta sección, que pedía no cargar video bajo 768 px. Hoy el iframe se monta en todos los viewports, sin esperar idle, y también con `prefers-reduced-motion`. Se decidió después de plantear el costo de cada recorte; queda registrado en `DEUDA-TECNICA.md` §5 y en la nota del componente. El único recorte que sobrevive es `saveData` / 2g.
+**Autoplay en mobile (decisión explícita del usuario, 18/08/2026).** Reemplaza la regla anterior de esta sección, que pedía no cargar video bajo 768 px y dejaba solo el poster. En vez de sacar el corte, se agregó un segundo archivo: `public/hero-video-mobile.mp4`, recortado 9:16 (no escalado) desde el original y codificado aparte — 2.3 MB contra los 9 MB del desktop. Los dos `<source>` de `HeroVideo.astro` matchean por ancho y ambos siguen atados a `prefers-reduced-motion: no-preference`, así que la preferencia de movimiento reducido se sigue respetando en cualquier ancho (**WCAG 2.2.2** y el objetivo de **a11y 100** intactos) — lo que cambió es solo el corte por viewport, no el corte por reduced-motion.
 
 Consecuencias asumidas, a medir antes de lanzar:
-- El objetivo de **Lighthouse mobile ≥95** pasa a estar en riesgo real: mobile ahora baja el player y el stream.
-- Reproducir con `prefers-reduced-motion` va contra **WCAG 2.2.2** y contra el objetivo de **a11y 100**. Lo único que sigue respetando la preferencia es el fundido de entrada.
+- El objetivo de **Lighthouse mobile ≥95** pasa a estar en riesgo: mobile ahora baja 2.3 MB de video que antes no bajaba. Recortar el archivo a 9:16 en vez de escalarlo desde el 16:9 desktop reduce ese costo respecto de simplemente sacar el gate (que hubiera bajado los 9 MB completos).
 
 El iframe va con `pointer-events: none` — es lo que impide que aparezca el chrome del player, que se dispara al hover — y con `loop=1&playlist=<id>` más una red de seguridad por postMessage para que nunca se vea la pantalla final de "más videos".
 
@@ -1006,7 +1005,8 @@ Ninguna página se considera terminada sin esto:
 - [ ] Ninguna página por variante geográfica
 - [ ] Lighthouse **perfil mobile** ≥ 95 performance, 100 accesibilidad
 - [ ] Objetivos táctiles ≥ 44×44 px
-- [ ] En mobile no se descarga el video del hero
+- [ ] En mobile se descarga el video del hero recortado (`hero-video-mobile.mp4`, ≤2.5 MB), no el de desktop (§7.2)
+- [ ] Con `prefers-reduced-motion`, ningún video del hero se descarga en ningún ancho
 
 ### Checks de CI
 

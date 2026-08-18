@@ -27,8 +27,9 @@ interface Props {
 const { class: className } = Astro.props as Props;
 
 /** Logos que no se muestran, por número de archivo (decisión del 07/08/2026).
- * El asset sigue en /public/logos: se oculta, no se borra. */
-const ocultos = new Set(['08']);
+ * El asset sigue en /public/logos: se oculta, no se borra. `08` vuelto a
+ * mostrar (18/08/2026, pedido explícito: "añademe... el logo_08"). */
+const ocultos = new Set<string>([]);
 
 const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, '0'))
   .filter((n) => !ocultos.has(n))
@@ -36,7 +37,12 @@ const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(
     src: `/logos/logo_${n}.svg`,
     alt: `Logo de cliente corporativo de NEST (${n})`,
   }));
+/* Google reemplazado por el archivo nuevo (18/08/2026, pedido explícito) —
+ * mismo path `/logos/logo_google.svg`, así que no hace falta tocar nada más
+ * que el contenido del SVG en `public/logos/`. Subway se suma al lado
+ * (18/08/2026, pedido explícito). */
 logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
+logosReales.splice(6, 0, { src: '/logos/logo_subway.svg', alt: 'Logo de Subway' });
 
 /* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
  * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
@@ -87,11 +93,20 @@ const reticulados = [
     /** Una vertical continua por cada límite de columna, sin cortes por fila
      * (16/08/2026): sin los puntos en los cruces, el corte por GAP dejaba un
      * hueco visible en cada intersección. */
-    segmentosV: Array.from({ length: cols + 1 }, (_, c) => ({
-      left: `${c * anchoCol}%`,
-      top: '0%',
-      height: '100%',
-    })),
+    /* La ÚLTIMA vertical se ancla con `right: 0` y no con `left: 100%`
+     * (18/08/2026). Con `left: 100%` su píxel cae justo AFUERA del borde
+     * derecho de la grilla, y como ese borde coincide con la guía derecha de
+     * página —cuyo píxel cae adentro— las dos líneas quedaban adyacentes en vez
+     * de superpuestas: 2px de banda que se leían como una línea extra del
+     * marco. Medido: reticulado en [1224,1225] contra guía en [1223,1224].
+     * Con `right: 0` ocupa el mismo píxel que la guía y se lee una sola línea,
+     * que es lo que ya pasaba del lado izquierdo (ahí `left: 0%` cae adentro y
+     * coincidía por casualidad). */
+    segmentosV: Array.from({ length: cols + 1 }, (_, c) =>
+      c === cols
+        ? { right: '0', top: '0%', height: '100%' }
+        : { left: `${c * anchoCol}%`, top: '0%', height: '100%' },
+    ),
     /** Una horizontal continua por fila, de punta a punta (con sus dos
      * extensiones que se funden hacia el borde real de pantalla), sin cortes
      * por columna. */

@@ -214,12 +214,23 @@ const grafo = {
     documento, y lo que garantiza que un fallo del módulo no deje la página en
     blanco. Ver la nota extensa allá arriba. */}
 <style is:global>
+  /* Entrada más marcada (18/08/2026, pedido explícito, segunda pasada): el
+   * desplazamiento pasa de 10px a 28px y la duración de 0.7s a 1.1s, así el
+   * movimiento se lee como una entrada y no como un fundido con un
+   * empujoncito. El escalonado entre bloques también sube (90ms → 240ms, ver
+   * el script de abajo): es lo que hace que se perciba la secuencia dentro de
+   * cada sección en vez de que todo aparezca casi junto.
+   *
+   * Los mismos 1.1s y 28px que usa la entrada del hero (`reveal-up` en
+   * `global.css` + los delays del markup de index.astro): son dos mecanismos
+   * distintos —el hero anima al cargar, esto al entrar en viewport— pero
+   * tienen que verse igual, así que si se calibra uno hay que mover el otro. */
   .js-reveal [data-reveal] {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(28px);
     transition:
-      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .js-reveal [data-reveal].visible {
@@ -259,8 +270,10 @@ const grafo = {
     } else {
       for (const seccion of document.querySelectorAll('section')) {
         seccion
+          // 240ms y no 90 (18/08/2026): escalonado más marcado, ver el
+          // comentario de `.js-reveal [data-reveal]` en el <style>.
           .querySelectorAll<HTMLElement>('[data-reveal]')
-          .forEach((el, i) => (el.style.transitionDelay = `${i * 90}ms`));
+          .forEach((el, i) => (el.style.transitionDelay = `${i * 240}ms`));
       }
 
       const observador = new IntersectionObserver(

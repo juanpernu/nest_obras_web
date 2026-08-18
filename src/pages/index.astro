@@ -18,6 +18,7 @@ import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
 import TimelineContacto from '@/components/astro/TimelineContacto.astro';
 import quienesSomosImg from '@/assets/intro/servicios.webp';
+import tacuariSanTelmo from '@/assets/contacto/tacuari-san-telmo.png';
 import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
 import type { ImageMetadata } from 'astro';
@@ -125,10 +126,12 @@ const seo = {
 
 <Layout title={seo.title} description={seo.description}>
   {/* Sección 1 — Hero. El LCP es el <h1>. El video del fondo es un <video>
-      nativo propio (public/hero-video.mp4), que no se descarga en mobile ni
-      con `prefers-reduced-motion` (§7.2) — el porqué, incluida la historia de
-      los dos intentos de embed de YouTube que se probaron y revirtieron, está
-      en HeroVideo.astro y en docs/DEUDA-TECNICA.md §5.
+      nativo propio, con autoplay en todos los anchos desde el 18/08/2026
+      (public/hero-video.mp4 desktop, public/hero-video-mobile.mp4 recortado
+      9:16 y liviano para mobile) — solo se corta con `prefers-reduced-motion`.
+      El porqué, incluida la historia de los dos intentos de embed de YouTube
+      que se probaron y revirtieron, está en HeroVideo.astro y en
+      docs/DEUDA-TECNICA.md §5.
       El overlay es negro/50 (feedback del cliente, 14/08/2026): antes era
       navy/50 para leer como una sola superficie con el header en reposo
       (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el
@@ -136,36 +139,54 @@ const seo = {
       sección por la misma razón — es lo que se ve un instante antes de que
       cargue el primer frame del video. */}
   <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-black">
-    <HeroVideo srcDesktop="/hero-video.mp4" poster="/hero-poster.jpg" class="-z-20" />
+    <HeroVideo
+      srcDesktop="/hero-video.mp4"
+      srcMobile="/hero-video-mobile.mp4"
+      poster="/hero-poster.jpg"
+      class="absolute inset-0 -z-20 h-full w-full object-cover"
+    />
     <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
-      {/* 0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
+      {/* ESCALONADO DEL HERO (corregido el 18/08/2026). Antes estos cuatro
+          bloques llevaban `delay-100`/`delay-200`/`delay-300`, que es
+          `transition-delay` — y acá la entrada es una ANIMACIÓN
+          (`animate-[reveal-up…]`), no una transición, así que ese delay no
+          hacía nada: los cuatro entraban exactamente al mismo tiempo. De ahí
+          que la entrada se leyera "muy rápida" aunque se subiera la duración.
+          Ahora el delay va como segundo valor de tiempo del shorthand de
+          `animation` (`reveal-up 1.1s 0.25s …`), que es donde el navegador lo
+          lee — el mismo patrón que ya usaba la línea de arena de abajo.
+
+          La cadena queda: eyebrow 0s → h1 0.25s → línea 0.6s → párrafo 0.5s →
+          botones 0.75s, con 1.1s de duración cada uno.
+
+          0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
           necesario porque el tamaño base de Eyebrow también es un valor
           arbitrario: sin él, cuál gana depende del orden del CSS generado. */}
       <Eyebrow
         sobreNavy
-        class="mb-3 text-[0.8125rem]! opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="mb-3 text-[0.8125rem]! opacity-0 motion-safe:animate-[reveal-up_1.1s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
         >Constructora premium · Zona Norte y CABA</Eyebrow
       >
       <h1
-        class="max-w-3xl text-hero font-normal opacity-0 delay-100 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="max-w-3xl text-hero font-normal opacity-0 motion-safe:animate-[reveal-up_1.1s_0.25s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
       >
         Tu obra en manos expertas <br class="hidden lg:block" />
         <span class="subrayado-hero inline-block whitespace-nowrap">de principio a fin.</span>
       </h1>
       <div
-        class="mt-4 h-0.5 w-32 origin-left scale-x-0 bg-arena motion-safe:animate-[hero-rule_1s_0.4s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:scale-x-100"
+        class="mt-4 h-0.5 w-32 origin-left scale-x-0 bg-arena motion-safe:animate-[hero-rule_1s_0.6s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:scale-x-100"
         aria-hidden="true"
       >
       </div>
       <p
-        class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100 opacity-0 delay-200 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="mt-6 max-w-xl text-lg leading-relaxed text-navy-100 opacity-0 motion-safe:animate-[reveal-up_1.1s_0.5s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
       >
         30 años construyendo casas y proyectos que cumplen plazo, presupuesto y los más altos
         estándares. Con un equipo que te acompaña desde el primer trazo.
       </p>
       <div
-        class="mt-8 flex flex-wrap gap-4 opacity-0 delay-300 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="mt-8 flex flex-wrap gap-4 opacity-0 motion-safe:animate-[reveal-up_1.1s_0.75s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
       >
         {/* backdrop-blur-md! pisa el backdrop-blur-2xl de la variante primario
             (Boton.astro): con el `!` de Tailwind, solo para este botón del
@@ -262,26 +283,51 @@ const seo = {
       navy-100). Pasan a las variantes de fondo claro del resto del sitio. */}
   <MarcoSeccion cierra>
   <section class="bg-white">
-    {/* `md:pr-0` (16/08/2026, pedido explícito): sin padding derecho en
-        desktop para que la imagen se adhiera al marco de la sección — en
-        mobile (columna única) el `pr-6` normal se mantiene. */}
-    <div class="mx-auto grid max-w-6xl items-stretch gap-12 pl-6 pr-6 md:pr-0 md:grid-cols-2">
+    {/* El padding derecho es justo lo que separa el borde del contenedor de la
+        guía derecha de página, para que la imagen muera exactamente sobre la
+        línea del marco (desktop desde el 16/08/2026, mobile desde el
+        18/08/2026 por pedido explícito):
+
+         - En desktop da 0: la guía YA cae sobre el borde del `max-w-6xl`.
+         - En mobile da `--guia-margen`: ahí el contenedor ocupa todo el ancho
+           y la guía queda adentro de su borde, así que sin este padding la
+           imagen se pasaba hasta el borde del viewport.
+
+        Sale de `1.5rem - var(--sangria-guia)`, que es exactamente esa
+        distancia en los dos regímenes (ver `--sangria-guia` en `global.css`).
+        El `pl-6` se queda: es el margen del texto, alineado con el resto de la
+        página. */}
+    <div
+      class="mx-auto grid max-w-6xl items-stretch gap-12 pr-[calc(1.5rem-var(--sangria-guia))] pl-6 md:grid-cols-2"
+    >
       {/* `self-center` (16/08/2026): con el grid en `items-stretch` la celda de
           texto mide lo mismo que la imagen (más alta que su propio contenido),
           y sin esto el bloque Eyebrow+h2+párrafo quedaba pegado arriba. Centra
           el CONTENIDO dentro de la celda sin tocar `items-stretch` del grid
-          padre — eso volvería a achicar la imagen a la altura del texto. */}
-      <div class="self-center" data-reveal>
+          padre — eso volvería a achicar la imagen a la altura del texto.
+
+          `pt-20` solo en mobile (18/08/2026, pedido explícito): ahí la sección
+          no tiene padding vertical propio y el texto quedaba pegado a la regla
+          superior del marco. En desktop no hace falta — el `self-center` ya lo
+          separa, porque la celda es más alta que su contenido. */}
+      <div class="self-center pt-20 md:pt-0" data-reveal>
         <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
-        <h2 class="max-w-[640px] text-h2 font-normal text-navy">
-          Más de 30 años construyendo lo que prometemos
+        {/* Un solo título, sin párrafo de descripción aparte (16/08/2026,
+            pedido explícito): el texto que antes vivía en el <p> se suma
+            adentro del propio <h2>, sin agregar copy nuevo. */}
+        {/* `id="qs-titulo"` (16/08/2026, pedido explícito): reveal palabra por
+            palabra con blur, mismo criterio que `.w-anim` en
+            CarruselTestimonios.astro pero sin React/framer-motion — el
+            pedido original era un componente `"use client"` con
+            framer-motion, imposible acá (§7.1 del plan: cero `client:*`,
+            JS < 5KB/ruta, solo scripts inline). El script de abajo hace lo
+            mismo con DOM plano. */}
+        <h2 id="qs-titulo" class="max-w-[640px] text-[24px] font-normal text-navy">
+          Más de 30 años construyendo lo que prometemos. NEST es una empresa constructora
+          especializada en viviendas premium, refacciones y proyectos corporativos en Zona Norte de
+          GBA y CABA. Combinamos ingeniería de primer nivel con acompañamiento personalizado para que
+          tu obra sea una experiencia sin sorpresas, desde el primer trazo hasta la llave en la mano.
         </h2>
-        <p class="mt-6 max-w-[600px] text-lg font-light leading-relaxed text-navy-700">
-          NEST es una empresa constructora especializada en viviendas premium, refacciones y
-          proyectos corporativos en Zona Norte de GBA y CABA. Combinamos ingeniería de primer nivel
-          con acompañamiento personalizado para que tu obra sea una experiencia sin sorpresas, desde
-          el primer trazo hasta la llave en la mano.
-        </p>
       </div>
 
       {/* Sin `aspect-[4/3]` (16/08/2026): antes la imagen tenía una relación de
@@ -291,7 +337,22 @@ const seo = {
           pero explícito acá) para que ambas columnas compartan la altura real
           de la fila — `object-cover` en la imagen interna se encarga del
           recorte sin distorsión. */}
-      <div class="h-full w-full overflow-hidden rounded-boton" data-reveal>
+      {/* En mobile la imagen también se estira hasta la guía IZQUIERDA
+          (18/08/2026, pedido explícito de que llegue al marco): el `pl-6` del
+          grid es el margen del texto y ahí se queda, así que la imagen lo
+          cancela con un margen negativo de `--sangria-guia` — la misma
+          distancia contenido-a-guía que usan el formulario y las líneas del
+          timeline. Desde `md:` se desactiva: ahí la imagen es la columna
+          derecha y a su izquierda está el texto, no una línea del marco. */}
+      {/* SIN `w-full` a propósito: con un ancho fijo al 100% del área, el
+          margen negativo DESPLAZA la caja hacia la izquierda en vez de
+          agrandarla, y el borde derecho se iba 12px adentro de la guía. Con
+          ancho automático, el ítem del grid se estira para llenar su área y el
+          margen negativo lo extiende. */}
+      <div
+        class="h-full overflow-hidden rounded-boton ml-[calc(-1*var(--sangria-guia))] md:ml-0"
+        data-reveal
+      >
         <Image
           src={quienesSomosImg}
           alt="Obra de NEST en desarrollo"
@@ -370,7 +431,7 @@ const seo = {
           <Eyebrow class="mb-2.5">Portfolio</Eyebrow>
           <h2 class="text-h2 font-normal text-navy">Obras destacadas</h2>
         </div>
-        <Boton href="/obras" variante="secundario" class="whitespace-nowrap">Ver todas</Boton>
+        <Boton href="/obras" variante="secundario" class="whitespace-nowrap">Ver todas →</Boton>
       </div>
     </div>
     {/* Flex y no grid: la expansión en hover se hace con flex-grow, que un
@@ -384,12 +445,11 @@ const seo = {
         cascada, sin redefinirla acá), así que el borde de la fila cae
         exactamente sobre las mismas guías que el resto del sistema de
         página, en vez del padding fijo `px-6`/`max-w-6xl` del encabezado de
-        arriba. `gap-y-8` es solo vertical: en mobile (`flex-col`) separa las
-        tarjetas apiladas: en desktop (`sm:flex-row`) el `gap` vertical no
-        genera separación horizontal, así que la fila sigue sin gap entre
-        cards en ese eje. */}
+        arriba. Sin `gap` en ningún eje (18/08/2026, pedido explícito): las
+        tarjetas van pegadas entre sí también apiladas en mobile, igual que ya
+        estaban en la fila de desktop. */}
     <div
-      class="obras-fila relative z-10 mt-10 flex w-full flex-col gap-y-8 sm:flex-row sm:gap-y-0"
+      class="obras-fila relative z-10 mt-10 flex w-full flex-col sm:flex-row"
       style="padding-inline: var(--marco-x, 0px);"
       data-reveal
     >
@@ -437,7 +497,7 @@ const seo = {
     </div>
     <div class="mx-auto max-w-6xl px-6 text-center">
       {/* COPY PROVISIONAL — reemplazar por la redacción exacta del PDF p.14 (§5.1 Sección 6). */}
-      <p class="mx-auto mt-10 max-w-2xl leading-relaxed text-navy-700" data-reveal>
+      <p class="mx-auto mt-10 max-w-2xl text-center text-[20px] leading-relaxed text-navy-700" data-reveal>
         Trabajamos para empresas que no dejan nada librado al azar. Si NEST pasó el filtro de una
         compañía como Google, tu casa está en las mejores manos.
       </p>
@@ -554,8 +614,19 @@ const seo = {
       deje los 120px de aire de siempre justo antes del footer. El `pt` no se
       toca — es el aire después de la sección anterior. */}
   <MarcoSeccion cierra>
-  <section id="contacto" class="bg-white pt-20 pb-6 md:pt-[120px] md:pb-10">
-    <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
+  <section id="contacto" class="relative bg-white pt-20 pb-6 md:pt-[120px] md:pb-10">
+    {/* Divisor vertical entre las dos columnas (18/08/2026, boceto de la
+        usuaria): cierra las líneas de `TimelineContacto`, que llegan hasta
+        acá desde la guía izquierda de página. Va al 50% exacto de la sección
+        —el borde derecho de la columna izquierda cae en `50% - 1.5rem` y la
+        del formulario arranca en `50% + 1.5rem`, así que el 50% es la mitad
+        del `gap-12`— y de punta a punta en alto, como las guías de
+        `HojaTecnica`. Solo desde `md:`: abajo de ese breakpoint el grid es una
+        sola columna y no hay nada que dividir. */}
+    <span
+      class="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px bg-(--color-rule) md:block"
+      aria-hidden="true"></span>
+    <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
       {/* Subheader estándar (14/08/2026): antes tenía el mismo recurso
           tipográfico de fondo que el resto, retirado en toda la Home — ver
           Sección 3. */}
@@ -568,15 +639,31 @@ const seo = {
         <TimelineContacto class="mt-10" atributos={bloquesDeConfianza} />
       </div>
 
-      {/* Card sólido (14/08/2026): sin la foto detrás, el glass (navy
-          translúcido + blur) no tenía nada fotográfico que dejar entrever —
-          quedaba un efecto de vidrio sobre blanco liso, sin justificación.
-          Pasa a navy sólido: mismo acento de color que distingue esta card
-          del resto de la sección (blanca), sin blur ni sombra (`shadow-lg`
-          también se saca acá — la identidad no admite sombras, §3.3).
-          `FormularioConsulta` sigue recibiendo `sobreNavy` porque el fondo
-          sigue siendo oscuro, solo que ahora sólido en vez de translúcido. */}
-      <div class="bg-navy p-6 md:p-10" data-reveal>
+      {/* El bloque del formulario llega hasta las líneas del marco, sin aire
+          entre medio (18/08/2026, pedido explícito + boceto). Toda la
+          geometría de la caja vive en `.form-a-la-guia`, en el <style> de esta
+          página, y no en utilidades acá: son márgenes negativos que dependen
+          de `--sangria-guia` (que cambia de régimen por media query), y
+          mezclar eso con clases de Tailwind hacía imposible ver de un saque
+          qué borde termina dónde. El comentario largo de la clase explica cada
+          medida.
+
+          Fondo fotográfico con velo negro encima, mismo recurso que el hero
+          (18/08/2026, pedido explícito): la foto va en `-z-20`, el velo
+          `bg-black/50` en `-z-10` —el mismo valor que el overlay del hero— e
+          `isolate` acota ese apilado a esta caja. `bg-navy` queda de fallback
+          detrás, como el `bg-black` del hero: es lo que se ve si la imagen
+          todavía no pintó. `FormularioConsulta` sigue con `sobreNavy` porque
+          el fondo sigue siendo oscuro. */}
+      <div class="form-a-la-guia relative isolate overflow-hidden bg-navy" data-reveal>
+        <Image
+          src={tacuariSanTelmo}
+          alt=""
+          widths={[640, 960]}
+          sizes="(min-width: 768px) 50vw, 100vw"
+          class="absolute inset-0 -z-20 h-full w-full object-cover"
+        />
+        <div class="absolute inset-0 -z-10 bg-black/50" aria-hidden="true"></div>
         <FormularioConsulta sobreNavy />
       </div>
     </div>
@@ -589,8 +676,9 @@ const seo = {
   /* Subrayado que se dibuja bajo el cierre del <h1> (07/08/2026). Va en un
    * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
    * porque acá el trazo no responde a hover: se anima al cargar, reusando el
-   * keyframe `hero-rule` que ya dibuja la línea de abajo. El delay de 0.7s lo
-   * encadena después del reveal del h1 y de esa línea. */
+   * keyframe `hero-rule` que ya dibuja la línea de abajo. El delay pasó de
+   * 0.7s a 1.15s (18/08/2026) para seguir cayendo DESPUÉS del reveal del h1,
+   * que ahora arranca a los 0.25s y dura 1.1s. */
   .subrayado-hero {
     position: relative;
   }
@@ -606,7 +694,7 @@ const seo = {
     background-color: var(--color-arena);
     transform: scaleX(0);
     transform-origin: left;
-    animation: hero-rule 1s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: hero-rule 1s 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -649,4 +737,107 @@ const seo = {
       mask-image: none;
     }
   }
+
+  /* Geometría del bloque del formulario (18/08/2026): tiene que morir EXACTO
+   * sobre las líneas del marco, sin aire. Cada `margin` negativo cancela un
+   * padding que lo separa de una línea, y el `padding` propio lo repone hacia
+   * adentro para que los campos no se peguen al borde ni se muevan de donde
+   * estaban. Va todo acá y no en utilidades porque los valores dependen de
+   * `--sangria-guia`, que cambia por media query (ver `global.css`).
+   *
+   * MOBILE (una sola columna: el formulario es una fila más, debajo de los
+   * datos de contacto):
+   *  - En X, a las dos guías. La distancia del contenido a la guía NO es el
+   *    `px-6` del contenedor: en pantallas donde el contenedor ocupa todo el
+   *    ancho, la guía queda ADENTRO de ese borde. De ahí `--sangria-guia`.
+   *  - En Y, solo abajo (`pb-6` de la sección): arriba está el contenido de
+   *    contacto, no una línea del marco, así que ahí no hay nada que cerrar. */
+  .form-a-la-guia {
+    margin-inline: calc(-1 * var(--sangria-guia));
+    padding-inline: calc(1.5rem + var(--sangria-guia));
+    padding-top: 1.5rem;
+    margin-bottom: -1.5rem;
+    padding-bottom: 3rem;
+  }
+
+  /* DESDE `md:` el grid pasa a dos columnas y el bloque llena su rectángulo
+   * completo del marco — el que en el boceto va rayado:
+   *  - Izquierda: mitad del `gap-12` → cae en el 50% de la sección, donde está
+   *    el divisor vertical. Es geometría del grid, constante.
+   *  - Derecha: `--sangria-guia` → la guía derecha de página.
+   *  - Arriba y abajo: el `pt`/`pb` de la sección → las dos reglas de
+   *    `MarcoSeccion`. */
+  @media (min-width: 768px) {
+    .form-a-la-guia {
+      margin-top: -120px;
+      padding-top: calc(120px + 2.5rem);
+      margin-inline-start: -1.5rem;
+      padding-inline-start: 2.5rem;
+      margin-inline-end: calc(-1 * var(--sangria-guia));
+      padding-inline-end: calc(2.5rem + var(--sangria-guia));
+      margin-bottom: -2.5rem;
+      padding-bottom: 5rem;
+    }
+  }
+
+  /* Reveal palabra por palabra con blur, #qs-titulo (16/08/2026, pedido
+   * explícito de replicar un efecto de referencia en React/framer-motion).
+   * Mismo criterio que `.w-anim` en CarruselTestimonios.astro: cada palabra
+   * en su propio <span>, con blur+opacity animando por transition (no por
+   * JS), y un `transitionDelay` escalonado que arma el JS de abajo. */
+  #qs-titulo :global(.w-anim-qs) {
+    display: inline-block;
+    opacity: 0;
+    filter: blur(6px);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #qs-titulo.is-in :global(.w-anim-qs) {
+    opacity: 1;
+    filter: blur(0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #qs-titulo :global(.w-anim-qs) {
+      transition: none;
+    }
+  }
 </style>
+
+<script>
+  /* Reveal palabra por palabra de #qs-titulo, sin React/framer-motion — ver
+   * el comentario en el markup del <h2>. Mismo patrón que el script de
+   * CarruselTestimonios.astro (split en palabras, span por palabra,
+   * transitionDelay escalonado), pero disparado por IntersectionObserver en
+   * vez de por cambio de slide. */
+  const qsTitulo = document.getElementById('qs-titulo');
+
+  if (qsTitulo && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const palabras = (qsTitulo.textContent ?? '').trim().split(/\s+/);
+    qsTitulo.textContent = '';
+    palabras.forEach((palabra, i) => {
+      const span = document.createElement('span');
+      span.className = 'w-anim-qs';
+      span.textContent = palabra;
+      span.style.transitionDelay = `${i * 0.05}s`;
+      qsTitulo.append(span);
+      if (i < palabras.length - 1) qsTitulo.append(document.createTextNode(' '));
+    });
+
+    if ('IntersectionObserver' in window) {
+      const observador = new IntersectionObserver(
+        (entradas) => {
+          for (const entrada of entradas) {
+            if (!entrada.isIntersecting) continue;
+            qsTitulo.classList.add('is-in');
+            observador.unobserve(entrada.target);
+          }
+        },
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+      );
+      observador.observe(qsTitulo);
+    } else {
+      qsTitulo.classList.add('is-in');
+    }
+  }
+</script>
