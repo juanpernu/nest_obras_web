@@ -711,16 +711,46 @@ const seo = {
    * derecha. Donde ambas capas se solapan (la silueta de la "N"), "exclude"
    * las cancela: el overlay no pinta ahí y se ve el video a pleno dentro del
    * isotipo. mask-composite no tiene shorthand en Tailwind, por eso va en un
-   * <style> scoped en vez de utilities. */
+   * <style> scoped en vez de utilities.
+   *
+   * BUG DE SINTAXIS corregido el 18/08/2026 (reportado: "la N se posiciona
+   * rara en resoluciones de más de 1500px"). La posición nunca se aplicó, en
+   * NINGÚN ancho: `right max(6vw, calc(...)) center` es la sintaxis de 3
+   * valores de CSS Backgrounds L4 ("edge offset"), que Chromium soporta en
+   * `background-position` pero NO en `mask-position` — la declaración entera
+   * se descartaba como inválida y el navegador caía al default `0% 0%` en
+   * las dos capas, dejando el isotipo siempre pegado arriba a la izquierda,
+   * tapado por el header. Confirmado con `getComputedStyle`: devolvía
+   * "0% 0%, 0% 0%" en todos los anchos probados.
+   *
+   * El arreglo es la sintaxis de 2 valores (universalmente soportada, sin la
+   * palabra clave `right`): `calc(100% - X)` como componente horizontal
+   * equivale exactamente a `right X` — el 100% de un `background/mask-position`
+   * de 2 valores resuelve como (contenedor - imagen), así que
+   * `calc(100% - X)` dpsición = (contenedor - imagen) - X, y el borde derecho
+   * de la imagen queda a X del borde derecho del contenedor. Mismo resultado,
+   * sintaxis que sí se parsea.
+   *
+   * `X` (la distancia al borde derecho) se recalibró de paso: la fórmula
+   * vieja (`50% - 540px`) estaba pensada para el contenedor fijo de 1152px
+   * que existía antes de que `--container-6xl` se volviera un `clamp()` hasta
+   * 1536px (ver global.css) — con el contenedor más ancho en pantallas
+   * grandes, esa cuenta ya no correspondía a nada real. Ahora usa
+   * `var(--guia-margen)` más el mismo cálculo de `(100% - --container-6xl)/2`
+   * que usan las guías de página del resto del sistema de marco (ver
+   * `--marco-x` en MarcoSeccion/HojaTecnica/FranjaRayado): el isotipo queda
+   * anclado a la MISMA guía vertical derecha que el resto de la página, en
+   * vez de a un número mágico propio. */
   .hero-overlay {
     --iso: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="180 215 745 815"><path fill="%23fff" d="M204.164 494.511C209.186 498.107 230.479 520.19 236.231 525.952L306.802 596.632L571.809 861.605L642.51 790.904V933.292C620.092 955.33 594.332 983.06 571.521 1003.72L204.164 632.966V494.511Z"/><path fill="%23fff" d="M896.61 536.809C897.59 540.188 897.25 571.013 897.25 577.143L897.17 678.634L847.409 728.177C819.159 726.665 788.537 723.688 760.185 721.472L557.15 705.736L475.5 624.086L403.014 551.6C452.349 554.401 505.191 559.491 554.66 563.345L846.936 586.262L896.61 536.809Z"/><path fill="%23fff" d="M458.861 239.706C538.564 317.219 619.614 400.418 698.459 479.256C682.544 478.716 662.419 476.611 646.23 475.343L547.054 467.665L458.832 378.634L458.861 239.706Z"/></svg>');
+    --iso-borde-der: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2 + 1.5rem));
 
     -webkit-mask-image: linear-gradient(#000, #000), var(--iso);
     mask-image: linear-gradient(#000, #000), var(--iso);
-    -webkit-mask-position: 0 0, right max(6vw, calc(50% - 540px)) center;
-    mask-position: 0 0, right max(6vw, calc(50% - 540px)) center;
-    -webkit-mask-size: 100% 100%, auto 52%;
-    mask-size: 100% 100%, auto 52%;
+    -webkit-mask-position: 0 0, calc(100% - var(--iso-borde-der)) center;
+    mask-position: 0 0, calc(100% - var(--iso-borde-der)) center;
+    -webkit-mask-size: 100% 100%, auto 40%;
+    mask-size: 100% 100%, auto 40%;
     -webkit-mask-repeat: no-repeat, no-repeat;
     mask-repeat: no-repeat, no-repeat;
     -webkit-mask-composite: xor; /* Safari/WebKit */
@@ -730,8 +760,10 @@ const seo = {
   /* La ventana del isotipo solo se ve en desktop (decisión del 06/08/2026):
    * en mobile/tablet el hero es más angosto y la "N" recortada a la derecha
    * queda encima del texto o casi invisible, así que directamente se apaga y
-   * el overlay vuelve a ser un tono plano de navy/50. */
-  @media (max-width: 1023px) {
+   * el overlay vuelve a ser un tono plano de navy/50. Subido de 1023 a 1279px
+   * (18/08/2026): con el h1 en `max-w-3xl` (768px), en el rango 1024-1279px
+   * no queda aire suficiente para el isotipo sin invadir el texto. */
+  @media (max-width: 1279px) {
     .hero-overlay {
       -webkit-mask-image: none;
       mask-image: none;
