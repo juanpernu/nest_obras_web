@@ -1,0 +1,197 @@
+---
+/**
+ * Los pasos del proceso como grilla bento (20/08/2026, pedido directo con
+ * referencia a un componente externo de React/Next — `ruixen-bento-cards`:
+ * cards con borde dasheado, `rounded-lg` y un ícono "+" en las cuatro esquinas
+ * de cada card). Se adaptó la IDEA al lenguaje del sitio; no se instaló nada de
+ * eso, que además no aplica en un Astro estático sin React de runtime.
+ *
+ * Lo que sobrevive del referente y lo que se traduce:
+ *  - La grilla asimétrica de celdas de distinto ancho: SÍ, es el recurso.
+ *  - `rounded-lg`: NO. `--radius: 0` está congelado (la excepción de 4px del
+ *    03/08 se revirtió el 14/08). Esquinas rectas, sin sombra, sin degradado.
+ *  - Borde dasheado: NO. El dasheado se sacó de todo el sitio el 15/08 a favor
+ *    del sistema "hoja técnica": líneas sólidas de 1px en `--color-rule`.
+ *  - El "+" en las cuatro esquinas de CADA card: se traduce a la escuadra en L
+ *    del sistema, y solo en las cuatro esquinas EXTERNAS del rectángulo.
+ *
+ * RETICULADO CONTINUO, no cards separadas: un solo rectángulo sin `gap`, con
+ * las divisiones internas en línea de 1px y sin marca en los cruces. Es el
+ * mismo patrón que ya usan `GrillaLogos` y `GrillaServicios`, y es también la
+ * regla del sistema general: `MarcoSeccion` tampoco marca cruces que no son una
+ * esquina real, solo los cuatro extremos. La alternativa —cada celda con sus
+ * cuatro escuadras, como el referente— habría sido 20 escuadras y contradice
+ * eso.
+ *
+ * CÓMO SE DIBUJA EL RETICULADO (importa, es donde se cuelan las líneas dobles):
+ * `border-top` + `border-left` en la grilla, y `border-right` + `border-bottom`
+ * en cada celda. Cada límite lo dibuja exactamente un elemento: los bordes
+ * exteriores izquierdo y superior son de la grilla, el resto lo aportan las
+ * celdas, y ninguna celda dibuja su lado izquierdo ni su lado superior, así que
+ * en ningún cruce hay dos píxeles apilados. Es preferible a posicionar
+ * segmentos por porcentaje (la técnica de `GrillaLogos`) porque acá las
+ * columnas NO son uniformes —3+3 arriba, 2+2+2 abajo— y los porcentajes
+ * hardcodeados serían frágiles.
+ *
+ * SANGRÍA A LAS GUÍAS: el rectángulo muere sobre las guías verticales de página
+ * en vez de flotar adentro de la columna de contenido, con la técnica de
+ * `TimelineContacto` (`--sangria-guia`, dos regímenes por media query — ver
+ * `global.css`). Acá no hace falta reponer el margen con padding como allá: las
+ * celdas ya tienen su propio padding, que es lo que separa el texto del trazo.
+ * El `border-right` de la última columna cae en el mismo píxel que la guía
+ * derecha, no adyacente, porque un `border-right` pinta hacia adentro de la
+ * caja — que es justo la razón por la que `GrillaLogos` tuvo que anclar su
+ * última vertical con `right: 0` en vez de `left: 100%` (ver su L96-104).
+ *
+ * Cero `100vw` en el archivo: cuenta el ancho de la barra de scroll y mete
+ * scroll horizontal. Todo es CSS, sin JS y sin `client:*` (§7.1).
+ */
+export interface Paso {
+  n: string;
+  titulo: string;
+  texto: string;
+}
+
+interface Props {
+  pasos: Paso[];
+  class?: string;
+}
+const { pasos, class: className, ...rest } = Astro.props as Props & Record<string, unknown>;
+
+/* ESCALONADO 3+3 / 2+2+2 sobre una grilla de 6 columnas: los dos primeros
+ * pasos ocupan media fila cada uno, los tres últimos un tercio. Es la
+ * distribución que resuelve —a propósito— el problema que había hecho sacar las
+ * tarjetas el 16/08: cinco ítems en una grilla uniforme de 3 dejan la última
+ * fila incompleta, con un hueco. Repartidos 2 y 3 no sobra ninguna celda.
+ *
+ * El ancho va por índice y no por `nth-child` en el CSS para que se lea acá,
+ * junto al dato. Está atado a que `pasos` tenga 5 elementos: si mañana son 4 o
+ * 6, este reparto hay que rehacerlo (con el fallback, un sexto paso entraría
+ * como angosto y cerraría una tercera fila de 2+2+2). */
+const anchos = ['ancha', 'ancha', 'angosta', 'angosta', 'angosta'] as const;
+---
+
+<div class:list={['gp-marco relative', className]} {...rest}>
+  <ol class="gp-grid">
+    {
+      pasos.map((p, i) => (
+        <li class:list={['gp-celda', `gp-celda--${anchos[i] ?? 'angosta'}`]}>
+          {/* Mismo par tamaño/peso que el dato editorial de BarraEstadisticas:
+              `text-stat` en 300. Es lo que el pedido preservó explícitamente
+              ("manteniendo los números") y lo que hace el trabajo de jerarquía
+              en lugar de una caja con sombra. Verificado que no desborda en la
+              celda más angosta (2 de 6 columnas) en ningún breakpoint. */}
+          <span class="text-stat font-light leading-none text-navy">{p.n}</span>
+          <h3 class="mt-6 text-h3 font-medium text-navy">{p.titulo}</h3>
+          {/* `ch` en Roboto Condensed rinde ~6.4px, así que 64ch ≈ 410px: topea
+              la medida de lectura en las dos celdas anchas de la primera fila
+              (en las angostas manda el ancho de la celda). */}
+          <p class="mt-3 max-w-[64ch] font-light leading-relaxed text-navy-700">{p.texto}</p>
+        </li>
+      ))
+    }
+  </ol>
+
+  {/* Las cuatro esquinas externas del rectángulo. Misma técnica que `.esq` en
+      `GrillaLogos` y `.marco-esq` en `MarcoSeccion`: <span> vacío de 9×9 con
+      solo dos lados a 1.5px en navy. Van acá, hermanas del <ol> y no adentro,
+      porque los únicos hijos válidos de un <ol> son <li>. */}
+  <span class="gp-esq gp-esq--si" aria-hidden="true"></span>
+  <span class="gp-esq gp-esq--sd" aria-hidden="true"></span>
+  <span class="gp-esq gp-esq--ii" aria-hidden="true"></span>
+  <span class="gp-esq gp-esq--id" aria-hidden="true"></span>
+</div>
+
+<style>
+  /* Sangría a las dos guías de página. No lleva `padding` que reponga el
+   * margen —a diferencia de `.tl-lista`/`.tl-fila` en TimelineContacto— porque
+   * lo que separa el texto del trazo es el padding de cada celda. */
+  .gp-marco {
+    margin-inline: calc(-1 * var(--sangria-guia));
+  }
+
+  /* Mobile: una sola columna. Cada paso es una franja a todo el ancho y el
+   * reticulado se reduce a sus divisiones horizontales. Con 5 celdas en 6
+   * columnas no hay reparto intermedio que cierre sin huecos, así que no hay
+   * `sm:grid-cols-2`: se pasa de 1 a 6 directo en `md:`. */
+  .gp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--color-rule);
+    border-left: 1px solid var(--color-rule);
+  }
+
+  .gp-celda {
+    min-width: 0;
+    padding: 1.25rem;
+    border-right: 1px solid var(--color-rule);
+    border-bottom: 1px solid var(--color-rule);
+    /* SIN hover de superficie (20/08/2026, corregido a pedido explícito): estas
+     * celdas son de solo lectura, no hay nada que clickear adentro, así que un
+     * cambio de fondo al pasar el mouse sugiere una interactividad que no
+     * existe. `GrillaServicios` sí lo usa, pero ahí cada celda es candidata a
+     * link en el futuro del sitio (servicio → su página propia); el proceso no. */
+  }
+
+  /* Escala de padding de `GrillaServicios` (1.25 / 2 / 3rem), para que el bento
+   * se lea del mismo sistema y no como un módulo con densidad propia. */
+  @media (min-width: 768px) {
+    .gp-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    .gp-celda {
+      padding: 2rem;
+    }
+    .gp-celda--ancha {
+      grid-column: span 3;
+    }
+    .gp-celda--angosta {
+      grid-column: span 2;
+    }
+  }
+  @media (min-width: 1024px) {
+    .gp-celda {
+      padding: 3rem;
+    }
+  }
+
+  /* Escuadras en L. `z-index: 2` como en GrillaLogos/GrillaServicios: por
+   * encima del trazo del propio reticulado y bien por debajo de las guías de
+   * página (10) y del marco de sección (11 / 12). Ancladas al 0/100% del
+   * rectángulo, que después de la sangría es la guía de página. */
+  .gp-esq {
+    position: absolute;
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--color-navy);
+    pointer-events: none;
+  }
+  .gp-esq--si {
+    top: 0;
+    left: 0;
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .gp-esq--sd {
+    top: 0;
+    right: 0;
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+  .gp-esq--ii {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .gp-esq--id {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+</style>

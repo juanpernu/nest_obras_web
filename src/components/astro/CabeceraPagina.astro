@@ -29,9 +29,26 @@ interface Props {
   titulo: string;
   /** Bajada opcional. `/obras/[id]` la toma de `subtitulo`, que no es requerido. */
   bajada?: string;
+  /**
+   * Saca el contenedor propio (`mx-auto max-w-6xl px-6`) y deja solo el bloque
+   * animado con el contenido (20/08/2026). Es para el único caso en que la
+   * cabecera NO es el ancho completo de la página: `/nosotros`, donde vive
+   * dentro de una grilla de dos columnas y el contenedor lo aporta la página.
+   *
+   * OPT-IN a propósito, no un cambio de default: `/servicios`, `/contacto` y
+   * `/obras` (y `/obras/[id]`, que además usa el slot `migas`) siguen montando
+   * el componente sin esta prop y renderizan exactamente el mismo HTML que
+   * antes. Si algún día son mayoría las que van en grilla, se invierte el
+   * default y se toca una sola vez.
+   *
+   * Lo que NO se mueve es la animación de entrada: sigue en este mismo div,
+   * porque es el que envuelve el <h1> y de eso depende el LCP (ver arriba).
+   * Sacarla de acá o duplicar el string en la página es lo que rompe la métrica.
+   */
+  sinContenedor?: boolean;
 }
 
-const { eyebrow, titulo, bajada } = Astro.props as Props;
+const { eyebrow, titulo, bajada, sinContenedor = false } = Astro.props as Props;
 
 /** `/obras/[id]` antepone migas de pan; el resto de las páginas no. */
 const conMigas = Astro.slots.has('migas');
@@ -39,7 +56,10 @@ const claseEyebrow = conMigas ? 'mt-6 mb-2.5' : 'mb-2.5';
 ---
 
 <div
-  class="mx-auto max-w-6xl px-6 opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+  class:list={[
+    !sinContenedor && 'mx-auto max-w-6xl px-6',
+    'opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100',
+  ]}
 >
   <slot name="migas" />
   <Eyebrow class={claseEyebrow}>{eyebrow}</Eyebrow>

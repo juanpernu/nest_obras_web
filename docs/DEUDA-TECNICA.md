@@ -146,6 +146,16 @@ Esto es una **excepción deliberada** a reglas que el propio proyecto documenta 
 
 **Cómo reemplazar:** sobrescribir los dos `.md` con los textos reales (campos `nombre`, `zona`, `iniciales` + el texto en el cuerpo) y borrar el bloque de comentarios ⚠️ del frontmatter.
 
+### 2.4 🟠 Imagen a definir en la cabecera de `/nosotros` (20/08/2026)
+
+La Sección 1 de `src/pages/nosotros.astro` abre con el texto a la izquierda y un **bloque visual al 50% del ancho de la sección** a la derecha, que hoy es un **plano navy sin imagen**. El layout está terminado; lo que falta es la foto, que el usuario dejó a definir.
+
+- **Cómo reemplazarlo (sin tocar el layout):** meter un `<Image>` dentro del `<div class="cab-visual">`, con `class="absolute inset-0 h-full w-full object-cover"`, y agregarle `relative isolate overflow-hidden` al div. La geometría —que muere exacto sobre las dos reglas de `<MarcoSeccion>` y sobre la guía derecha de página— vive en `.cab-visual`, en el `<style>` de la página, y **no depende de la imagen**: es alto de fila más márgenes negativos.
+- **Sacar el `aria-hidden="true"` del div** y decidir el `alt` según qué termine siendo la foto: si es una obra o el equipo, descripción real; si es textura, `alt=""`.
+- **Ojo con el LCP:** hoy el bloque es color plano y el LCP de la ruta es el `<h1>`. Una foto de ~50% de la primera pantalla puede pasar a ser el elemento LCP. Al cargarla, medir y evaluar `loading="eager"` + `fetchpriority="high"` en vez del `lazy` por defecto.
+- Candidata única real y horizontal disponible hoy: `src/assets/obras/el-canton-aerea.jpg` (el resto de las `portada` son los placeholders de §2.1).
+- **Contexto:** esto revierte la decisión "SIN FOTO" que la página tenía documentada desde el 16/08/2026, incluida su recomendación de usar "una banda propia debajo de la cabecera, no partiendo el h1". Se le presentó esa nota al usuario y eligió la cabecera igual. La consecuencia asumida es que `/nosotros` y `/servicios` ya no abren con la misma composición.
+
 ---
 
 ## 3. 🟠 Bloqueado por datos de terceros (§11)

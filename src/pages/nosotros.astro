@@ -7,11 +7,16 @@ import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
-/* Sin imports de imagen: la cabecera volvió a ser solo texto (16/08/2026, ver la
- * nota de la sección). Si vuelve una foto a esta página, la única real y
- * horizontal disponible hoy es `@/assets/obras/el-canton-aerea.jpg` — todas las
- * `portada` de la colección son placeholders navy con el cartel "REEMPLAZAR CON
- * FOTO REAL" impreso (ver docs/DEUDA-TECNICA.md). */
+import GrillaProceso from '@/components/astro/GrillaProceso.astro';
+import GrillaValores from '@/components/astro/GrillaValores.astro';
+/* `Image` se usa para los retratos del equipo, que salen de la colección
+ * (`m.data.foto`) y no de un import suelto. El bloque visual de la cabecera es
+ * un plano navy sin archivo todavía, así que no importa ninguna imagen: cuando
+ * se defina, la única real y horizontal disponible hoy es
+ * `@/assets/obras/el-canton-aerea.jpg` — todas las `portada` de la colección son
+ * placeholders navy con el cartel "REEMPLAZAR CON FOTO REAL" impreso (ver
+ * docs/DEUDA-TECNICA.md §2.1 y §2.4). */
+import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -28,10 +33,17 @@ const proceso = [
   { n: '05', titulo: 'Entrega y postventa', texto: 'Entregamos la obra terminada y te acompañamos en el período post-entrega.' },
 ];
 
-const valores = [
-  { titulo: 'Transparencia', texto: 'Sabés en todo momento en qué estado está tu obra y tu presupuesto. Sin sorpresas.' },
-  { titulo: 'Cumplimiento', texto: 'Los plazos son compromisos, no estimaciones. Lo que prometemos, lo entregamos.' },
-  { titulo: 'Calidad', texto: 'Cada detalle importa. No hacemos obra terminada, hacemos obra bien terminada.' },
+/* `icono` agregado el 20/08/2026 (pedido directo, "replicame acá los estilos
+ * de la card de servicios" incluye la píldora). Mismo patrón que `icono` en
+ * `GrillaServicios`: un valor de unión que el componente usa para elegir qué
+ * `<svg>` dibujar, no un ícono en sí. Los tres son literales al concepto y no
+ * un reflejo del set genérico (lupa/tilde/estrella): ojo por "sabés en todo
+ * momento", calendario con check por "los plazos son compromisos", escudo con
+ * check por la garantía de calidad. */
+const valores: { titulo: string; texto: string; icono: 'transparencia' | 'cumplimiento' | 'calidad' }[] = [
+  { titulo: 'Transparencia', texto: 'Sabés en todo momento en qué estado está tu obra y tu presupuesto. Sin sorpresas.', icono: 'transparencia' },
+  { titulo: 'Cumplimiento', texto: 'Los plazos son compromisos, no estimaciones. Lo que prometemos, lo entregamos.', icono: 'cumplimiento' },
+  { titulo: 'Calidad', texto: 'Cada detalle importa. No hacemos obra terminada, hacemos obra bien terminada.', icono: 'calidad' },
 ];
 
 // `alumniOf` son casas de estudio, no empleadores: Benito Roggio es donde Carlos
@@ -85,21 +97,63 @@ const personasLd = [
         <CabeceraPagina> (16/08/2026). Las decisiones de escala tipográfica y la
         entrada CSS-only que evita el hit de LCP están documentadas allá.
 
-        SIN FOTO. La intro pasó por tres formas en el día: texto a todo el ancho,
-        después el bloque partido con foto a la derecha de la Sección 3 del Home,
-        después ese mismo bloque con la foto topeada en 500px. Vuelve a ser solo
-        texto por decisión directa: la apertura de /servicios no lleva imagen y
-        acá tenía que leerse igual. Con eso sale de la página la única foto que
-        tenía —`el-canton-aerea`, que la Home sigue usando como fondo de una
-        destacada—; si más adelante se quiere una imagen en /nosotros, el lugar
-        natural es una banda propia debajo de esta cabecera, no partiendo el h1. */}
+        CON BLOQUE VISUAL AL 50% (20/08/2026, pedido directo: "añadir una imagen
+        a la derecha del texto, full height y que llegue al marco en todos sus
+        extremos, sin excederlo... que ocupe el 50% del width de la sección en
+        escritorio").
+
+        ESTO REVIERTE UNA DECISIÓN DE ESTA MISMA PÁGINA, a conciencia. Hasta hoy
+        el comentario que estaba acá decía "SIN FOTO" y contaba que la intro
+        había pasado por tres formas en un solo día —texto a todo el ancho, el
+        bloque partido con foto a la derecha, y ese bloque con la foto topeada en
+        500px— para volver a ser solo texto por decisión directa, con el
+        argumento de que la apertura de /servicios no lleva imagen y acá tenía
+        que leerse igual. También recomendaba que, si volvía una imagen, fuera
+        "una banda propia debajo de esta cabecera, no partiendo el h1". Esa nota
+        se le presentó al usuario junto con las otras opciones y eligió la
+        cabecera igual: la recomendación de la banda propia queda sin efecto y se
+        borra, para que no queden dos indicaciones contradictorias en el archivo.
+        La consecuencia asumida es que /nosotros y /servicios ya no abren igual.
+
+        GEOMETRÍA: la misma técnica de `.form-a-la-guia` (Sección 9 de la Home y
+        /contacto). El bloque muere sobre las tres líneas que lo rodean —regla
+        superior e inferior de <MarcoSeccion>, que acá existen las dos porque la
+        sección `cierra`, y la guía derecha de página— con márgenes negativos
+        atados al `py` de la sección y a `--sangria-guia`. Ver `.cab-visual` en
+        el <style> de esta página, que detalla cada medida.
+
+        El <h1> sigue siendo el <h1> y sigue dentro del div animado de
+        <CabeceraPagina>: la prop `sinContenedor` solo le saca el
+        `mx-auto max-w-6xl px-6`, que acá lo aporta la grilla. La animación de
+        entrada no se duplicó ni se movió, que es de lo que depende el LCP. */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <CabeceraPagina
-          eyebrow="Quiénes somos"
-          titulo="Más de 30 años construyendo lo que prometemos"
-          bajada="NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos."
-        />
+        <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
+          <CabeceraPagina
+            sinContenedor
+            eyebrow="Quiénes somos"
+            titulo="Más de 30 años construyendo lo que prometemos"
+            bajada="NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos."
+          />
+
+          {/* PLACEHOLDER NAVY, imagen a definir (20/08/2026, elección del
+              usuario: armar la geometría final ahora y decidir la foto después).
+              Registrado en docs/DEUDA-TECNICA.md §2.4 para que reemplazarlo sea
+              meter un <Image> acá adentro sin tocar el layout.
+
+              Es un plano navy y no un placeholder con cartel impreso como los de
+              `src/assets/obras`: esos son archivos de imagen que pasan por
+              Sharp, y acá no hay archivo todavía. Un plano de navy grande es
+              además lenguaje de marca (identidad §3.3, "superficies planas de
+              navy en grandes áreas"), así que en producción se lee como una
+              decisión y no como una imagen que falló.
+
+              `aria-hidden` porque hoy no comunica nada: es color. Cuando entre
+              la foto real hay que decidir su `alt` — si es una obra o el equipo,
+              lleva descripción; si termina siendo textura, se queda en `alt=""`
+              y el `aria-hidden` se va. */}
+          <div class="cab-visual bg-navy" aria-hidden="true"></div>
+        </div>
       </section>
     </MarcoSeccion>
 
@@ -133,7 +187,31 @@ const personasLd = [
               text-navy-700` las credenciales. Se va la regla de 1px que cada
               ficha tenía arriba: en la Home el bloque no lleva ningún trazo, la
               separación la hace el `gap`, y era el último resto del
-              `border-t-4` original de esta página. */}
+              `border-t-4` original de esta página.
+
+              FOTO ARRIBA DEL NOMBRE (20/08/2026, pedido directo: "añademe una
+              imagen arriba"). Se replica el tratamiento de la Sección 8 de la
+              Home tal cual —`aspect-square`, `max-w-[220px]`, `bg-navy-50` de
+              fondo, blanco y negro que pasa a color en hover, `width`/`height`
+              en 440 (2x del tope de 220 para pantallas densas)— así las dos
+              vistas del equipo hablan el mismo idioma. No hizo falta tocar ni el
+              schema ni el contenido: `equipo` ya tiene `foto` opcional y los dos
+              .md ya la cargan, así que la Home venía mostrando estas mismas
+              fotos y acá era lo único que faltaba.
+
+              Sin la rama de iniciales que tiene la Home: allá el fallback existe
+              porque el componente se escribió cuando ninguna entrada cargaba
+              foto. Las dos la tienen y el campo es `optional()` en el schema, así
+              que acá el `?.` alcanza — si mañana entra un tercer integrante sin
+              foto, se ve el bloque `bg-navy-50` vacío, que es exactamente lo que
+              corresponde: un hueco reservado, no unas iniciales que simulan un
+              retrato.
+
+              `alt` descriptivo y no `alt={nombre}` como la Home: repetir el
+              nombre hace que un lector de pantalla lo lea dos veces seguidas
+              —una por la imagen y otra por el <h3> que va pegado abajo— sin
+              aportar nada. "Retrato de X" dice qué ES la imagen, que es la
+              información que el texto de al lado no da. */}
           <div data-reveal>
             <Eyebrow class="mb-2.5">Quiénes somos</Eyebrow>
             <h2 class="text-h2 font-normal text-navy">Las personas que están detrás de tu obra</h2>
@@ -142,6 +220,17 @@ const personasLd = [
             {
               equipo.map((m) => (
                 <div>
+                  <div class="mb-4 aspect-square w-full overflow-hidden bg-navy-50">
+                    {m.data.foto && (
+                      <Image
+                        src={m.data.foto}
+                        alt={`Retrato de ${m.data.nombre}`}
+                        widths={[440, 880, 1200]}
+                        sizes="(min-width: 640px) 50vw, 100vw"
+                        class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+                      />
+                    )}
+                  </div>
                   <h3 class="text-h3 font-medium text-navy">{m.data.nombre}</h3>
                   <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
                     {m.data.rolDetalle ?? m.data.rol}
@@ -180,41 +269,41 @@ const personasLd = [
             <Eyebrow class="mb-2.5">Proceso</Eyebrow>
             <h2 class="text-h2 font-normal text-navy">Cómo trabajamos, paso a paso</h2>
           </div>
-          {/* ÍNDICE TIPOGRÁFICO (16/08/2026, pedido directo: "redisñá esto para
-              que quede más tipográfico, manteniendo el contenido"). Los cinco
-              pasos eran tarjetas en una grilla de 3×2, con la última fila
-              incompleta y cada paso encerrado en su propia caja. Ahora son cinco
-              renglones a todo el ancho separados por la regla de 1px del
-              sistema: el mismo recurso con el que la hoja técnica dibuja sus
-              juntas, aplicado al ritmo de lectura.
+          {/* GRILLA BENTO (20/08/2026, pedido directo con referencia a un
+              componente externo de React/Next: "gusta la propuesta de bento,
+              manteniendo los números", con la condición de "que se respete el
+              marco y las esquinas de los contenedores que venimos implementando
+              en toda la vista").
 
-              Lo que hace el trabajo es el contraste de escala, no una caja: la
-              cifra sube a `text-stat` en peso 300 —el mismo par tamaño/peso del
-              dato editorial de BarraEstadisticas— y queda colgada en su propia
-              columna a la izquierda, como la numeración al margen de un pliego.
-              El título y el texto se reparten las dos columnas restantes, así el
-              ojo baja por tres ejes verticales fijos y los renglones se leen
-              como un índice y no como cinco párrafos sueltos.
+              Historia de esta sección, que va y viene entre caja y renglón:
+              hasta el 16/08 fueron tarjetas en una grilla uniforme de 3×2, y se
+              pasaron a índice tipográfico —cinco renglones separados por la
+              regla de 1px— en parte porque esa grilla dejaba la última fila
+              incompleta, con un hueco donde debería haber una sexta tarjeta.
+              Vuelven a ser cajas, pero el problema de entonces no vuelve: el
+              escalonado 3+3 / 2+2+2 sobre 6 columnas reparte los cinco pasos sin
+              que sobre ninguna celda. La asimetría es deliberada, no una
+              consecuencia.
 
-              En mobile la grilla colapsa a una columna y la cifra queda arriba
-              de su título: a 375px una columna de 5rem para el número deja el
-              texto en ~200px y se parte cada dos palabras. */}
-          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
-            {
-              proceso.map((p) => (
-                <li class="grid gap-x-10 gap-y-2 py-8 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
-                  <span class="text-stat font-light leading-none text-navy">{p.n}</span>
-                  <h3 class="text-h3 font-medium text-navy">{p.titulo}</h3>
-                  {/* `ch` en Roboto Condensed rinde ~6.4px, así que 64ch ≈ 410px:
-                      medida de lectura cómoda sin dejar la columna a medio usar
-                      (con 52ch el renglón cortaba en 330px y sobraban 190px). */}
-                  <p class="max-w-[64ch] font-light leading-relaxed text-navy-700 md:col-start-2 lg:col-start-3">
-                    {p.texto}
-                  </p>
-                </li>
-              ))
-            }
-          </ol>
+              De las dos opciones que se presentaron con preview, se eligió
+              RETICULADO CONTINUO: un solo rectángulo sin `gap`, escuadras navy
+              solo en las cuatro esquinas externas y divisiones internas en línea
+              de 1px sin marca en los cruces. Es lo que ya hacen GrillaLogos y
+              GrillaServicios, y lo que hace el marco general —MarcoSeccion
+              tampoco marca un cruce que no sea una esquina real. La otra
+              variante, cada celda con sus cuatro escuadras (que es literalmente
+              el "+" en las esquinas del componente de referencia), daba 20
+              escuadras y contradecía esa regla: el "+" se traduce entonces a la
+              escuadra en L del sistema, una sola vez por rectángulo.
+
+              Lo que se conserva del índice tipográfico es lo que hacía el
+              trabajo: la cifra en `text-stat` peso 300, el mismo par tamaño/peso
+              del dato editorial de BarraEstadisticas. Sigue siendo un <ol> con
+              <li> —el proceso es secuencial y el orden es información, por eso
+              acá los números sí son dato y no ornamento, a diferencia de los
+              bloques de /contacto. Toda la geometría (reticulado, spans,
+              sangría a las guías, escuadras) vive en GrillaProceso.astro. */}
+          <GrillaProceso pasos={proceso} class="mt-12" data-reveal />
         </div>
       </section>
     </MarcoSeccion>
@@ -226,16 +315,31 @@ const personasLd = [
             <Eyebrow class="mb-2.5">Valores</Eyebrow>
             <h2 class="text-h2 font-normal text-navy">Lo que no negociamos</h2>
           </div>
-          <div class="mt-10 grid gap-8 md:grid-cols-3" data-reveal>
-            {
-              valores.map((v) => (
-                <div class="border-t border-arena pt-6">
-                  <h3 class="text-h3 font-medium text-navy">{v.titulo}</h3>
-                  <p class="mt-3 leading-relaxed font-light text-navy-700">{v.texto}</p>
-                </div>
-              ))
-            }
-          </div>
+        </div>
+        {/* Card de servicios completa (20/08/2026, corregido a pedido explícito:
+            la primera versión solo copió los divisores y se quedó corta del
+            "estilos de la card de servicios" real). Ahora es el lenguaje
+            entero de `GrillaServicios`, en su propio componente
+            `GrillaValores.astro`: marco propio con reglas + escuadras en L,
+            divisores verticales entre celdas, píldora de ícono en arena-200 y
+            la escala de padding 1.25/2/3rem — ver el comentario de cabecera de
+            ese archivo para el detalle de cada pieza y por qué es una copia y
+            no una abstracción compartida.
+
+            MONTAJE fuera del `mx-auto max-w-6xl px-6` de arriba, mismo
+            criterio que `<GrillaServicios>` en la Home (Sección 4): el
+            componente necesita medir 100% contra la SECCIÓN para que sus
+            escuadras caigan sobre las mismas guías que el resto de la página,
+            y trae su propio `max-w-6xl` interno para la grilla de tarjetas.
+            Con esto la grilla queda "contenida en su columna" como la de
+            GrillaServicios —las tarjetas y los divisores viven en los 1152px
+            de contenido— mientras el marco (reglas + esquinas) sangra a
+            pantalla completa y ancla sobre las guías de página, igual que
+            todos los marcos del sistema. No se fuerza ninguna coincidencia con
+            el reticulado del bento de Proceso, que está 4rem+ más arriba: el
+            usuario confirmó que no hace falta ese calce. */}
+        <div class="mt-10" data-reveal>
+          <GrillaValores valores={valores} />
         </div>
       </section>
     </MarcoSeccion>
@@ -266,3 +370,59 @@ const personasLd = [
     </MarcoSeccion>
   </HojaTecnica>
 </Layout>
+
+<style>
+  /* ---------------------------------------------------------------------------
+   * Bloque visual de la cabecera (Sección 1). Misma técnica que
+   * `.form-a-la-guia` en index.astro y contacto.astro: cada `margin` negativo
+   * cancela un padding que separa el bloque de una línea del marco, para que
+   * muera EXACTO sobre ella y sin excederla. Va acá y no en utilidades porque
+   * los valores dependen de `--sangria-guia`, que cambia de régimen por media
+   * query (ver `global.css`), y mezclar eso con clases de Tailwind hace
+   * imposible ver de un saque qué borde termina dónde.
+   *
+   * MOBILE (una sola columna: el bloque es una fila más, debajo del texto):
+   *  - En X, a las dos guías vía `--sangria-guia`. La distancia del contenido a
+   *    la guía NO es el `px-6` del contenedor: en pantallas donde el contenedor
+   *    ocupa todo el ancho, la guía queda ADENTRO de ese borde.
+   *  - En Y, solo abajo (`py-20` = 5rem): arriba está el texto de la cabecera,
+   *    no una línea del marco, así que ahí no hay nada que cerrar.
+   *  - `aspect-ratio` porque acá no hay una fila de grilla que le dé altura: sin
+   *    esto el bloque mide 0 y no se ve.
+   * ------------------------------------------------------------------------- */
+  .cab-visual {
+    margin-inline: calc(-1 * var(--sangria-guia));
+    margin-bottom: -5rem;
+    aspect-ratio: 3 / 2;
+  }
+
+  /* DESDE `md:` el grid pasa a dos columnas y el bloque llena el rectángulo
+   * derecho completo del marco — las tres líneas que lo rodean:
+   *  - Arriba y abajo: el `py-[120px]` de la sección → las dos reglas de
+   *    <MarcoSeccion>, que en esta sección existen las dos porque `cierra`.
+   *  - Derecha: `--sangria-guia` → la guía derecha de página.
+   *  - Izquierda: la mitad del `gap-12` (1.5rem de 3rem) → el borde izquierdo
+   *    del bloque cae en el 50% EXACTO de la sección. Es la misma cuenta que el
+   *    divisor vertical de la Sección 9 de la Home: el centro de la columna de
+   *    contenido coincide con el centro de la sección, así que correr la columna
+   *    derecha media medida de gap la lleva justo al 50%. De ahí sale el "50%
+   *    del width de la sección" del pedido.
+   *
+   * `align-self: stretch` (el default de la grilla, reforzado por
+   * `items-stretch`) hace el resto: el alto del bloque es el de la fila más los
+   * 240px de los dos márgenes negativos, que es exactamente el alto de la
+   * sección. De ahí el "full height", sin ninguna medida fija. */
+  @media (min-width: 768px) {
+    .cab-visual {
+      aspect-ratio: auto;
+      margin-top: -120px;
+      margin-bottom: -120px;
+      margin-inline-start: -1.5rem;
+      margin-inline-end: calc(-1 * var(--sangria-guia));
+    }
+  }
+
+  /* Valores (Sección 5) ya no tiene estilos acá: el lenguaje completo de
+   * tarjeta de GrillaServicios —marco propio, divisores, píldora de ícono—
+   * vive en `GrillaValores.astro` (20/08/2026), montado como componente. */
+</style>

@@ -6,7 +6,9 @@ import Boton from '@/components/astro/Boton.astro';
 import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import { Image } from 'astro:assets';
 import { whatsappUrl } from '@/data/site';
+import tacuariSanTelmo from '@/assets/contacto/tacuari-san-telmo.png';
 
 // Bloques de confianza PROVISIONALES — reemplazar por el copy del PDF pp.15-17
 // (§5.6: separar título y párrafo, que en el PDF vienen pegados).
@@ -49,47 +51,24 @@ const bloques = [
     </MarcoSeccion>
 
     <MarcoSeccion cierra>
-      <section id="contacto" class="bg-white py-20 md:py-[120px]">
-        <div class="mx-auto grid max-w-6xl items-start gap-12 px-6 md:grid-cols-2">
-          {/* Mismo criterio tipográfico que /nosotros y /servicios (16/08/2026,
-              pedido directo): renglones separados por la regla de 1px del
-              sistema y el contraste de escala haciendo el trabajo.
-
-              SIN CIFRA, a diferencia de los otros dos índices. Allá el número es
-              dato —el paso 03 va después del 02, el `orden` del servicio está en
-              el schema—; acá los tres bloques son atributos ("respondemos en el
-              día", "sin costo", "+30 años"), no una secuencia, y numerarlos
-              afirmaría un orden que no existe. Lo que crece entonces es el
-              título, que pasa de `font-medium` a `text-h3`: la misma jerarquía,
-              con el elemento que sí corresponde.
-
-              Los atributos salen de <TimelineContacto> y se renderizan acá, pero
-              el componente SE QUEDA con `atributos={[]}` porque es además el
-              bloque de NAP del sitio: publica teléfono, email y dirección desde
-              site.ts con las píldoras de ícono, y eso no se duplica a mano
-              (§6.7). La Home lo sigue montando entero, con sus tres atributos.
-
-              Nota: el 15/08/2026 se sacaron a pedido las líneas de
-              <TimelineContacto>. No es lo mismo que esto: aquello era un
-              timeline literal —vertical de referencia, horizontales enmascaradas
-              y un nodo en cada cruce— y esto es la regla del sistema de marco,
-              que ese día todavía no existía. Si igual se lee como un retroceso,
-              se revierte sacando las clases `divide-y`/`border-y` del <ul>. */}
+      <section id="contacto" class="relative bg-white pt-20 pb-6 md:pt-[120px] md:pb-10">
+        {/* Divisor vertical entre las dos columnas, igual que la Sección 9 de
+            la Home: cierra las líneas de `TimelineContacto` y va al 50% exacto
+            de la sección (mitad del `gap-12`). Solo desde `md:`. */}
+        <span
+          class="pointer-events-none absolute inset-y-0 left-1/2 hidden w-px bg-(--color-rule) md:block"
+          aria-hidden="true"></span>
+        <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
+          {/* Exactamente el mismo componente que la Sección 9 de la Home
+              (20/08/2026, pedido directo): antes esta página duplicaba a mano
+              los tres bloques en un <ul> propio (check y líneas aparte) y
+              montaba <TimelineContacto> solo por el NAP con `atributos={[]}`.
+              Ahora es una única instancia con `atributos={bloques}`: el check
+              en arena y las líneas horizontales sangradas a la guía ("el
+              marco") salen del componente, igual que en la Home. */}
           <div data-reveal>
             <h2 class="text-h2 font-normal text-navy">Cómo trabajamos la primera consulta</h2>
-            <ul class="mt-8 divide-y divide-arena border-y border-arena">
-              {
-                bloques.map((b) => (
-                  <li class="py-6">
-                    <h3 class="text-h3 font-medium text-navy">{b.titulo}</h3>
-                    <p class="mt-2 max-w-[64ch] font-light leading-relaxed text-navy-700">
-                      {b.texto}
-                    </p>
-                  </li>
-                ))
-              }
-            </ul>
-            <TimelineContacto class="mt-10" atributos={[]} />
+            <TimelineContacto class="mt-8" atributos={bloques} />
             <div class="mt-8">
               <Boton
                 href={whatsappUrl}
@@ -102,23 +81,83 @@ const bloques = [
             </div>
           </div>
 
-          {/* Card GLASS, los mismos cuatro valores que la Sección 9 de la Home y
-              que el header scrolleado (Nav.astro): `bg-white/70` +
-              `backdrop-blur-md` + `border-navy-200` + la sombra
-              `0_12px_40px_rgba(0,0,0,0.1)`. Como el fondo de la card es claro,
-              <FormularioConsulta> va SIN `sobreNavy`: labels y texto en navy,
-              campos con borde navy-600 (3.4:1, límite de control WCAG 1.4.11).
-              Con `sobreNavy` el formulario es blanco sobre transparente y acá
-              sería ilegible. */}
-          <div
-            class="border border-navy-200 bg-white/70 p-6 shadow-[0_12px_40px_rgba(0,0,0,0.1)] backdrop-blur-md md:p-10"
-            data-reveal
-          >
+          {/* Card NAVY con foto de fondo, mismo patrón que la Sección 9 de la
+              Home (18/08/2026 ahí, portado acá para unificar la firma visual
+              de "formulario de consulta" en todo el sitio): la caja llega
+              hasta las líneas del marco, sin aire entre medio. Toda la
+              geometría vive en `.form-a-la-guia` (ver <style> de esta
+              página), con los mismos márgenes/paddings negativos dependientes
+              de `--sangria-guia` que usa index.astro — el token es global
+              (`:root` en global.css), así que el cálculo es idéntico acá.
+
+              Imagen: reutiliza `tacuari-san-telmo.png`, la misma que la Home.
+              No es un descarte por pereza: es la foto que ya funciona como
+              firma visual del bloque "formulario de consulta" en el resto del
+              sitio, y no hay en el repo otra imagen de obra pensada para este
+              recorte vertical con espacio para overlay de texto encima.
+              Repetirla refuerza la asociación en vez de diluirla.
+
+              `FormularioConsulta` pasa a `sobreNavy` porque el fondo ahora es
+              oscuro (foto + velo `bg-black/50`, mismo valor que el overlay del
+              hero) — el componente ya resuelve el contraste de labels,
+              bordes y placeholders para esta variante (ver su comentario). */}
+          <div class="form-a-la-guia relative isolate overflow-hidden bg-navy" data-reveal>
+            <Image
+              src={tacuariSanTelmo}
+              alt=""
+              widths={[640, 960]}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              class="absolute inset-0 -z-20 h-full w-full object-cover"
+            />
+            <div class="absolute inset-0 -z-10 bg-black/50" aria-hidden="true"></div>
             <h2 class="sr-only">Formulario de consulta</h2>
-            <FormularioConsulta />
+            <FormularioConsulta sobreNavy />
           </div>
         </div>
       </section>
     </MarcoSeccion>
   </HojaTecnica>
 </Layout>
+
+<style>
+  /* Geometría del bloque del formulario, portada tal cual de index.astro
+   * (Sección 9, 18/08/2026): tiene que morir EXACTO sobre las líneas del
+   * marco, sin aire. Cada `margin` negativo cancela un padding que lo separa
+   * de una línea, y el `padding` propio lo repone hacia adentro para que los
+   * campos no se peguen al borde. Depende de `--sangria-guia`, que es un
+   * token en `:root` de global.css (no algo que aporte HojaTecnica/MarcoSeccion),
+   * así que el cálculo es idéntico en esta página aunque el <style> esté
+   * scopeado acá y no se pueda compartir literalmente con index.astro.
+   *
+   * MOBILE (una sola columna: el formulario es una fila más, debajo de la
+   * columna "Cómo trabajamos"): en X, a las dos guías vía `--sangria-guia`;
+   * en Y, solo abajo (`pb-6` de la sección) — arriba no hay línea del marco
+   * que cerrar. */
+  .form-a-la-guia {
+    margin-inline: calc(-1 * var(--sangria-guia));
+    padding-inline: calc(1.5rem + var(--sangria-guia));
+    padding-top: 1.5rem;
+    margin-bottom: -1.5rem;
+    padding-bottom: 3rem;
+  }
+
+  /* DESDE `md:` el grid pasa a dos columnas y el bloque llena su rectángulo
+   * completo del marco:
+   *  - Izquierda: mitad del `gap-12` → cae en el 50% de la sección, donde
+   *    está el divisor vertical.
+   *  - Derecha: `--sangria-guia` → la guía derecha de página.
+   *  - Arriba y abajo: el `pt`/`pb` de la sección → las dos reglas de
+   *    `MarcoSeccion`. */
+  @media (min-width: 768px) {
+    .form-a-la-guia {
+      margin-top: -120px;
+      padding-top: calc(120px + 2.5rem);
+      margin-inline-start: -1.5rem;
+      padding-inline-start: 2.5rem;
+      margin-inline-end: calc(-1 * var(--sangria-guia));
+      padding-inline-end: calc(2.5rem + var(--sangria-guia));
+      margin-bottom: -2.5rem;
+      padding-bottom: 5rem;
+    }
+  }
+</style>
