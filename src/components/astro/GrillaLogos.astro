@@ -31,9 +31,10 @@ const { class: className } = Astro.props as Props;
  * mostrar (18/08/2026, pedido explícito: "añademe... el logo_08"). */
 const ocultos = new Set<string>([]);
 
-/* Google salió de la grilla (22/08/2026, pedido del cliente): antes se
- * insertaba `/logos/logo_google.svg` en la posición 6 con un splice. El asset
- * sigue en /public/logos, igual criterio que `ocultos`. Quedan pendientes de
+/* Google salió del sitio (22/08/2026, pedido del cliente): antes se insertaba
+ * `/logos/logo_google.svg` en la posición 6 con un splice. A diferencia de
+ * `ocultos`, acá el asset se borró: el pedido fue sacar la marca, no ocultarla.
+ * Quedan pendientes de
  * incorporar los logos de Fabric Sushi, Perramus y SPI Astilleros: hasta que
  * lleguen los SVG la grilla queda en 11 celdas (10 numeradas + Subway) y la
  * última fila deja un hueco en los dos breakpoints. */

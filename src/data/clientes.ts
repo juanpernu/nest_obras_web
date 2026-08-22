@@ -11,7 +11,6 @@ export interface Cliente {
 }
 
 export const clientes: Cliente[] = [
-  { nombre: 'Google' },
   { nombre: 'WeWork' },
   { nombre: 'IRSA' },
   { nombre: 'UADE' },
