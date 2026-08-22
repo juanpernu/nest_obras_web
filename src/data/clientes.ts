@@ -15,7 +15,7 @@ export const clientes: Cliente[] = [
   { nombre: 'WeWork' },
   { nombre: 'IRSA' },
   { nombre: 'UADE' },
-  { nombre: 'PRUNE' },
+  { nombre: 'PRÜNE' },
   { nombre: 'Fabric Sushi' },
   { nombre: 'Subway' },
   { nombre: 'Hospitales' },

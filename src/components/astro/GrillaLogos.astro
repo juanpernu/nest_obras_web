@@ -31,25 +31,29 @@ const { class: className } = Astro.props as Props;
  * mostrar (18/08/2026, pedido explícito: "añademe... el logo_08"). */
 const ocultos = new Set<string>([]);
 
+/* Google salió de la grilla (22/08/2026, pedido del cliente): antes se
+ * insertaba `/logos/logo_google.svg` en la posición 6 con un splice. El asset
+ * sigue en /public/logos, igual criterio que `ocultos`. Quedan pendientes de
+ * incorporar los logos de Fabric Sushi, Perramus y SPI Astilleros: hasta que
+ * lleguen los SVG la grilla queda en 11 celdas (10 numeradas + Subway) y la
+ * última fila deja un hueco en los dos breakpoints. */
+
 const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, '0'))
   .filter((n) => !ocultos.has(n))
   .map((n) => ({
     src: `/logos/logo_${n}.svg`,
     alt: `Logo de cliente corporativo de NEST (${n})`,
   }));
-/* Google reemplazado por el archivo nuevo (18/08/2026, pedido explícito) —
- * mismo path `/logos/logo_google.svg`, así que no hace falta tocar nada más
- * que el contenido del SVG en `public/logos/`. Subway se suma al lado
- * (18/08/2026, pedido explícito). */
-logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
-logosReales.splice(6, 0, { src: '/logos/logo_subway.svg', alt: 'Logo de Subway' });
+/* Subway (18/08/2026, pedido explícito). Ocupa la posición que hasta el
+ * 22/08/2026 tenía Google, que iba justo antes con otro splice. */
+logosReales.splice(5, 0, { src: '/logos/logo_subway.svg', alt: 'Logo de Subway' });
 
 /* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
  * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
  * mide solo su padding, así que las filas dejaban de ser uniformes y el
  * reticulado —que reparte porcentajes iguales— se desalineaba de los logos.
- * Con las celdas justas, mobile da 5 filas exactas (10/2) y desktop 3 (⌈10/4⌉),
- * y `auto-rows-fr` en la grilla garantiza que todas midan igual. */
+ * Con las celdas justas, mobile da ⌈n/2⌉ filas y desktop ⌈n/4⌉ sobre el total
+ * real de logos, y `auto-rows-fr` garantiza que todas midan igual. */
 const celdas = logosReales;
 
 /* Las dos extensiones que salen de la grilla se difuminan hacia el borde del

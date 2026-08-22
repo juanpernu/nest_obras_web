@@ -11,4 +11,4 @@ incluye:
   - "Plazos corporativos, no estimaciones"
 ---
 
-Oficinas, locales comerciales, desarrollos gastronómicos y espacios corporativos. Cumplimos plazos ajustados, coordinamos múltiples sedes y trabajamos en horarios que minimizan la interrupción de tu negocio. PRUNE confió en nosotros para abrir 10 sucursales en 40 días.
+Oficinas, locales comerciales, desarrollos gastronómicos y espacios corporativos. Cumplimos plazos ajustados, coordinamos múltiples sedes y trabajamos en horarios que minimizan la interrupción de tu negocio. PRÜNE confió en nosotros para abrir 10 sucursales en 40 días.
