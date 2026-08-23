@@ -62,13 +62,26 @@ const serviciosLd = entries.map((s) => ({
   evento={{ nombre: 'servicio_view' }}
 >
   <HojaTecnica>
+    {/* CON BLOQUE VISUAL AL 50% (22/08/2026, mismo pedido y misma solución que
+        la cabecera de /nosotros: "añadir una imagen a la derecha del texto,
+        full height y que llegue al marco en todos sus extremos, sin
+        excederlo... que ocupe el 50% del width de la sección en escritorio").
+        Geometría y clase `.cab-visual` copiadas tal cual de nosotros.astro
+        (ver el <style> de esa página para el detalle de cada medida) — es la
+        técnica de `.form-a-la-guia` de la Home/contacto aplicada a esta
+        cabecera. PLACEHOLDER NAVY, imagen a definir: mismo criterio que
+        /nosotros, se reemplaza por un <Image> sin tocar el layout. */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <CabeceraPagina
-          eyebrow="Servicios"
-          titulo="Servicios de construcción"
-          bajada="Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega. Con un solo responsable de la obra y un único punto de contacto."
-        />
+        <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
+          <CabeceraPagina
+            sinContenedor
+            eyebrow="Servicios"
+            titulo="Servicios de construcción"
+            bajada="Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega. Con un solo responsable de la obra y un único punto de contacto."
+          />
+          <div class="cab-visual bg-navy" aria-hidden="true"></div>
+        </div>
       </section>
     </MarcoSeccion>
 
@@ -140,33 +153,48 @@ const serviciosLd = entries.map((s) => ({
             <Eyebrow class="mb-2.5">Modalidades</Eyebrow>
             <h2 class="text-h2 font-normal text-navy">Cómo preferís trabajar con nosotros</h2>
           </div>
-          {/* Mismo índice tipográfico que los servicios de arriba (16/08/2026,
-              misma pasada). Reemplaza a dos cards glass —borde navy-200, blur y
-              la sombra del header— que eran el único lenguaje de caja que
-              quedaba en la página: con los servicios ya resueltos como renglones
-              con regla, dos tarjetas flotando debajo leían como otro sistema.
+          {/* BENTO de 3 cards (22/08/2026, pedido directo: "replicame acá el
+              bento grid que tenemos en nosotros pero con tres cards paralelas
+              de izquierda a derecha, y la tercera es una imagen (placeholder)
+              que ocupa el total width y height del contenedor"). Reemplaza al
+              índice tipográfico de dos renglones que había acá.
 
-              El glass no desaparece del sitio, se queda donde es una SUPERFICIE
-              y no un contenedor de texto: el header scrolleado y la card del
-              formulario de /contacto y de la Sección 9 del Home. */}
-          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
-            {
-              modalidades.map((m, i) => (
-                <li class="grid gap-x-10 gap-y-3 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
-                  <span class="text-stat font-light leading-none text-navy">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">
-                    {m.titulo}
-                  </h3>
-                  <div class="md:col-start-2 lg:col-start-3">
-                    <p class="max-w-[64ch] font-light leading-relaxed text-navy-700">{m.texto}</p>
-                    <p class="mt-3 max-w-[64ch] text-sm italic text-navy-700">{m.ideal}</p>
-                  </div>
-                </li>
-              ))
-            }
-          </ol>
+              A diferencia de GrillaProceso.astro (asimétrico 3+3/2+2+2 sobre 6
+              columnas, para 5 pasos), acá son tres columnas PARES: las dos
+              modalidades de `modalidades` más una tercera celda de imagen,
+              mismo ancho las tres. Mismo reticulado continuo sin gap —borde
+              superior/izquierdo en la grilla, derecho/inferior en cada celda,
+              escuadras en L solo en las cuatro esquinas externas— y misma
+              sangría a las guías de página (`--sangria-guia`) que el resto del
+              sistema. La celda de imagen no lleva padding: la foto (hoy
+              placeholder navy) llena el 100% de ancho y alto de su celda. */}
+          <div class="mod-bento relative mt-12" data-reveal>
+            <ol class="mod-bento-grid">
+              {
+                modalidades.map((m, i) => (
+                  <li class="mod-bento-celda">
+                    <span class="block text-stat font-light leading-none text-navy">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 class="mt-4 text-h3 font-medium uppercase tracking-[0.04em] text-navy">
+                      {m.titulo}
+                    </h3>
+                    <p class="mt-3 max-w-[42ch] font-light leading-relaxed text-navy-700">
+                      {m.texto}
+                    </p>
+                    <p class="mt-3 max-w-[42ch] text-sm italic text-navy-700">{m.ideal}</p>
+                  </li>
+                ))
+              }
+              {/* PLACEHOLDER NAVY, imagen a definir: mismo criterio que
+                  `.cab-visual` más arriba en esta misma página. */}
+              <li class="mod-bento-celda mod-bento-celda--img bg-navy" aria-hidden="true" />
+            </ol>
+            <span class="mod-bento-esq mod-bento-esq--si" aria-hidden="true" />
+            <span class="mod-bento-esq mod-bento-esq--sd" aria-hidden="true" />
+            <span class="mod-bento-esq mod-bento-esq--ii" aria-hidden="true" />
+            <span class="mod-bento-esq mod-bento-esq--id" aria-hidden="true" />
+          </div>
         </div>
       </section>
     </MarcoSeccion>
@@ -209,3 +237,118 @@ const serviciosLd = entries.map((s) => ({
     </MarcoSeccion>
   </HojaTecnica>
 </Layout>
+
+<style>
+  /* Bloque visual de la cabecera (Sección 1). Copiado tal cual de
+   * `.cab-visual` en nosotros.astro — ver el comentario extenso ahí para el
+   * detalle de cada medida. Misma técnica que `.form-a-la-guia` en
+   * index.astro y contacto.astro: cada `margin` negativo cancela un padding
+   * que separa el bloque de una línea del marco, para que muera EXACTO sobre
+   * ella y sin excederla. */
+  .cab-visual {
+    margin-inline: calc(-1 * var(--sangria-guia));
+    margin-bottom: -5rem;
+    aspect-ratio: 3 / 2;
+  }
+
+  @media (min-width: 768px) {
+    .cab-visual {
+      aspect-ratio: auto;
+      margin-top: -120px;
+      margin-bottom: -120px;
+      margin-inline-start: -1.5rem;
+      margin-inline-end: calc(-1 * var(--sangria-guia));
+    }
+  }
+
+  /* Bento de Modalidades (Sección 3). Mismo reticulado continuo de
+   * GrillaProceso.astro (ver ese archivo para el detalle de la técnica: borde
+   * superior/izquierdo en la grilla, derecho/inferior en cada celda, sin
+   * `gap`, así ningún cruce apila dos líneas de 1px), pero con TRES columnas
+   * PARES en vez del escalonado 3+3/2+2+2 — acá son siempre tres celdas del
+   * mismo ancho. */
+  .mod-bento {
+    margin-inline: calc(-1 * var(--sangria-guia));
+  }
+
+  .mod-bento-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--color-rule);
+    border-left: 1px solid var(--color-rule);
+  }
+
+  .mod-bento-celda {
+    min-width: 0;
+    padding: 1.25rem;
+    border-right: 1px solid var(--color-rule);
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  /* Celda de imagen: sin padding y con altura mínima propia en mobile (ahí es
+   * una fila más, apilada, y sin una fila de grilla que le dé alto se vería
+   * de 0px). Desde `md:` el `stretch` por default de la grilla la iguala al
+   * alto de las otras dos celdas, así llena "el total width y height del
+   * contenedor" que pidió el usuario. */
+  .mod-bento-celda--img {
+    padding: 0;
+    min-height: 16rem;
+  }
+
+  @media (min-width: 768px) {
+    .mod-bento-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .mod-bento-celda {
+      padding: 2rem;
+    }
+    .mod-bento-celda--img {
+      padding: 0;
+      min-height: 0;
+    }
+  }
+  @media (min-width: 1024px) {
+    .mod-bento-celda {
+      padding: 3rem;
+    }
+  }
+
+  /* Escuadras en L, idénticas a `.gp-esq` de GrillaProceso: ancladas al
+   * 0/100% del rectángulo, que tras la sangría cae sobre las guías de
+   * página. */
+  .mod-bento-esq {
+    position: absolute;
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--color-navy);
+    pointer-events: none;
+  }
+  .mod-bento-esq--si {
+    top: 0;
+    left: 0;
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .mod-bento-esq--sd {
+    top: 0;
+    right: 0;
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+  .mod-bento-esq--ii {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .mod-bento-esq--id {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+</style>

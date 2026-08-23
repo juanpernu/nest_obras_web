@@ -1,11 +1,11 @@
 ---
-nombre: "San Isidro — Vivienda"
-zona: "San Isidro, Zona Norte"
+nombre: "El Aromo — Vivienda"
+zona: "Provincia"
 localidad: San Isidro
 tipo: vivienda
 orden: 7
-portada: ../../assets/obras/san-isidro-portada.jpg
-portadaAlt: "Imagen provisoria — Vivienda premium en San Isidro construida por NEST"
+portada: ../../assets/obras/san-isidro-portada.png
+portadaAlt: "Vivienda premium en El Aromo construida por NEST"
 destacadaEnHome: false
 paginaPropia: false
 ---

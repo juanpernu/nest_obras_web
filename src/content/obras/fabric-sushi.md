@@ -5,7 +5,7 @@ localidad: CABA
 tipo: corporativo
 orden: 4
 portada: ../../assets/obras/fabric-sushi-portada.jpg
-portadaAlt: "Imagen provisoria — Local de Fabric Sushi construido por NEST, obra gastronómica corporativa"
+portadaAlt: "Local de Fabric Sushi construido por NEST, obra gastronómica corporativa"
 destacadaEnHome: false
 paginaPropia: false
 ---

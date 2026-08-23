@@ -4,8 +4,8 @@ zona: "CABA"
 localidad: CABA
 tipo: edificio
 orden: 5
-portada: ../../assets/obras/tacuari-1050-portada.jpg
-portadaAlt: "Imagen provisoria — Edificio Tacuarí 1051 en CABA construido por NEST"
+portada: ../../assets/obras/tacuari-1050-portada.png
+portadaAlt: "Edificio Tacuarí 1051 en CABA construido por NEST"
 destacadaEnHome: true
 paginaPropia: true
 slug: tacuari-1051

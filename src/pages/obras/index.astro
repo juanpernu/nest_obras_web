@@ -9,6 +9,8 @@ import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import { getCollection } from 'astro:content';
 import { filtroLabel } from '@/data/obras';
+import { Image } from 'astro:assets';
+import cabeceraImg from '@/assets/paginas/obras-cabecera.jpg';
 
 const obras = (await getCollection('obras')).sort((a, b) => a.data.orden - b.data.orden);
 
@@ -35,13 +37,32 @@ const labelBase =
   description="Viviendas premium, refacciones y proyectos corporativos de NEST en Nordelta, San Isidro, Escobar, Pilar, Tigre y CABA."
 >
   <HojaTecnica>
+    {/* CON BLOQUE VISUAL AL 50% (22/08/2026, mismo pedido y misma solución que
+        las cabeceras de /nosotros y /servicios: "añadir una imagen a la
+        derecha del texto, full height y que llegue al marco en todos sus
+        extremos, sin excederlo... que ocupe el 50% del width de la sección en
+        escritorio"). Geometría y clase `.cab-visual` copiadas tal cual de
+        nosotros.astro (ver el <style> de esa página para el detalle de cada
+        medida). Imagen real (22/08/2026): la foto de Casa Santa Bárbara. */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <CabeceraPagina
-          eyebrow="Portfolio"
-          titulo="Obras"
-          bajada="Edificios, viviendas premium y proyectos corporativos en Zona Norte del Gran Buenos Aires y CABA."
-        />
+        <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
+          <CabeceraPagina
+            sinContenedor
+            eyebrow="Portfolio"
+            titulo="Obras"
+            bajada="Edificios, viviendas premium y proyectos corporativos en Zona Norte del Gran Buenos Aires y CABA."
+          />
+          <div class="cab-visual overflow-hidden">
+            <Image
+              src={cabeceraImg}
+              alt="Vivienda construida por NEST"
+              widths={[400, 640, 960, 1280]}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+            />
+          </div>
+        </div>
       </section>
     </MarcoSeccion>
 
@@ -137,6 +158,30 @@ const labelBase =
     body:has(#f-gastronomia:checked) li[data-tipo]:not([data-tipo='gastronomia']),
     body:has(#f-edificio:checked) li[data-tipo]:not([data-tipo='edificio']) {
       display: none;
+    }
+  </style>
+
+  <style>
+    /* Bloque visual de la cabecera (Sección 1). Copiado tal cual de
+     * `.cab-visual` en nosotros.astro — ver el comentario extenso ahí para el
+     * detalle de cada medida. Misma técnica que `.form-a-la-guia` en
+     * index.astro y contacto.astro: cada `margin` negativo cancela un padding
+     * que separa el bloque de una línea del marco, para que muera EXACTO
+     * sobre ella y sin excederla. */
+    .cab-visual {
+      margin-inline: calc(-1 * var(--sangria-guia));
+      margin-bottom: -5rem;
+      aspect-ratio: 3 / 2;
+    }
+
+    @media (min-width: 768px) {
+      .cab-visual {
+        aspect-ratio: auto;
+        margin-top: -120px;
+        margin-bottom: -120px;
+        margin-inline-start: -1.5rem;
+        margin-inline-end: calc(-1 * var(--sangria-guia));
+      }
     }
   </style>
 </Layout>
