@@ -2,8 +2,13 @@
 /**
  * Tarjeta de obra (§5.4). Comportamiento de link según §5.1/§5.4:
  *  - paginaPropia → link al caso
- *  - destacada sin página propia (El Aromo) → link a /obras
+ *  - destacada sin página propia → link a /obras
  *  - resto → no clickeable
+ *
+ * Desde el 23/08/2026 la rama del medio no tiene ningún caso: las tres
+ * destacadas de la Home (PRÜNE, El Aromo y Tacuarí 1051) tienen página propia.
+ * Se deja igual porque sigue siendo el fallback si se marca una destacada
+ * nueva antes de tener el contenido de su caso.
  */
 import FotoObra from '@/components/astro/FotoObra.astro';
 import { tipoLabel } from '@/data/obras';
