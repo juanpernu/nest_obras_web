@@ -54,8 +54,16 @@ const labelBase =
             bajada="Edificios, viviendas premium y proyectos corporativos en Zona Norte del Gran Buenos Aires y CABA."
           />
           <div class="cab-visual overflow-hidden">
+            {/* eager + fetchpriority alta (23/08/2026, auditoría de performance):
+                este bloque ocupa la mitad de la primera pantalla y es la LCP de
+                la ruta. Con el `loading="lazy"` que <Image> pone por defecto, el
+                preload scanner la salteaba y la descarga no arrancaba hasta
+                después del layout. */}
             <Image
               src={cabeceraImg}
+              loading="eager"
+              fetchpriority="high"
+              decoding="sync"
               alt="Vivienda construida por NEST"
               widths={[400, 640, 960, 1280]}
               sizes="(min-width: 768px) 50vw, 100vw"
