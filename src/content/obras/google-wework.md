@@ -1,11 +1,11 @@
 ---
-nombre: "Google / WeWork"
+nombre: "Ianki Bar"
 zona: "CABA"
 localidad: CABA
 tipo: corporativo
 orden: 3
-portada: ../../assets/obras/google-wework-portada.jpg
-portadaAlt: "Imagen provisoria — Espacio corporativo de Google y WeWork ejecutado por NEST"
+portada: ../../assets/obras/google-wework-portada.png
+portadaAlt: "Espacio corporativo de Ianki Bar ejecutado por NEST"
 destacadaEnHome: false
 paginaPropia: false
 ---

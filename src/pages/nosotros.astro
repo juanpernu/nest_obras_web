@@ -17,6 +17,7 @@ import GrillaValores from '@/components/astro/GrillaValores.astro';
  * placeholders navy con el cartel "REEMPLAZAR CON FOTO REAL" impreso (ver
  * docs/DEUDA-TECNICA.md §2.1 y §2.4). */
 import { Image } from 'astro:assets';
+import cabeceraImg from '@/assets/paginas/nosotros-cabecera.webp';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -136,23 +137,19 @@ const personasLd = [
             bajada="NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos."
           />
 
-          {/* PLACEHOLDER NAVY, imagen a definir (20/08/2026, elección del
-              usuario: armar la geometría final ahora y decidir la foto después).
-              Registrado en docs/DEUDA-TECNICA.md §2.4 para que reemplazarlo sea
-              meter un <Image> acá adentro sin tocar el layout.
-
-              Es un plano navy y no un placeholder con cartel impreso como los de
-              `src/assets/obras`: esos son archivos de imagen que pasan por
-              Sharp, y acá no hay archivo todavía. Un plano de navy grande es
-              además lenguaje de marca (identidad §3.3, "superficies planas de
-              navy en grandes áreas"), así que en producción se lee como una
-              decisión y no como una imagen que falló.
-
-              `aria-hidden` porque hoy no comunica nada: es color. Cuando entre
-              la foto real hay que decidir su `alt` — si es una obra o el equipo,
-              lleva descripción; si termina siendo textura, se queda en `alt=""`
-              y el `aria-hidden` se va. */}
-          <div class="cab-visual bg-navy" aria-hidden="true"></div>
+          {/* Imagen real (22/08/2026): reemplaza al placeholder navy del
+              20/08/2026 (ver docs/DEUDA-TECNICA.md §2.4, a cerrar). Blanco y
+              negro por defecto / color en hover, mismo recurso que el resto de
+              las fotos del sitio (GrillaLogos, TarjetaObra, TarjetaObraHover). */}
+          <div class="cab-visual overflow-hidden">
+            <Image
+              src={cabeceraImg}
+              alt="Obra corporativa de NEST"
+              widths={[400, 640, 960, 1280]}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+            />
+          </div>
         </div>
       </section>
     </MarcoSeccion>

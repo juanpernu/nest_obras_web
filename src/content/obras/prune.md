@@ -5,8 +5,8 @@ localidad: CABA
 tipo: corporativo
 anio: 2023
 orden: 1
-portada: ../../assets/obras/prune-portada.jpg
-portadaAlt: "Imagen provisoria — Local de PRUNE terminado por NEST, obra de retail corporativo"
+portada: ../../assets/obras/prune-home.jpeg
+portadaAlt: "Local de PRUNE terminado por NEST, obra de retail corporativo"
 destacadaEnHome: true
 paginaPropia: true
 slug: prune
