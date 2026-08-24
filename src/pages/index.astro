@@ -12,13 +12,17 @@ import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import type { Servicio } from '@/components/astro/GrillaServicios.astro';
-import elCantonAerea from '@/assets/obras/el-canton-aerea.jpg';
-import tacuari1 from '../../assets/img/tacuari1.png';
+import elAromoAerea from '@/assets/obras/el-aromo-aerea.jpg';
 import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
 import TimelineContacto from '@/components/astro/TimelineContacto.astro';
-import quienesSomosImg from '@/assets/intro/servicios.webp';
-import tacuariSanTelmo from '@/assets/contacto/tacuari-san-telmo.png';
+/* Compartida con la cabecera de /nosotros (23/08/2026): antes existía dos
+ * veces en el repo, byte por byte igual, como `intro/servicios.webp` acá y
+ * `paginas/nosotros-cabecera.webp` allá. Se unificó bajo un nombre que
+ * describe la foto y no el lugar donde se usa. El `alt` sí es distinto en
+ * cada página, porque el contexto de lectura es distinto. */
+import quienesSomosImg from '@/assets/paginas/obra-corporativa.webp';
+import hormigonSombra from '@/assets/contacto/hormigon-sombra.png';
 import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
 import type { ImageMetadata } from 'astro';
@@ -44,19 +48,32 @@ const testimonios = await Promise.all(
  * las obras que no estén acá caen en su propia `portada`, así que agregar una
  * destacada en el contenido no rompe el build. */
 const fondoDestacada: Record<string, { imagen: ImageMetadata; alt: string }> = {
-  'el-canton': {
-    imagen: elCantonAerea,
-    alt: 'Vista aérea del barrio El Cantón Golf, Escobar, donde NEST construyó una vivienda premium',
-  },
-  'tacuari-1050': {
-    imagen: tacuari1,
-    alt: 'Edificio Tacuarí 1050, obra de NEST en CABA',
+  'el-aromo': {
+    imagen: elAromoAerea,
+    alt: 'Vista aérea de El Aromo, Escobar, donde NEST construyó una vivienda premium',
   },
   prune: {
     imagen: pruneHome,
-    alt: 'Local de PRUNE terminado por NEST, una de las 10 sucursales de la expansión',
+    alt: 'Local de PRÜNE terminado por NEST, una de las 10 sucursales de la expansión',
   },
 };
+
+/* OJO CON LAS CLAVES: son el `id` de la entrada, y el glob loader de Astro usa
+ * como `id` el `slug` del frontmatter cuando existe, NO el nombre del archivo.
+ * `tacuari-1050.md` declara `slug: tacuari-1051`, así que su id es
+ * `tacuari-1051`. Una clave que no matchea no rompe nada: cae al `??` de abajo
+ * y la tarjeta muestra la `portada` de la colección, en silencio. Ya pasó una
+ * vez (23/08/2026, al publicar la página propia de Tacuarí). Esta guarda lo
+ * convierte en error de build en vez de un cambio de foto que nadie nota. */
+const idsDestacadas = new Set(destacadas.map((o) => o.id));
+const clavesHuerfanas = Object.keys(fondoDestacada).filter((k) => !idsDestacadas.has(k));
+if (clavesHuerfanas.length) {
+  throw new Error(
+    `fondoDestacada tiene claves que no son id de ninguna obra destacada: ` +
+      `${clavesHuerfanas.join(', ')}. Los ids actuales son: ${[...idsDestacadas].join(', ')}. ` +
+      `Recordá que el id sale del \`slug\` del frontmatter si está definido.`,
+  );
+}
 
 const tipoLabel: Record<string, string> = {
   vivienda: 'Vivienda',
@@ -90,13 +107,13 @@ const serviciosHome: Servicio[] = [
   {
     titulo: 'Proyectos Corporativos',
     texto:
-      'Oficinas, locales y desarrollos comerciales. Cumplimos plazos ajustados sin interrumpir tu operación. 10 sucursales PRUNE en 40 días.',
+      'Oficinas y locales comerciales. Cumplimos plazos ajustados sin interrumpir tu operación. 10 sucursales PRÜNE en 40 días.',
     icono: 'corporativo',
   },
   {
     titulo: 'Dirección de Obra',
     texto:
-      'Asesoramiento técnico, control de presupuesto y gestión integral. Nos hacemos cargo del proceso para que vos te concentres en lo que importa.',
+      'Asesoramiento técnico, control de presupuesto y gestión integral. Nos hacemos cargo de supervisar, coordinar y controlar la ejecución de tu proyecto.',
     icono: 'direccion',
   },
 ];
@@ -120,7 +137,7 @@ const bloquesDeConfianza = [
 const seo = {
   title: 'NEST | Constructora premium en Zona Norte y CABA | Viviendas y proyectos',
   description:
-    'Constructora con +30 años, +80 proyectos y clientes como Google, WeWork y PRUNE. Viviendas premium y proyectos corporativos en Zona Norte y CABA. Consulta sin compromiso.',
+    'Constructora con +30 años, +80 proyectos y clientes como WeWork y PRÜNE. Viviendas premium y proyectos corporativos en Zona Norte y CABA. Consulta sin compromiso.',
 };
 ---
 
@@ -499,7 +516,7 @@ const seo = {
       {/* COPY PROVISIONAL — reemplazar por la redacción exacta del PDF p.14 (§5.1 Sección 6). */}
       <p class="mx-auto mt-10 max-w-2xl text-center text-[20px] leading-relaxed text-navy-700" data-reveal>
         Trabajamos para empresas que no dejan nada librado al azar. Si NEST pasó el filtro de una
-        compañía como Google, tu casa está en las mejores manos.
+        compañía como IRSA, tu obra está en las mejores manos.
       </p>
     </div>
   </section>
@@ -657,7 +674,7 @@ const seo = {
           el fondo sigue siendo oscuro. */}
       <div class="form-a-la-guia relative isolate overflow-hidden bg-navy" data-reveal>
         <Image
-          src={tacuariSanTelmo}
+          src={hormigonSombra}
           alt=""
           widths={[640, 960]}
           sizes="(min-width: 768px) 50vw, 100vw"

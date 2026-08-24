@@ -13,11 +13,13 @@ import GrillaValores from '@/components/astro/GrillaValores.astro';
  * (`m.data.foto`) y no de un import suelto. El bloque visual de la cabecera es
  * un plano navy sin archivo todavía, así que no importa ninguna imagen: cuando
  * se defina, la única real y horizontal disponible hoy es
- * `@/assets/obras/el-canton-aerea.jpg` — todas las `portada` de la colección son
+ * `@/assets/obras/el-aromo-aerea.jpg` — todas las `portada` de la colección son
  * placeholders navy con el cartel "REEMPLAZAR CON FOTO REAL" impreso (ver
  * docs/DEUDA-TECNICA.md §2.1 y §2.4). */
 import { Image } from 'astro:assets';
-import cabeceraImg from '@/assets/paginas/nosotros-cabecera.webp';
+/* Compartida con el bloque "quiénes somos" de la Home — ver la nota del
+ * import en index.astro (23/08/2026, deduplicación). */
+import cabeceraImg from '@/assets/paginas/obra-corporativa.webp';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -142,9 +144,17 @@ const personasLd = [
               negro por defecto / color en hover, mismo recurso que el resto de
               las fotos del sitio (GrillaLogos, TarjetaObra, TarjetaObraHover). */}
           <div class="cab-visual overflow-hidden">
+            {/* eager + fetchpriority alta (23/08/2026, auditoría de performance):
+                este bloque ocupa la mitad de la primera pantalla y es la LCP de
+                la ruta. Con el `loading="lazy"` que <Image> pone por defecto, el
+                preload scanner la salteaba y la descarga no arrancaba hasta
+                después del layout. */}
             <Image
               src={cabeceraImg}
               alt="Obra corporativa de NEST"
+              loading="eager"
+              fetchpriority="high"
+              decoding="sync"
               widths={[400, 640, 960, 1280]}
               sizes="(min-width: 768px) 50vw, 100vw"
               class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"

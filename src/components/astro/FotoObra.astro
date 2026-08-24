@@ -33,11 +33,20 @@ const { src, alt, sizes, prioridad = false, class: className } = Astro.props as 
 
     Los tres anchos cubren la grilla de /obras en sus tres breakpoints: 100vw en
     mobile, 50vw en sm y 33vw en lg. Galeria.astro ya lo hacía bien. */}
+{/* `fallbackFormat` (23/08/2026, auditoría de performance): <Picture> escribe
+    el <img> de fallback en el formato de la fuente, y al entrar las fotos
+    reales de design-v2 seis portadas pasaron a ser PNG. Eso emitía 27,4 MB de
+    PNG en dist/ —el 70% de todo el peso de imágenes— que ningún browser
+    moderno llega a bajar, porque el <source> avif matchea antes. Forzando jpeg
+    el deploy baja a una fracción y el browser sin avif/webp recibe un JPEG en
+    vez de un PNG fotográfico de 3 MB. No cambia lo que baja un browser
+    moderno: ese sigue eligiendo avif. */}
 <Picture
   src={src}
   alt={alt}
   widths={[400, 800, 1200]}
   formats={['avif', 'webp']}
+  fallbackFormat="jpeg"
   sizes={sizes}
   loading={prioridad ? 'eager' : 'lazy'}
   fetchpriority={prioridad ? 'high' : 'auto'}

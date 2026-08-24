@@ -8,14 +8,14 @@ import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import { Image } from 'astro:assets';
 import { whatsappUrl } from '@/data/site';
-import tacuariSanTelmo from '@/assets/contacto/tacuari-san-telmo.png';
+import hormigonSombra from '@/assets/contacto/hormigon-sombra.png';
 
 // Bloques de confianza PROVISIONALES — reemplazar por el copy del PDF pp.15-17
 // (§5.6: separar título y párrafo, que en el PDF vienen pegados).
 const bloques = [
   { titulo: 'Respuesta en el día', texto: 'En horario hábil respondemos tu consulta en el momento; siempre en menos de 24 horas hábiles.' },
   { titulo: 'Sin costo ni compromiso', texto: 'La primera consulta y el asesoramiento inicial no tienen costo. Nos contás tu proyecto y te orientamos.' },
-  { titulo: '+30 años de obra', texto: 'Ingeniería de nivel corporativo y arquitectura, con clientes como Google, WeWork y PRUNE.' },
+  { titulo: '+30 años de obra', texto: 'Ingeniería de nivel corporativo y arquitectura, con clientes como WeWork y PRÜNE.' },
 ];
 ---
 
@@ -90,12 +90,15 @@ const bloques = [
               de `--sangria-guia` que usa index.astro — el token es global
               (`:root` en global.css), así que el cálculo es idéntico acá.
 
-              Imagen: reutiliza `tacuari-san-telmo.png`, la misma que la Home.
-              No es un descarte por pereza: es la foto que ya funciona como
-              firma visual del bloque "formulario de consulta" en el resto del
-              sitio, y no hay en el repo otra imagen de obra pensada para este
-              recorte vertical con espacio para overlay de texto encima.
-              Repetirla refuerza la asociación en vez de diluirla.
+              Imagen: `hormigon-sombra.png`, la misma que la Home
+              (22/08/2026, reemplaza a `tacuari-san-telmo.png`, que se borró
+              del repo). Compartirla entre las dos páginas es a propósito: es
+              la firma visual del bloque "formulario de consulta" en todo el
+              sitio, y repetirla refuerza la asociación en vez de diluirla.
+              El encuadre —un detalle abstracto de hormigón cortado en
+              diagonal por una sombra— está pensado para este recorte vertical
+              con overlay de texto encima: no compite con el formulario como
+              lo haría una foto de obra reconocible.
 
               `FormularioConsulta` pasa a `sobreNavy` porque el fondo ahora es
               oscuro (foto + velo `bg-black/50`, mismo valor que el overlay del
@@ -103,7 +106,7 @@ const bloques = [
               bordes y placeholders para esta variante (ver su comentario). */}
           <div class="form-a-la-guia relative isolate overflow-hidden bg-navy" data-reveal>
             <Image
-              src={tacuariSanTelmo}
+              src={hormigonSombra}
               alt=""
               widths={[640, 960]}
               sizes="(min-width: 768px) 50vw, 100vw"

@@ -1,10 +1,22 @@
 ---
 /**
- * Tarjeta de obra de /obras (§5.4). Sin link (22/08/2026, pedido explícito):
- * ninguna tarjeta de esta grilla navega, todas hacen zoom-in en hover por
- * igual. Antes algunas eran <a> (paginaPropia o destacada) y solo esas tenían
- * zoom; ahora es siempre <div> y el zoom corre parejo en todas. Esto es
- * específico de esta vista — TarjetaObraHover.astro (Home) no cambia.
+ * Tarjeta de obra de /obras (§5.4).
+ *
+ * LINK (23/08/2026, pedido explícito): las obras con página propia vuelven a
+ * navegar al caso. El 22/08 se habían sacado TODOS los links de esta grilla
+ * porque solo algunas tarjetas eran `<a>` y el zoom-in de hover corría
+ * únicamente en esas, así que la grilla se comportaba distinto según la
+ * tarjeta. Eso se resuelve aparte y se mantiene: el `group` y el zoom viven
+ * ahora en el wrapper pase lo que pase, así que TODAS las tarjetas siguen
+ * haciendo el mismo hover, enlacen o no. Lo único que cambia entre una y otra
+ * es si el wrapper es `<a>` o `<div>`.
+ *
+ * Hoy enlazan tres: PRÜNE, El Aromo y Tacuarí 1051. Las destacadas sin página
+ * propia YA NO linkean a /obras —estando en /obras, era un link a sí misma—,
+ * que es la única parte de la regla vieja que no se restituye.
+ *
+ * Específico de esta vista: TarjetaObraHover.astro (Home) no comparte código
+ * ni criterio con esta.
  */
 import FotoObra from '@/components/astro/FotoObra.astro';
 import { tipoLabel } from '@/data/obras';
@@ -18,10 +30,19 @@ interface Props {
 const { obra, sizes = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw' } =
   Astro.props as Props;
 const d = obra.data;
+
+const href = d.paginaPropia && d.slug ? `/obras/${d.slug}` : null;
+const Tag = href ? 'a' : 'div';
 ---
 
 <article>
-  <div class="group block">
+  <Tag
+    href={href}
+    data-evento={href ? 'obra_card_click' : undefined}
+    data-evento-obra={href ? d.nombre : undefined}
+    data-evento-tipo={href ? d.tipo : undefined}
+    class="group block"
+  >
     <div class="aspect-[4/3] overflow-hidden bg-navy">
       <FotoObra
         src={d.portada}
@@ -36,5 +57,5 @@ const d = obra.data;
         {tipoLabel[d.tipo]} · {d.zona}
       </p>
     </div>
-  </div>
+  </Tag>
 </article>

@@ -1,5 +1,6 @@
-// Genera imágenes PLACEHOLDER on-brand (navy) para poder construir y revisar el
-// sitio sin las fotos reales. Se reemplazan por las fotos reales antes del launch
+// Genera las imágenes PLACEHOLDER on-brand (navy) que todavía quedan: las
+// galerías de los tres casos con página propia. Sirven para poder construir y
+// revisar el sitio sin las fotos reales. Se reemplazan por las fotos reales antes del launch
 // (mismo nombre de archivo). NO son contenido final. Correr: node scripts/gen-placeholders.mjs
 import sharp from 'sharp';
 import { mkdir } from 'node:fs/promises';
@@ -38,28 +39,34 @@ async function gen(path, w, h, title, sub) {
 
 await mkdir(OBRAS, { recursive: true });
 
-const obras = [
-  ['prune', 'PRUNE', 'RETAIL CORPORATIVO'],
-  ['el-canton', 'EL CANTÓN GOLF', 'VIVIENDA · ESCOBAR'],
-  ['google-wework', 'GOOGLE / WEWORK', 'CORPORATIVO · CABA'],
-  ['fabric-sushi', 'FABRIC SUSHI', 'CORPORATIVO · BUENOS AIRES'],
-  ['tacuari-1050', 'TACUARÍ 1050', 'EDIFICIO · CABA'],
-  ['nordelta', 'NORDELTA', 'VIVIENDA · TIGRE'],
-  ['san-isidro', 'SAN ISIDRO', 'VIVIENDA'],
-  ['uade', 'UADE', 'CORPORATIVO · CABA'],
-  ['irsa', 'IRSA', 'CORPORATIVO · CABA'],
-  ['santa-barbara', 'BARRIO SANTA BÁRBARA', 'VIVIENDA · PILAR'],
-  ['nordelta-golf', 'NORDELTA GOLF', 'VIVIENDA · TIGRE'],
+/* PORTADAS: ya no se generan (23/08/2026). Con las fotos reales que entraron
+ * en design-v2, las 12 obras de la colección apuntan a una imagen real, así
+ * que este bloque solo producía archivos que no referenciaba nadie. Si vuelve
+ * a hacer falta una portada provisional para una obra nueva, la receta es la
+ * misma que abajo: `gen(`${OBRAS}<slug>-portada.jpg`, 1200, 900, TITULO, SUB)`.
+ *
+ * Lo único que sigue siendo placeholder son las galerías de los tres casos con
+ * página propia, acá abajo. */
+
+/* Galerías de los casos con página propia. El schema de la colección exige
+ * mínimo 8 fotos cuando `paginaPropia: true` (ver el superRefine de
+ * content.config.ts), así que sin estas ocho el build de esas páginas no pasa.
+ *
+ * `tacuari-1050` conserva el prefijo viejo a propósito: el .md, la portada y
+ * estos archivos siguen nombrados 1050 aunque la obra se muestre como
+ * "Tacuarí 1051" y su URL sea /obras/tacuari-1051. Se cambió el texto visible,
+ * no los identificadores internos (22/08/2026). */
+const galerias = [
+  ['prune', 'PRÜNE', (i) => `SUCURSAL ${i}`],
+  ['el-aromo', 'EL AROMO', (i) => `VISTA ${i}`],
+  ['tacuari-1050', 'TACUARÍ 1051', (i) => `VISTA ${i}`],
 ];
 
-console.log('Portadas de obra:');
-for (const [slug, title, sub] of obras) {
-  await gen(`${OBRAS}${slug}-portada.jpg`, 1200, 900, title, sub);
-}
-
-console.log('Galería PRUNE (8):');
-for (let i = 1; i <= 8; i++) {
-  await gen(`${OBRAS}prune-${String(i).padStart(2, '0')}.jpg`, 1200, 900, 'PRUNE', `SUCURSAL ${i}`);
+for (const [slug, title, sub] of galerias) {
+  console.log(`Galería ${title} (8):`);
+  for (let i = 1; i <= 8; i++) {
+    await gen(`${OBRAS}${slug}-${String(i).padStart(2, '0')}.jpg`, 1200, 900, title, sub(i));
+  }
 }
 
 console.log('Poster del hero:');

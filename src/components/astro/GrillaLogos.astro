@@ -31,25 +31,41 @@ const { class: className } = Astro.props as Props;
  * mostrar (18/08/2026, pedido explícito: "añademe... el logo_08"). */
 const ocultos = new Set<string>([]);
 
+/* Google salió del sitio (22/08/2026, pedido del cliente): antes se insertaba
+ * `/logos/logo_google.svg` en la posición 6 con un splice. A diferencia de
+ * `ocultos`, acá el asset se borró: el pedido fue sacar la marca, no ocultarla.
+ *
+ * Quedan pendientes los logos de Perramus y SPI Astilleros; con esos dos la
+ * grilla pasaría a 14 celdas. Hoy son 12 (10 numeradas + Subway + Fabric
+ * Sushi), que cierran filas exactas en los dos breakpoints: 6 × 2 en mobile,
+ * 3 × 4 en desktop. */
+
 const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, '0'))
   .filter((n) => !ocultos.has(n))
   .map((n) => ({
     src: `/logos/logo_${n}.svg`,
     alt: `Logo de cliente corporativo de NEST (${n})`,
   }));
-/* Google reemplazado por el archivo nuevo (18/08/2026, pedido explícito) —
- * mismo path `/logos/logo_google.svg`, así que no hace falta tocar nada más
- * que el contenido del SVG en `public/logos/`. Subway se suma al lado
- * (18/08/2026, pedido explícito). */
-logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
-logosReales.splice(6, 0, { src: '/logos/logo_subway.svg', alt: 'Logo de Subway' });
+/* Subway (18/08/2026, pedido explícito). Ocupa la posición que hasta el
+ * 22/08/2026 tenía Google, que iba justo antes con otro splice. */
+logosReales.splice(5, 0, { src: '/logos/logo_subway.svg', alt: 'Logo de Subway' });
+
+/* Fabric Sushi (23/08/2026, pedido explícito). Único logo en PNG y no SVG: es
+ * el archivo que publica la marca. Venía blanco puro sobre transparente
+ * —invisible contra el fondo blanco de esta sección—, así que se recoloreó a
+ * #5A636E, un gris frío cuya luminancia (98) es la media de los otros logos ya
+ * pasados por el `grayscale` de la grilla, medida sobre el render real.
+ * OJO con el hover: la clase es la misma que en el resto, pero al ser un arte
+ * monocromo no hay color de marca que restituir, así que el efecto no se ve.
+ * Si aparece una versión a color del logo, reemplazar el archivo alcanza. */
+logosReales.splice(6, 0, { src: '/logos/logo_fabric-sushi.png', alt: 'Logo de Fabric Sushi' });
 
 /* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
  * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
  * mide solo su padding, así que las filas dejaban de ser uniformes y el
  * reticulado —que reparte porcentajes iguales— se desalineaba de los logos.
- * Con las celdas justas, mobile da 5 filas exactas (10/2) y desktop 3 (⌈10/4⌉),
- * y `auto-rows-fr` en la grilla garantiza que todas midan igual. */
+ * Con las celdas justas, mobile da ⌈n/2⌉ filas y desktop ⌈n/4⌉ sobre el total
+ * real de logos, y `auto-rows-fr` garantiza que todas midan igual. */
 const celdas = logosReales;
 
 /* Las dos extensiones que salen de la grilla se difuminan hacia el borde del
