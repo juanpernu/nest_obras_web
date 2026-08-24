@@ -17,7 +17,9 @@ import GrillaValores from '@/components/astro/GrillaValores.astro';
  * placeholders navy con el cartel "REEMPLAZAR CON FOTO REAL" impreso (ver
  * docs/DEUDA-TECNICA.md §2.1 y §2.4). */
 import { Image } from 'astro:assets';
-import cabeceraImg from '@/assets/paginas/nosotros-cabecera.webp';
+/* Compartida con el bloque "quiénes somos" de la Home — ver la nota del
+ * import en index.astro (23/08/2026, deduplicación). */
+import cabeceraImg from '@/assets/paginas/obra-corporativa.webp';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 

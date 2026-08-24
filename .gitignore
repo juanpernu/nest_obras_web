@@ -34,3 +34,8 @@ pnpm-debug.log*
 
 # git worktrees creados por Claude Code
 .claude/worktrees/
+
+# Material fuente del cliente (fotos originales, video, logos). No lo consume
+# el build: lo que el sitio usa vive en src/assets/ y public/. Se sacó de git
+# el 23/08/2026 porque eran 113 MB versionados que nadie servía.
+assets/

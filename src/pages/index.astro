@@ -13,11 +13,15 @@ import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import type { Servicio } from '@/components/astro/GrillaServicios.astro';
 import elAromoAerea from '@/assets/obras/el-aromo-aerea.jpg';
-import tacuari1 from '../../assets/img/tacuari1.png';
 import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
 import TimelineContacto from '@/components/astro/TimelineContacto.astro';
-import quienesSomosImg from '@/assets/intro/servicios.webp';
+/* Compartida con la cabecera de /nosotros (23/08/2026): antes existía dos
+ * veces en el repo, byte por byte igual, como `intro/servicios.webp` acá y
+ * `paginas/nosotros-cabecera.webp` allá. Se unificó bajo un nombre que
+ * describe la foto y no el lugar donde se usa. El `alt` sí es distinto en
+ * cada página, porque el contexto de lectura es distinto. */
+import quienesSomosImg from '@/assets/paginas/obra-corporativa.webp';
 import hormigonSombra from '@/assets/contacto/hormigon-sombra.png';
 import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
@@ -48,15 +52,28 @@ const fondoDestacada: Record<string, { imagen: ImageMetadata; alt: string }> = {
     imagen: elAromoAerea,
     alt: 'Vista aérea de El Aromo, Escobar, donde NEST construyó una vivienda premium',
   },
-  'tacuari-1050': {
-    imagen: tacuari1,
-    alt: 'Edificio Tacuarí 1051, obra de NEST en CABA',
-  },
   prune: {
     imagen: pruneHome,
     alt: 'Local de PRÜNE terminado por NEST, una de las 10 sucursales de la expansión',
   },
 };
+
+/* OJO CON LAS CLAVES: son el `id` de la entrada, y el glob loader de Astro usa
+ * como `id` el `slug` del frontmatter cuando existe, NO el nombre del archivo.
+ * `tacuari-1050.md` declara `slug: tacuari-1051`, así que su id es
+ * `tacuari-1051`. Una clave que no matchea no rompe nada: cae al `??` de abajo
+ * y la tarjeta muestra la `portada` de la colección, en silencio. Ya pasó una
+ * vez (23/08/2026, al publicar la página propia de Tacuarí). Esta guarda lo
+ * convierte en error de build en vez de un cambio de foto que nadie nota. */
+const idsDestacadas = new Set(destacadas.map((o) => o.id));
+const clavesHuerfanas = Object.keys(fondoDestacada).filter((k) => !idsDestacadas.has(k));
+if (clavesHuerfanas.length) {
+  throw new Error(
+    `fondoDestacada tiene claves que no son id de ninguna obra destacada: ` +
+      `${clavesHuerfanas.join(', ')}. Los ids actuales son: ${[...idsDestacadas].join(', ')}. ` +
+      `Recordá que el id sale del \`slug\` del frontmatter si está definido.`,
+  );
+}
 
 const tipoLabel: Record<string, string> = {
   vivienda: 'Vivienda',
