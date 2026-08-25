@@ -13,7 +13,7 @@ slug: prune
 seo:
   titulo: "Caso PRÜNE: 10 sucursales en 40 días | NEST"
   descripcion: "NEST construyó 10 sucursales de PRÜNE en 40 días con turnos de 24 horas. Obra de retail corporativo en CABA, GBA e interior del país."
-headline: "10 sucursales. 40 días. 24 horas."
+headline: "10 sucursales / 40 días / 24 hrs"
 subtitulo: "Cómo NEST ejecutó la expansión retail de PRÜNE cumpliendo un plazo corporativo."
 ficha:
   - clave: "Cliente"
@@ -31,22 +31,14 @@ ficha:
   - clave: "Ubicación"
     valor: "CABA, GBA e interior del país"
 galeria:
-  - src: ../../assets/obras/prune-01.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — vista general del local"
-  - src: ../../assets/obras/prune-02.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — terminaciones interiores"
-  - src: ../../assets/obras/prune-03.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — vidriera y frente"
-  - src: ../../assets/obras/prune-04.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — sector de atención"
-  - src: ../../assets/obras/prune-05.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — mobiliario de marca"
-  - src: ../../assets/obras/prune-06.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — iluminación y cielorraso"
-  - src: ../../assets/obras/prune-07.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — depósito y trastienda"
-  - src: ../../assets/obras/prune-08.jpg
-    alt: "Imagen provisoria — Sucursal PRÜNE construida por NEST — detalle de terminación"
+  - src: ../../assets/obras/prune-vista-general.png
+    alt: "Sucursal PRÜNE construida por NEST — vista general del local"
+  - src: ../../assets/obras/prune-vidriera-carteras.png
+    alt: "Sucursal PRÜNE construida por NEST — vidriera con exhibidores de carteras y calzado"
+  - src: ../../assets/obras/prune-vidriera-temporada.png
+    alt: "Sucursal PRÜNE construida por NEST — vidriera con maniquíes y ambientación de temporada"
+  - src: ../../assets/obras/prune-vidriera-montaje.png
+    alt: "Sucursal PRÜNE construida por NEST — vidriera en montaje final con exhibidores de carteras"
 ---
 
 <!-- COPY DEL CASO PROVISIONAL — reemplazar la prosa por la redacción exacta del

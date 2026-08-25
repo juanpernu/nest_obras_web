@@ -135,7 +135,7 @@ const personasLd = [
           <CabeceraPagina
             sinContenedor
             eyebrow="Quiénes somos"
-            titulo="Más de 30 años construyendo lo que prometemos"
+            titulo="Más de 30 años construyendo"
             bajada="NEST nació de la convicción de que construir una casa merece el mismo nivel de gestión, rigor técnico y atención al cliente que los proyectos corporativos más exigentes. Fundada hace más de 30 años, combinamos el respaldo de la ingeniería con la sensibilidad de la arquitectura para entregar obras que cumplen lo que prometen: plazo, presupuesto y calidad. No hacemos promesas que no podemos cumplir. Y lo que prometemos, lo entregamos."
           />
 
@@ -270,7 +270,7 @@ const personasLd = [
     <FranjaRayado />
 
     <MarcoSeccion>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="bg-white pt-20 md:pt-[120px]">
         <div class="mx-auto max-w-6xl px-6">
           <div data-reveal>
             <Eyebrow class="mb-2.5">Proceso</Eyebrow>
@@ -310,13 +310,26 @@ const personasLd = [
               acá los números sí son dato y no ornamento, a diferencia de los
               bloques de /contacto. Toda la geometría (reticulado, spans,
               sangría a las guías, escuadras) vive en GrillaProceso.astro. */}
-          <GrillaProceso pasos={proceso} class="mt-12" data-reveal />
         </div>
+        {/* FUSIONADO CON EL MARCO DE PÁGINA (25/08/2026, pedido directo: mismo
+            criterio que el bento de Modalidades y la grilla de logos en
+            /servicios). El `<GrillaProceso>` sale del `mx-auto max-w-6xl px-6`
+            de arriba —es hermano directo de la `<section>`, no queda anidado—
+            porque adentro de ese contenedor la vieja sangría con
+            `--sangria-guia` solo cancelaba el `px-6`: en pantallas más anchas
+            que `--container-6xl` seguía quedando el hueco de centrado del
+            `max-w-6xl` y el reticulado se paraba corto de la guía real, con
+            aire de sobra a los costados. Ahora `.gp-marco` (en
+            GrillaProceso.astro) redefine `--marco-x` con el mismo cálculo que
+            `MarcoSeccion` y lo usa como `margin-inline`, así se funde exacto
+            con esa guía en cualquier ancho, igual que el resto de los marcos
+            de la página. */}
+        <GrillaProceso pasos={proceso} class="mt-12" data-reveal />
       </section>
     </MarcoSeccion>
 
     <MarcoSeccion cierra>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="bg-white pt-20 md:pt-[120px]">
         <div class="mx-auto max-w-6xl px-6">
           <div data-reveal>
             <Eyebrow class="mb-2.5">Valores</Eyebrow>

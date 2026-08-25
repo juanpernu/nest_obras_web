@@ -12,7 +12,7 @@ import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import type { Servicio } from '@/components/astro/GrillaServicios.astro';
-import elAromoAerea from '@/assets/obras/el-aromo-aerea.jpg';
+import elAromo5 from '@/assets/obras/el-aromo-5.png';
 import tacuari1 from '@/assets/obras/tacuari-1050-1.jpg';
 import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
@@ -50,8 +50,8 @@ const testimonios = await Promise.all(
  * destacada en el contenido no rompe el build. */
 const fondoDestacada: Record<string, { imagen: ImageMetadata; alt: string }> = {
   'el-aromo': {
-    imagen: elAromoAerea,
-    alt: 'Vista aérea de El Aromo, Escobar, donde NEST construyó una vivienda premium',
+    imagen: elAromo5,
+    alt: 'Fachada y pileta de El Aromo, Escobar, donde NEST construyó una vivienda premium',
   },
   'tacuari-1051': {
     imagen: tacuari1,

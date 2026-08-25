@@ -46,28 +46,99 @@ interface Props {
    * Sacarla de acá o duplicar el string en la página es lo que rompe la métrica.
    */
   sinContenedor?: boolean;
+  /**
+   * Entrada escalonada (25/08/2026, pedido puntual de `/obras/[id]`): eyebrow,
+   * h1 y bajada animan por separado con delay creciente en vez de moverse
+   * juntos como un solo bloque — mismo mecanismo que el hero de la Home
+   * (`reveal-up`, con el delay como SEGUNDO valor del shorthand de
+   * `animation`, no `transition-delay`: acá no hay transición, ese delay no
+   * haría nada — ver el comentario del hero en index.astro).
+   *
+   * OPT-IN a propósito, no cambio de default: `/nosotros`, `/servicios`,
+   * `/contacto` y `/obras` siguen con el bloque único sin tocar.
+   */
+  escalonado?: boolean;
 }
 
-const { eyebrow, titulo, bajada, sinContenedor = false } = Astro.props as Props;
+const { eyebrow, titulo, bajada, sinContenedor = false, escalonado = false } = Astro.props as Props;
 
 /** `/obras/[id]` antepone migas de pan; el resto de las páginas no. */
 const conMigas = Astro.slots.has('migas');
 const claseEyebrow = conMigas ? 'mt-6 mb-2.5' : 'mb-2.5';
 ---
 
-<div
-  class:list={[
-    !sinContenedor && 'mx-auto max-w-6xl px-6',
-    'opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100',
-  ]}
->
-  <slot name="migas" />
-  <Eyebrow class={claseEyebrow}>{eyebrow}</Eyebrow>
-  <h1 class="max-w-[900px] text-h1 font-medium text-navy">{titulo}</h1>
-  <div class="mt-4 h-0.5 w-32 bg-arena" aria-hidden="true"></div>
+<div class:list={[!sinContenedor && 'mx-auto max-w-6xl px-6']}>
   {
-    bajada && (
-      <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">{bajada}</p>
+    escalonado ? (
+      <>
+        <div class="opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100">
+          <slot name="migas" />
+          <Eyebrow class={claseEyebrow}>{eyebrow}</Eyebrow>
+        </div>
+        <h1 class="max-w-[900px] text-h1 font-medium text-navy opacity-0 motion-safe:animate-[reveal-up_0.7s_0.25s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100">
+          <span class="subrayado-hero subrayado-hero--escalonado inline-block">{titulo}</span>
+        </h1>
+        {bajada && (
+          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700 opacity-0 motion-safe:animate-[reveal-up_0.7s_0.5s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100">
+            {bajada}
+          </p>
+        )}
+      </>
+    ) : (
+      <div class="opacity-0 motion-safe:animate-[reveal-up_0.7s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100">
+        <slot name="migas" />
+        <Eyebrow class={claseEyebrow}>{eyebrow}</Eyebrow>
+        <h1 class="max-w-[900px] text-h1 font-medium text-navy">
+          <span class="subrayado-hero inline-block">{titulo}</span>
+        </h1>
+        {bajada && (
+          <p class="mt-6 max-w-[680px] text-lg font-light leading-relaxed text-navy-700">
+            {bajada}
+          </p>
+        )}
+      </div>
     )
   }
 </div>
+
+<style>
+  /* Subrayado que cubre el headline completo (25/08/2026): mismo mecanismo que
+   * el hero de la Home (`.subrayado-hero` + keyframe `hero-rule` de
+   * global.css), pero envolviendo todo el texto del h1 en vez de solo una
+   * porción final — acá no hay un cierre a destacar, es el título entero.
+   * Reemplaza a la línea estática que antes iba debajo del h1 en un div
+   * aparte. El delay (0.7s) arranca justo cuando termina el reveal-up del
+   * bloque completo (0.7s, sin delay propio), para que el trazo se dibuje
+   * después de que el título ya es visible.
+   *
+   * Variante `--escalonado` (25/08/2026): en la entrada escalonada el propio
+   * h1 ya lleva 0.25s de delay + 0.7s de duración (ver arriba), así que el
+   * trazo tiene que arrancar 0.25s más tarde que en la versión de bloque
+   * único: 0.95s en vez de 0.7s. */
+  .subrayado-hero {
+    position: relative;
+  }
+
+  .subrayado-hero::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.14em;
+    height: 3px;
+    background-color: var(--color-arena);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: hero-rule 1s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .subrayado-hero--escalonado::after {
+    animation-delay: 0.95s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .subrayado-hero::after {
+      animation: none;
+      transform: scaleX(1);
+    }
+  }
+</style>

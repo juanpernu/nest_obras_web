@@ -20,22 +20,18 @@ ficha:
   - clave: "Ubicación"
     valor: "Tacuarí 1051, CABA"
 galeria:
-  - src: ../../assets/obras/tacuari-1050-01.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — vista general"
-  - src: ../../assets/obras/tacuari-1050-02.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — frente sobre la calle"
-  - src: ../../assets/obras/tacuari-1050-03.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — acceso y hall"
-  - src: ../../assets/obras/tacuari-1050-04.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — unidad terminada"
-  - src: ../../assets/obras/tacuari-1050-05.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — cocina de unidad"
-  - src: ../../assets/obras/tacuari-1050-06.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — baño y terminaciones"
-  - src: ../../assets/obras/tacuari-1050-07.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — espacios comunes"
-  - src: ../../assets/obras/tacuari-1050-08.jpg
-    alt: "Imagen provisoria — Edificio Tacuarí 1051 construido por NEST — detalle de terminación"
+  - src: ../../assets/obras/tacuari-1050-1.jpg
+    alt: "Terraza en la azulea del edificio Tacuarí 1051, con living exterior y parrilla de plantas"
+  - src: ../../assets/obras/tacuari-1050-portada.png
+    alt: "Fachada del edificio Tacuarí 1051 en San Telmo, con balcones vidriados y curtain wall de madera"
+  - src: ../../assets/obras/tacuari-1050-vista-ciudad.png
+    alt: "Vista de San Telmo desde el ventanal en altura de una unidad del edificio Tacuarí 1051"
+  - src: ../../assets/obras/tacuari-1050-living-balcon.png
+    alt: "Living con doble altura, escalera suspendida y balcón hacia el arbolado, en una unidad del edificio Tacuarí 1051"
+  - src: ../../assets/obras/tacuari-1050-duplex-escalera.png
+    alt: "Unidad dúplex del edificio Tacuarí 1051, con escalera de madera y entrepiso hacia el living-comedor"
+  - src: ../../assets/obras/tacuari-1050-escalera-balcon.png
+    alt: "Escalera de madera y balcón vidriado hacia el arbolado, en una unidad del edificio Tacuarí 1051"
 ---
 
 <!-- CONTENIDO PROVISIONAL (23/08/2026) — la página se publicó con la estructura
@@ -54,12 +50,9 @@ galeria:
      se cambió el texto visible a 1051 y no los identificadores internos; la URL
      pública sí es /obras/tacuari-1051.
 
-     FOTOS: las 8 de la galería son los placeholders navy de
-     scripts/gen-placeholders.mjs. Reemplazar por las reales con el MISMO
-     nombre de archivo. En el repo hay dos imágenes reales que podrían ser de
-     esta obra: `assets/img/tacuari1.png` (la que usa la Home como fondo de la
-     tarjeta) y `assets/img/DESARROLLOS INMOBILIARIO - COMPLETOS/TACUARI, SAN
-     TELMO.png`. Confirmar que sean de este desarrollo antes de usarlas. -->
+     FOTOS: reemplazadas el 25/08/2026 por 6 fotos reales de la obra
+     (`tacuari-1050-1.jpg` y `tacuari-1050-{portada,vista-ciudad,living-balcon,
+     duplex-escalera,escalera-balcon}.png`). -->
 
 ## El Desafío
 

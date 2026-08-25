@@ -72,4 +72,17 @@ for (const [slug, title, sub] of galerias) {
 console.log('Poster del hero:');
 await gen(`${PUBLIC}hero-poster.jpg`, 1920, 1080, 'NEST', 'CONSTRUCTORA');
 
+/* Placeholder "antes" del slider antes/después en /obras/[id] (25/08/2026).
+ * Ninguna de las 3 obras con página propia tiene foto real del estado previo
+ * a la intervención, así que el lado "antes" del slider usa esta imagen
+ * navy genérica hasta que haya fotos reales de obra en proceso. El lado
+ * "después" sí usa `d.portada` (foto real). */
+for (const [slug, title] of [
+  ['prune', 'PRÜNE'],
+  ['el-aromo', 'EL AROMO'],
+  ['tacuari-1050', 'TACUARÍ 1051'],
+]) {
+  await gen(`${OBRAS}${slug}-antes.jpg`, 1200, 900, title, 'ANTES');
+}
+
 console.log('Listo.');

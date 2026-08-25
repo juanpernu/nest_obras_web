@@ -33,14 +33,23 @@
  * columnas NO son uniformes —3+3 arriba, 2+2+2 abajo— y los porcentajes
  * hardcodeados serían frágiles.
  *
- * SANGRÍA A LAS GUÍAS: el rectángulo muere sobre las guías verticales de página
- * en vez de flotar adentro de la columna de contenido, con la técnica de
- * `TimelineContacto` (`--sangria-guia`, dos regímenes por media query — ver
- * `global.css`). Acá no hace falta reponer el margen con padding como allá: las
- * celdas ya tienen su propio padding, que es lo que separa el texto del trazo.
- * El `border-right` de la última columna cae en el mismo píxel que la guía
- * derecha, no adyacente, porque un `border-right` pinta hacia adentro de la
- * caja — que es justo la razón por la que `GrillaLogos` tuvo que anclar su
+ * FUSIONADO CON EL MARCO DE PÁGINA (25/08/2026, corregido a pedido directo):
+ * el rectángulo muere sobre las mismas guías que las escuadras de
+ * `MarcoSeccion`, no sobre las de `TimelineContacto`. La versión anterior
+ * sangraba con `--sangria-guia` (pensada para un elemento anidado en un
+ * `mx-auto max-w-6xl px-6`, cancelando ese `px-6`) pero en pantallas más
+ * anchas que `--container-6xl` quedaba corta: el hueco de centrado del
+ * `max-w-6xl` no es ese padding, así que el reticulado se frenaba antes de la
+ * guía real con aire de sobra a los costados. Ahora `<GrillaProceso>` se monta
+ * como hermano directo de la `<section>` (fuera del `max-w-6xl px-6` de
+ * `nosotros.astro`) y `.gp-marco` redefine `--marco-x` con el MISMO cálculo
+ * que `MarcoSeccion`, así el borde se funde exacto con esa guía en cualquier
+ * ancho — el mismo criterio ya aplicado al bento de Modalidades y a
+ * `GrillaLogos` en `servicios.astro`. Acá no hace falta reponer el margen con
+ * padding: las celdas ya tienen el suyo, que es lo que separa el texto del
+ * trazo. El `border-right` de la última columna cae en el mismo píxel que la
+ * guía derecha, no adyacente, porque un `border-right` pinta hacia adentro de
+ * la caja — que es justo la razón por la que `GrillaLogos` tuvo que anclar su
  * última vertical con `right: 0` en vez de `left: 100%` (ver su L96-104).
  *
  * Cero `100vw` en el archivo: cuenta el ancho de la barra de scroll y mete
@@ -103,11 +112,13 @@ const anchos = ['ancha', 'ancha', 'angosta', 'angosta', 'angosta'] as const;
 </div>
 
 <style>
-  /* Sangría a las dos guías de página. No lleva `padding` que reponga el
-   * margen —a diferencia de `.tl-lista`/`.tl-fila` en TimelineContacto— porque
-   * lo que separa el texto del trazo es el padding de cada celda. */
+  /* Mismo cálculo que `--marco-x` en `MarcoSeccion`: el componente se monta
+   * como hermano directo de la `<section>` que lo envuelve (mide el 100% del
+   * ancho real), así que esto lo detiene exacto sobre la guía del marco en
+   * vez de sangrar hasta el borde del viewport. */
   .gp-marco {
-    margin-inline: calc(-1 * var(--sangria-guia));
+    --marco-x: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+    margin-inline: var(--marco-x);
   }
 
   /* Mobile: una sola columna. Cada paso es una franja a todo el ancho y el

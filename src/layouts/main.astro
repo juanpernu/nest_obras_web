@@ -291,4 +291,13 @@ const grafo = {
       elementos.forEach((el) => observador.observe(el));
     }
   }
+
+  // Tap-to-color: en hover:none (touch) el filtro grayscale no tiene forma de
+  // sacarse con :hover, así que un click/tap lo alterna a mano. En desktop
+  // (hover: hover) no se agrega ningún listener y queda solo el CSS.
+  if (window.matchMedia('(hover: none)').matches) {
+    document.querySelectorAll<HTMLImageElement>('img.grayscale').forEach((img) => {
+      img.addEventListener('click', () => img.classList.toggle('grayscale'));
+    });
+  }
 </script>

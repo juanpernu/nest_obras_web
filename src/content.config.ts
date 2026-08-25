@@ -63,10 +63,10 @@ const obras = defineCollection({
           });
         }
 
-        if ((obra.galeria?.length ?? 0) < 8) {
+        if ((obra.galeria?.length ?? 0) < 4) {
           ctx.addIssue({
             code: 'custom',
-            message: `"${obra.nombre}" tiene ${obra.galeria?.length ?? 0} fotos. Mínimo 8.`,
+            message: `"${obra.nombre}" tiene ${obra.galeria?.length ?? 0} fotos. Mínimo 4.`,
           });
         }
 

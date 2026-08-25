@@ -4,7 +4,7 @@ zona: "Escobar, Zona Norte"
 localidad: Escobar
 tipo: vivienda
 orden: 2
-portada: ../../assets/obras/el-aromo-portada.png
+portada: ../../assets/obras/el-aromo-5.png
 portadaAlt: "Vivienda premium en El Aromo, Escobar, construida por NEST"
 destacadaEnHome: true
 paginaPropia: true
@@ -20,22 +20,16 @@ ficha:
   - clave: "Ubicación"
     valor: "Escobar, Zona Norte"
 galeria:
-  - src: ../../assets/obras/el-aromo-01.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — vista general"
-  - src: ../../assets/obras/el-aromo-02.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — frente"
-  - src: ../../assets/obras/el-aromo-03.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — living"
-  - src: ../../assets/obras/el-aromo-04.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — cocina"
-  - src: ../../assets/obras/el-aromo-05.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — dormitorio principal"
-  - src: ../../assets/obras/el-aromo-06.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — baño y terminaciones"
-  - src: ../../assets/obras/el-aromo-07.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — galería y exterior"
-  - src: ../../assets/obras/el-aromo-08.jpg
-    alt: "Imagen provisoria — Vivienda en El Aromo construida por NEST — detalle de terminación"
+  - src: ../../assets/obras/el-aromo-encofrado-muros.jpg
+    alt: "Encofrado de madera para los muros de hormigón de la vivienda en El Aromo, Escobar"
+  - src: ../../assets/obras/el-aromo-armado-losa.jpg
+    alt: "Armado de hierros para la losa de fundación de la vivienda en El Aromo, Escobar"
+  - src: ../../assets/obras/el-aromo-vista-aerea-obra.jpg
+    alt: "Vista aérea de la obra en construcción de la vivienda en El Aromo, Escobar"
+  - src: ../../assets/obras/el-aromo-colado-hormigon.jpg
+    alt: "Colado de hormigón sobre la parrilla de hierros de la vivienda en El Aromo, Escobar"
+  - src: ../../assets/obras/el-aromo-vivienda-terminada.png
+    alt: "Vivienda terminada en El Aromo, Escobar, con piscina y jardín"
 ---
 
 <!-- CONTENIDO PROVISIONAL (23/08/2026) — la página se publicó con la estructura
