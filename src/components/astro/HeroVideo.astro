@@ -35,7 +35,16 @@
  * el poster, en cualquier ancho. El orden de los <source> importa: el
  * navegador usa el PRIMERO que matchea, así que el de mobile va primero.
  *
- * El LCP es el <h1>: `preload="none"` + poster.
+ * El LCP es el <h1>: preload reducido + poster.
+ *
+ * Bug de Safari (25/08/2026): `preload="none"` + `autoplay` en WebKit puede
+ * nunca disparar la carga real del video — se queda parado en el poster para
+ * siempre (bug conocido de WebKit; en Chrome funciona bien). La solución es
+ * `preload="metadata"` en vez de `"none"`: eso le da a Safari la señal que le
+ * faltaba para arrancar la carga con autoplay, y solo trae los metadatos +
+ * primeros bytes del archivo (unos pocos KB), no el video completo — el
+ * budget de performance que motivó sacar `preload` en primer lugar sigue
+ * intacto.
  *
  * NO LLEVA `data-evento="video_play"` A PROPÓSITO. Es un video decorativo con
  * `autoplay muted` y `aria-hidden`: el evento `play` se dispara solo al cargar la
@@ -56,7 +65,7 @@ const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props
 
 <video
   poster={poster}
-  preload="none"
+  preload="metadata"
   autoplay
   muted
   playsinline

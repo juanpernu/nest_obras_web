@@ -13,6 +13,7 @@ import { site } from '@/data/site';
 import heroFont from '@fontsource/roboto-condensed/files/roboto-condensed-latin-300-normal.woff2?url';
 import Nav from '@/components/astro/Nav.astro';
 import Footer from '@/components/astro/Footer.astro';
+import BotonFlotanteWhatsapp from '@/components/astro/BotonFlotanteWhatsapp.astro';
 // Toolbar de anotaciones (solo desarrollo). Es el ÚNICO `client:*` del proyecto y
 // existe detrás de `import.meta.env.DEV`: en el build de producción la condición es
 // falsa, el island no se renderiza y no se emite JS (verificado con `pnpm build`).
@@ -192,6 +193,7 @@ const grafo = {
       <slot />
     </main>
     <Footer />
+    <BotonFlotanteWhatsapp />
     {import.meta.env.DEV && <Agentation client:only="react" />}
 
     {/* Va al final del <body>, no en el <head>: Astro inyecta el <link> del CSS

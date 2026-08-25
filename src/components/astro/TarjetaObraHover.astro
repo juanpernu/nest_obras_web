@@ -50,7 +50,7 @@ const optimizada = await getImage({
 ---
 
 <article>
-  <a href={href} class="tarjeta aspect-[4/3] sm:aspect-auto sm:h-[600px]">
+  <a href={href} class="tarjeta group aspect-[4/3] sm:aspect-auto sm:h-[600px]">
     <div class="marco">
       <img
         src={optimizada.src}
@@ -59,6 +59,7 @@ const optimizada = await getImage({
         height="900"
         loading="lazy"
         decoding="async"
+        class="grayscale group-hover:grayscale-0 group-focus-visible:grayscale-0"
       />
     </div>
 
@@ -108,31 +109,18 @@ const optimizada = await getImage({
 
   /* scale(1.15) deja 15% de sobrante: el desplazamiento de 20px del hover nunca
    * descubre el borde de la imagen. Blanco y negro por default, color en hover
-   * (14/08/2026): mismo recurso que ya usaban los logos de clientes en
-   * GrillaLogos (`grayscale` + `hover:grayscale-0`), unificado acá para las
-   * fotos de obra. La transición de `filter` va siempre (no solo con
-   * `prefers-reduced-motion: no-preference`): es un cambio de color, no de
+   * (14/08/2026, unificado 25/08/2026): mismo mecanismo que el resto del
+   * sitio (clase `grayscale` + `group-hover:grayscale-0`, más el script
+   * global de tap-to-color en main.astro para touch) — ya no un filtro CSS
+   * propio de este componente. La transición de `filter` va siempre (no solo
+   * con `prefers-reduced-motion: no-preference`): es un cambio de color, no de
    * movimiento. */
   .marco img {
     height: 100%;
     width: 100%;
     object-fit: cover;
     scale: 1.15;
-    filter: grayscale(1);
     transition: filter 0.3s ease-out;
-  }
-
-  .tarjeta:hover .marco img,
-  .tarjeta:focus-visible .marco img {
-    filter: grayscale(0);
-  }
-
-  /* Sin hover (touch) la foto se ve siempre a color, igual que el resto del
-   * contenido de esta tarjeta en el mismo media query más abajo. */
-  @media (hover: none) {
-    .marco img {
-      filter: grayscale(0);
-    }
   }
 
   /* Gradiente acotado al 20% inferior (16/08/2026): vuelve el degradado que se
