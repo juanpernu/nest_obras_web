@@ -34,3 +34,12 @@ pnpm-debug.log*
 
 # git worktrees creados por Claude Code
 .claude/worktrees/
+
+# Material fuente del cliente (fotos originales, video, logos). No lo consume
+# el build: lo que el sitio usa vive en src/assets/ y public/. Se sacó de git
+# el 23/08/2026 porque eran 113 MB versionados que nadie servía.
+# Anclado a la raíz (/assets/) para NO matchear src/assets/ — sin la barra
+# inicial, git ignora CUALQUIER carpeta "assets" del árbol, incluida
+# src/assets/, que sí consume el build (bug encontrado el 25/08/2026: varias
+# imágenes nunca se commitearon y rompían el deploy en Vercel).
+/assets/

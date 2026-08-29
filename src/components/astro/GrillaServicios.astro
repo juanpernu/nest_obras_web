@@ -123,8 +123,13 @@ const { servicios, class: className } = Astro.props as Props;
                 )}
               </span>
 
-              <h3 class="text-h3 font-medium text-navy">{s.titulo}</h3>
-              <p class="srv-desc text-sm leading-relaxed font-light text-navy-700">{s.texto}</p>
+              {/* `text-[24px]` y `text-[20px]` en vez de `text-h3`/`text-sm`
+                  (16/08/2026, pedido explícito): esos dos tokens son
+                  compartidos con el resto del sitio (nombres de equipo,
+                  cuerpo de texto general), así que un cambio de tamaño acá se
+                  hace con un valor puntual en vez de tocar el token global. */}
+              <h3 class="text-[24px] font-medium text-navy">{s.titulo}</h3>
+              <p class="srv-desc text-[20px] leading-relaxed font-light text-navy-700">{s.texto}</p>
             </div>
           </>
         ))

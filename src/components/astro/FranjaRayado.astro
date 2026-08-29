@@ -29,7 +29,12 @@ interface Props {
 const { class: className } = Astro.props as Props;
 ---
 
-<div class:list={['franja h-8 sm:h-12 lg:h-[68px]', className]} aria-hidden="true"></div>
+{/* 80px en mobile (18/08/2026, pedido explícito), más que los 48/68px de sm y
+    lg. Va contra la intuición de que el corte crezca con la pantalla, y es a
+    propósito: en mobile las secciones se apilan una atrás de otra y el
+    achurado es lo único que separa un capítulo del siguiente, así que necesita
+    más aire ahí que en desktop, donde el layout ya ayuda a leer el corte. */}
+<div class:list={['franja h-20 sm:h-12 lg:h-[68px]', className]} aria-hidden="true"></div>
 
 <style>
   .franja {

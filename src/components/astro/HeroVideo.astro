@@ -13,30 +13,59 @@
  * comprometer el budget de performance. El archivo es propio
  * (public/hero-video.mp4).
  *
- * El <source> matchea solo en ≥768px Y sin prefers-reduced-motion: en mobile o
- * con reduced-motion ningún source matchea → el navegador NUNCA pide bytes de
- * video, solo pinta el poster. Se resuelve en el media del <source>, no con CSS
- * (ocultar por CSS descarga igual). El LCP es el <h1>: `preload="none"` + poster.
+ * Autoplay en mobile (18/08/2026, pedido explícito): hasta ahora el <source>
+ * de arriba matcheaba solo en ≥768px, así que abajo de ese ancho ningún source
+ * matcheaba y el navegador nunca pedía bytes de video — solo el poster. Eso
+ * protegía el budget de performance (el archivo desktop pesa 9 MB) pero
+ * dejaba el hero estático en el viewport donde más se navega.
+ *
+ * La salida no es sacar el gate: es un SEGUNDO archivo, recortado 9:16 en vez
+ * de escalado desde el 16:9 desktop (public/hero-video-mobile.mp4, 2.3 MB,
+ * crop=608:1080 centrado en el punto de interés del plano). Tiene sentido
+ * doble: pesa una fracción del original, y de paso corrige un desperdicio que
+ * ya existía — con `object-cover` sobre un 16:9 en una pantalla vertical, el
+ * navegador igual tenía que descargar los 1920px de ancho completos para
+ * mostrar una franja central de ~600px.
+ *
+ * Los dos <source> siguen atados a `prefers-reduced-motion: no-preference`
+ * además del ancho (WCAG 2.2.2): si no, con reduced-motion el navegador
+ * igual descargaría los MB del video para recién pausarlo después — se
+ * pierde el ahorro de datos que es la mitad del motivo de tener un archivo
+ * mobile aparte. Con reduced-motion ningún <source> matchea y solo se pinta
+ * el poster, en cualquier ancho. El orden de los <source> importa: el
+ * navegador usa el PRIMERO que matchea, así que el de mobile va primero.
+ *
+ * El LCP es el <h1>: preload reducido + poster.
+ *
+ * Bug de Safari (25/08/2026): `preload="none"` + `autoplay` en WebKit puede
+ * nunca disparar la carga real del video — se queda parado en el poster para
+ * siempre (bug conocido de WebKit; en Chrome funciona bien). La solución es
+ * `preload="metadata"` en vez de `"none"`: eso le da a Safari la señal que le
+ * faltaba para arrancar la carga con autoplay, y solo trae los metadatos +
+ * primeros bytes del archivo (unos pocos KB), no el video completo — el
+ * budget de performance que motivó sacar `preload` en primer lugar sigue
+ * intacto.
  *
  * NO LLEVA `data-evento="video_play"` A PROPÓSITO. Es un video decorativo con
  * `autoplay muted` y `aria-hidden`: el evento `play` se dispara solo al cargar la
  * página, sin que nadie haya hecho nada. Medirlo daría una métrica que parece
- * engagement pero en realidad es "visita de desktop sin reduced-motion", o sea un
+ * engagement pero en realidad es "visita sin reduced-motion", o sea un
  * pageview disfrazado. El engagement real lo cubre Enhanced Measurement de GA4.
  * El mapeo `video_play` existe en src/data/analytics.ts para un video con
  * controles de verdad, que es donde el evento sí significa algo.
  */
 interface Props {
   srcDesktop: string;
+  srcMobile: string;
   poster: string;
   class?: string;
 }
-const { srcDesktop, poster, class: className } = Astro.props as Props;
+const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props;
 ---
 
 <video
   poster={poster}
-  preload="none"
+  preload="metadata"
   autoplay
   muted
   playsinline
@@ -44,6 +73,11 @@ const { srcDesktop, poster, class: className } = Astro.props as Props;
   aria-hidden="true"
   class:list={['hero-video', className]}
 >
+  <source
+    media="(max-width: 767px) and (prefers-reduced-motion: no-preference)"
+    src={srcMobile}
+    type="video/mp4"
+  />
   <source
     media="(min-width: 768px) and (prefers-reduced-motion: no-preference)"
     src={srcDesktop}

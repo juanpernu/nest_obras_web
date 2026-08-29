@@ -11,6 +11,13 @@
  * que era ya la que el original usaba para el foco de teclado y la que apunta a
  * donde vive el texto.
  *
+ * La interacción de fila (16/08/2026) reemplaza otro componente React,
+ * `FocusCards` (Aceternity): en vez de la expansión tipo galería que había
+ * antes (la tarjeta apuntada crecía, las demás se encogían), ahora las
+ * tarjetas no apuntadas se desenfocan con `:has()` — mismo criterio, cero JS.
+ * Tamaño y blanco-y-negro/color por defecto no cambiaron, solo la animación
+ * de la fila. Ver el bloque `@media (hover: hover)` en el <style>.
+ *
  * `imagen` va por getImage() y no por <Picture>: necesitamos una sola URL final
  * para el recorte 4:3 hecho en build.
  */
@@ -43,7 +50,7 @@ const optimizada = await getImage({
 ---
 
 <article>
-  <a href={href} class="tarjeta aspect-[4/3] sm:aspect-auto sm:h-[600px]">
+  <a href={href} class="tarjeta group aspect-[4/3] sm:aspect-auto sm:h-[600px]">
     <div class="marco">
       <img
         src={optimizada.src}
@@ -52,6 +59,7 @@ const optimizada = await getImage({
         height="900"
         loading="lazy"
         decoding="async"
+        class="grayscale group-hover:grayscale-0 group-focus-visible:grayscale-0"
       />
     </div>
 
@@ -101,42 +109,31 @@ const optimizada = await getImage({
 
   /* scale(1.15) deja 15% de sobrante: el desplazamiento de 20px del hover nunca
    * descubre el borde de la imagen. Blanco y negro por default, color en hover
-   * (14/08/2026): mismo recurso que ya usaban los logos de clientes en
-   * GrillaLogos (`grayscale` + `hover:grayscale-0`), unificado acá para las
-   * fotos de obra. La transición de `filter` va siempre (no solo con
-   * `prefers-reduced-motion: no-preference`): es un cambio de color, no de
+   * (14/08/2026, unificado 25/08/2026): mismo mecanismo que el resto del
+   * sitio (clase `grayscale` + `group-hover:grayscale-0`, más el script
+   * global de tap-to-color en main.astro para touch) — ya no un filtro CSS
+   * propio de este componente. La transición de `filter` va siempre (no solo
+   * con `prefers-reduced-motion: no-preference`): es un cambio de color, no de
    * movimiento. */
   .marco img {
     height: 100%;
     width: 100%;
     object-fit: cover;
     scale: 1.15;
-    filter: grayscale(1);
     transition: filter 0.3s ease-out;
-  }
-
-  .tarjeta:hover .marco img,
-  .tarjeta:focus-visible .marco img {
-    filter: grayscale(0);
-  }
-
-  /* Sin hover (touch) la foto se ve siempre a color, igual que el resto del
-   * contenido de esta tarjeta en el mismo media query más abajo. */
-  @media (hover: none) {
-    .marco img {
-      filter: grayscale(0);
-    }
   }
 
   /* Gradiente acotado al 20% inferior (16/08/2026): vuelve el degradado que se
    * había sacado el 14/08/2026 por pedido del cliente ("sin degradados en toda
    * la Home") — acá es una excepción puntual pedida explícitamente por la
-   * usuaria para esta tarjeta, no una regresión de aquella decisión. El punto
-   * de partida del gradiente (navy/70, no navy/100) es el mismo tono que tenía
-   * el velo plano anterior en su punto más oscuro, así que el contraste contra
-   * el texto blanco en la base —donde el gradiente está en su punto más
-   * opaco— no empeora (sigue dando 5.41:1 en el peor caso, foto blanca). Hacia
-   * arriba baja a transparente: como el texto vive pegado a la base
+   * usuaria para esta tarjeta, no una regresión de aquella decisión.
+   *
+   * NEGRO al 70%, no navy (18/08/2026, pedido explícito): tinta neutra sobre
+   * la foto en vez de un tinte de marca, mismo criterio que el overlay del
+   * hero (que pasó de navy a negro el 14/08/2026 por el mismo motivo). De
+   * paso mejora el contraste contra el texto blanco en el peor caso —foto
+   * blanca— de 5.41 a 8.5, porque el negro puro es más oscuro que el navy.
+   * Hacia arriba baja a transparente: como el texto vive pegado a la base
    * (`.texto`, `bottom: 1.25rem`), queda siempre sobre la franja más opaca del
    * degradé. */
   .velo-degrade {
@@ -146,11 +143,7 @@ const optimizada = await getImage({
     bottom: 0;
     height: 20%;
     z-index: 10;
-    background-image: linear-gradient(
-      to top,
-      color-mix(in srgb, var(--color-navy) 70%, transparent) 0%,
-      transparent 100%
-    );
+    background-image: linear-gradient(to top, rgb(0 0 0 / 0.7) 0%, transparent 100%);
     opacity: 0;
   }
 
@@ -209,9 +202,8 @@ const optimizada = await getImage({
     }
   }
 
-  /* Expansión tipo galería (07/08/2026): la tarjeta apuntada crece y sus
-   * hermanas se encogen. Es CSS puro —dos reglas de igual especificidad, gana
-   * la última— así que no hace falta el framer-motion del ejemplo ni JS.
+  /* Tamaño fijo, sin la expansión tipo galería que había antes (16/08/2026,
+   * pedido explícito: reemplazar SOLO la animación de hover, no el tamaño).
    * `.obras-fila` vive en index.astro, de ahí el :global. */
   article {
     min-width: 0;
@@ -223,22 +215,26 @@ const optimizada = await getImage({
     }
   }
 
-  /* Solo con hover real, ancho suficiente y sin reduced-motion: en mobile la
-   * fila es una columna (crecer cambiaría alturas) y un salto de layout
-   * instantáneo sería peor que no expandir. */
-  @media (hover: hover) and (min-width: 640px) and (prefers-reduced-motion: no-preference) {
-    article {
-      transition: flex-grow 500ms ease-in-out;
+  /* Foco tipo "FocusCards" (16/08/2026, pedido explícito, referencia:
+   * Aceternity `FocusCards`): en vez de que la tarjeta apuntada crezca y las
+   * demás se encojan, ahora las OTRAS se desenfocan y la apuntada se queda
+   * como está — mismo criterio de blanco y negro por defecto / color en el
+   * propio hover, sin tocar eso. `:has()` en vez de JS: ya se usa el mismo
+   * recurso en el filtro de /obras (`body:has(#f-...:checked)`), navegadores
+   * sin soporte simplemente no aplican la regla y no pasa nada roto — la
+   * tarjeta en foco siempre se ve bien, solo no se "sfuma" el resto.
+   * Gateado a `(hover: hover)`: en touch no hay hover persistente y esto
+   * podría dejar una tarjeta trabada en blur después de un tap. */
+  @media (hover: hover) {
+    .marco img {
+      transition:
+        filter 0.3s ease-out,
+        scale 0.3s ease-out;
     }
 
-    :global(.obras-fila:hover) article,
-    :global(.obras-fila:focus-within) article {
-      flex-grow: 0.5;
-    }
-
-    :global(.obras-fila) article:hover,
-    :global(.obras-fila) article:focus-within {
-      flex-grow: 2;
+    :global(.obras-fila:has(article:hover)) article:not(:hover) .marco img {
+      filter: grayscale(1) blur(4px);
+      scale: 1.1;
     }
   }
 </style>

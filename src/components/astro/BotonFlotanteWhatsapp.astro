@@ -1,0 +1,36 @@
+---
+/**
+ * Botón flotante de WhatsApp, fijo en todas las páginas (incluido en
+ * `main.astro`). Ícono navy sobre el fondo arena (~7.5:1 de contraste, WCAG
+ * 1.4.11 para gráficos/UI). Estuvo en blanco por un pedido puntual
+ * (25/08/2026) que caía a ~1.7:1; se volvió a navy el mismo día.
+ *
+ * Un solo <path fill-rule="evenodd"> en vez de los dos <path> con solo stroke
+ * de antes: con relleno blanco sólido y sin evenodd, el glifo del teléfono
+ * (el segundo trazo) queda tapado por el fondo del propio bombucho —blanco
+ * sobre blanco, invisible—. `evenodd` lo recorta como hueco, dejando ver el
+ * fondo arena del botón a través, que es como se ve el logo de WhatsApp
+ * sólido en cualquier referencia.
+ */
+import { whatsappUrl } from '@/data/site';
+---
+
+<a
+  href={whatsappUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Escribinos por WhatsApp"
+  data-evento="whatsapp_click"
+  data-evento-lugar="boton_flotante"
+  class="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-arena shadow-lg transition-colors hover:bg-arena-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
+>
+  <svg viewBox="0 0 24 24" class="h-7 w-7" aria-hidden="true">
+    <path
+      class="fill-navy"
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3.5 20l1.2-4.7A8.5 8.5 0 1 1 21 11.5Z
+         M8.8 9.2c0 3 2.2 5.2 5.2 5.2l1-1.3-1.7-.8-.8.7c-.9-.4-1.6-1.1-2-2l.7-.8-.8-1.7-1.3 1Z"
+    />
+  </svg>
+</a>

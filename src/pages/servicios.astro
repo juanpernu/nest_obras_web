@@ -7,6 +7,10 @@ import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
 import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
+import { Image } from 'astro:assets';
+import cabeceraImg from '@/assets/obras/el-aromo-4.jpg';
+import antesImg from '@/assets/obras/tacuari-1050-1.jpg';
+import despuesImg from '@/assets/obras/tacuari-1050-portada.png';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -62,13 +66,41 @@ const serviciosLd = entries.map((s) => ({
   evento={{ nombre: 'servicio_view' }}
 >
   <HojaTecnica>
+    {/* CON BLOQUE VISUAL AL 50% (22/08/2026, mismo pedido y misma solución que
+        la cabecera de /nosotros: "añadir una imagen a la derecha del texto,
+        full height y que llegue al marco en todos sus extremos, sin
+        excederlo... que ocupe el 50% del width de la sección en escritorio").
+        Geometría y clase `.cab-visual` copiadas tal cual de nosotros.astro
+        (ver el <style> de esa página para el detalle de cada medida) — es la
+        técnica de `.form-a-la-guia` de la Home/contacto aplicada a esta
+        cabecera.
+
+        Imagen real (24/08/2026, pedido directo): reemplaza al placeholder
+        navy por la misma foto de El Aromo usada en el bento de Modalidades
+        más abajo. Mismo tratamiento blanco y negro → color en hover que
+        `.cab-visual` de /nosotros y el resto de fotos del sitio (GrillaLogos,
+        TarjetaObra, TarjetaObraHover): el fondo navy queda como color de
+        base bajo la imagen (`bg-navy` en el contenedor) y el hover lo resuelve
+        el propio `grayscale-0` de la <Image>, no un color de fondo distinto. */}
     <MarcoSeccion cierra>
       <section class="bg-white py-20 md:py-[120px]">
-        <CabeceraPagina
-          eyebrow="Servicios"
-          titulo="Servicios de construcción"
-          bajada="Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega. Con un solo responsable de la obra y un único punto de contacto."
-        />
+        <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
+          <CabeceraPagina
+            sinContenedor
+            eyebrow="Servicios"
+            titulo="Servicios de construcción"
+            bajada="Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega. Con un solo responsable de la obra y un único punto de contacto."
+          />
+          <div class="cab-visual overflow-hidden bg-navy">
+            <Image
+              src={cabeceraImg}
+              alt="Obra de NEST en El Aromo"
+              widths={[400, 640, 960, 1280]}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
+            />
+          </div>
+        </div>
       </section>
     </MarcoSeccion>
 
@@ -96,37 +128,46 @@ const serviciosLd = entries.map((s) => ({
         md son dos (la lista baja bajo el texto) y en mobile una: a 375px una
         columna fija para el número deja el texto partiéndose cada dos palabras. */}
     <MarcoSeccion cierra>
-      <section class="bg-white py-20 md:py-[120px]">
-        <div class="mx-auto max-w-6xl px-6">
-          <ol class="divide-y divide-arena border-y border-arena" data-reveal>
+      <section class="bg-white">
+        {/* DIVISORES HASTA EL MARCO (24/08/2026, pedido directo: mismo criterio
+            que el bento de Modalidades y la grilla de logos). El `<ol>` sale
+            del contenedor `max-w-6xl px-6` —es hermano directo de la
+            `<section>`— y redefine `--marco-x` para plantarse exacto sobre la
+            guía del marco: así el `border-y` del conjunto y el `divide-y`
+            entre ítems (que vive en cada `<li>`, ahora a ancho completo del
+            `<ol>`) llegan los dos hasta esa línea. El contenido de cada ítem
+            vuelve a centrarse con su propio `mx-auto max-w-6xl px-6` interno,
+            para no perder el ancho de lectura del resto de la página. */}
+          <ol class="serv-lista divide-y divide-arena border-y border-arena" data-reveal>
             {
               servicios.map((s, i) => (
-                <li class="grid gap-x-10 gap-y-4 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_1fr_16rem] lg:items-baseline">
-                  <span class="text-stat font-light leading-none text-navy">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <div class="md:col-start-2">
-                    <h2 class="text-h2 font-normal text-navy">{s.data.nombre}</h2>
-                    <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
-                    <div class="mt-4 max-w-[64ch] font-light leading-relaxed text-navy-700 [&_p]:mt-0">
-                      <s.Content />
+                <li class="py-12">
+                  <div class="mx-auto grid max-w-6xl gap-x-10 gap-y-4 px-6 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_1fr_16rem] lg:items-baseline">
+                    <span class="text-stat font-light leading-none text-navy">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div class="md:col-start-2">
+                      <h2 class="text-h2 font-normal text-navy">{s.data.nombre}</h2>
+                      <p class="mt-2 text-h3 font-light text-navy-700">{s.data.tagline}</p>
+                      <div class="mt-4 max-w-[64ch] font-light leading-relaxed text-navy-700 [&_p]:mt-0">
+                        <s.Content />
+                      </div>
                     </div>
+                    <ul class="space-y-2 text-sm text-navy-700 md:col-start-2 lg:col-start-3">
+                      {s.data.incluye.map((item) => (
+                        <li class="flex gap-2.5">
+                          <span aria-hidden="true" class="text-arena-800">
+                            —
+                          </span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul class="space-y-2 text-sm text-navy-700 md:col-start-2 lg:col-start-3">
-                    {s.data.incluye.map((item) => (
-                      <li class="flex gap-2.5">
-                        <span aria-hidden="true" class="text-arena-800">
-                          —
-                        </span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </li>
               ))
             }
           </ol>
-        </div>
       </section>
     </MarcoSeccion>
 
@@ -134,53 +175,214 @@ const serviciosLd = entries.map((s) => ({
     <FranjaRayado />
 
     <MarcoSeccion>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="bg-white pt-20 md:pt-[120px]">
         <div class="mx-auto max-w-6xl px-6">
           <div data-reveal>
             <Eyebrow class="mb-2.5">Modalidades</Eyebrow>
             <h2 class="text-h2 font-normal text-navy">Cómo preferís trabajar con nosotros</h2>
           </div>
-          {/* Mismo índice tipográfico que los servicios de arriba (16/08/2026,
-              misma pasada). Reemplaza a dos cards glass —borde navy-200, blur y
-              la sombra del header— que eran el único lenguaje de caja que
-              quedaba en la página: con los servicios ya resueltos como renglones
-              con regla, dos tarjetas flotando debajo leían como otro sistema.
+        </div>
+        {/* BENTO de 3 cards (22/08/2026, pedido directo: "replicame acá el
+            bento grid que tenemos en nosotros pero con tres cards paralelas
+            de izquierda a derecha, y la tercera es una imagen (placeholder)
+            que ocupa el total width y height del contenedor"). Reemplaza al
+            índice tipográfico de dos renglones que había acá.
 
-              El glass no desaparece del sitio, se queda donde es una SUPERFICIE
-              y no un contenedor de texto: el header scrolleado y la card del
-              formulario de /contacto y de la Sección 9 del Home. */}
-          <ol class="mt-12 divide-y divide-arena border-y border-arena" data-reveal>
+            A diferencia de GrillaProceso.astro (asimétrico 3+3/2+2+2 sobre 6
+            columnas, para 5 pasos), acá son tres columnas PARES: las dos
+            modalidades de `modalidades` más una tercera celda de imagen,
+            mismo ancho las tres. Mismo reticulado continuo sin gap —borde
+            superior/izquierdo en la grilla, derecho/inferior en cada celda,
+            escuadras en L solo en las cuatro esquinas externas.
+
+            SANGRÍA HASTA EL MARCO, NO HASTA EL BORDE DE PÁGINA (24/08/2026,
+            corrección del pedido anterior: "respeta el margen de la vista").
+            El bento sale del contenedor `max-w-6xl px-6` de la sección —es
+            hermano directo de la `<section>`, no está anidado en ese div—
+            pero NO llega al borde real del viewport: `.mod-bento` redefine
+            `--marco-x` con el mismo cálculo que `MarcoSeccion` y lo usa como
+            `margin-inline`, así el bloque se detiene exactamente sobre la
+            misma guía que las esquinas del marco (`--guia-margen` /
+            `--container-6xl`) y se funde con ese límite sin padding extra —
+            ni un pixel de aire entre el borde del bento y la guía, pero
+            tampoco de más allá de ella. Es el mismo límite que ya respeta el
+            resto de las secciones de la página. La celda de imagen no lleva
+            padding: la foto (hoy placeholder navy) llena el 100% de ancho de
+            su celda; el alto lo iguala el script de abajo al de las dos
+            celdas de arriba. */}
+        <div class="mod-bento relative mt-12" data-reveal>
+          <ol class="mod-bento-grid">
             {
               modalidades.map((m, i) => (
-                <li class="grid gap-x-10 gap-y-3 py-12 md:grid-cols-[6rem_1fr] lg:grid-cols-[7rem_18rem_1fr] lg:items-baseline">
-                  <span class="text-stat font-light leading-none text-navy">
+                <li class="mod-bento-celda">
+                  <span class="block text-stat font-light leading-none text-navy">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <h3 class="text-h3 font-medium uppercase tracking-[0.04em] text-navy">
+                  <h3 class="mt-4 text-h3 font-medium uppercase tracking-[0.04em] text-navy">
                     {m.titulo}
                   </h3>
-                  <div class="md:col-start-2 lg:col-start-3">
-                    <p class="max-w-[64ch] font-light leading-relaxed text-navy-700">{m.texto}</p>
-                    <p class="mt-3 max-w-[64ch] text-sm italic text-navy-700">{m.ideal}</p>
-                  </div>
+                  <p class="mt-3 max-w-[42ch] font-light leading-relaxed text-navy-700">
+                    {m.texto}
+                  </p>
+                  <p class="mt-3 max-w-[42ch] text-sm italic text-arena-800" data-reveal>{m.ideal}</p>
                 </li>
               ))
             }
+            {/* SLIDER ANTES/DESPUÉS (24/08/2026, pedido directo). Reemplaza al
+                placeholder navy por una comparativa arrastrable: dos fotos de
+                la misma obra (Tacuarí 1050) superpuestas, la de "antes"
+                recortada con `clip-path` según la posición del divisor. El
+                divisor se arrastra con mouse y con touch usando Pointer
+                Events (cubren ambos con la misma API, sin listeners
+                separados) — ver el <script> de más abajo, que además soporta
+                flechas de teclado sobre el propio divisor (rol `slider`).
+                Placeholder de imágenes: mismo criterio que `.cab-visual` más
+                arriba en esta misma página (obra real de NEST, no una foto
+                genérica). */}
+            <li class="mod-bento-celda mod-bento-celda--img mod-bento-slider bg-navy" data-bento-slider>
+              <div class="mod-bento-slider-despues">
+                <Image
+                  src={despuesImg}
+                  alt="Obra de NEST en Tacuarí 1050 terminada"
+                  widths={[400, 640, 960, 1280, 1600]}
+                  sizes="100vw"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+              <div class="mod-bento-slider-antes">
+                <Image
+                  src={antesImg}
+                  alt="Obra de NEST en Tacuarí 1050 antes de la intervención"
+                  widths={[400, 640, 960, 1280, 1600]}
+                  sizes="100vw"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+              <span class="mod-bento-slider-etiqueta mod-bento-slider-etiqueta--antes" aria-hidden="true">
+                Antes
+              </span>
+              <span class="mod-bento-slider-etiqueta mod-bento-slider-etiqueta--despues" aria-hidden="true">
+                Después
+              </span>
+              <div
+                class="mod-bento-slider-divisor"
+                role="slider"
+                tabindex="0"
+                aria-label="Comparar antes y después de la obra"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="50"
+              >
+                <span class="mod-bento-slider-agarre" aria-hidden="true"></span>
+              </div>
+            </li>
           </ol>
+          <span class="mod-bento-esq mod-bento-esq--si" aria-hidden="true" />
+          <span class="mod-bento-esq mod-bento-esq--sd" aria-hidden="true" />
+          <span class="mod-bento-esq mod-bento-esq--ii" aria-hidden="true" />
+          <span class="mod-bento-esq mod-bento-esq--id" aria-hidden="true" />
         </div>
       </section>
     </MarcoSeccion>
+
+    <script>
+      // Iguala el alto de la celda de imagen del bento de Modalidades al de
+      // las celdas de texto de arriba: son filas de grilla distintas, así que
+      // CSS por sí solo no puede igualarlas (cada fila `auto` mide su propio
+      // contenido). Ver el comentario extenso del bento en servicios.astro.
+      function sincronizarAltoBentoModalidades() {
+        const bento = document.querySelector<HTMLElement>('.mod-bento');
+        const img = bento?.querySelector<HTMLElement>('.mod-bento-celda--img');
+        const celdasTexto = bento?.querySelectorAll<HTMLElement>(
+          '.mod-bento-celda:not(.mod-bento-celda--img)',
+        );
+        if (!bento || !img || !celdasTexto || celdasTexto.length === 0) return;
+
+        if (window.matchMedia('(min-width: 768px)').matches) {
+          const alto = Math.max(...Array.from(celdasTexto).map((c) => c.offsetHeight));
+          img.style.height = `${alto}px`;
+        } else {
+          img.style.height = '';
+        }
+      }
+
+      sincronizarAltoBentoModalidades();
+      document.fonts?.ready.then(sincronizarAltoBentoModalidades);
+      window.addEventListener('resize', sincronizarAltoBentoModalidades);
+    </script>
+
+    <script>
+      // Slider antes/después de la celda de imagen del bento de Modalidades.
+      // Pointer Events cubre mouse y touch con la misma API, así que no hace
+      // falta separar `mousedown`/`touchstart`. La posición (0-100) se aplica
+      // como `clip-path` sobre la capa "antes" y como `left` sobre el
+      // divisor; el rol `slider` + flechas de teclado cubren el control sin
+      // mouse.
+      function initBentoSlider() {
+        const slider = document.querySelector<HTMLElement>('[data-bento-slider]');
+        const antes = slider?.querySelector<HTMLElement>('.mod-bento-slider-antes');
+        const divisor = slider?.querySelector<HTMLElement>('.mod-bento-slider-divisor');
+        if (!slider || !antes || !divisor) return;
+
+        let arrastrando = false;
+
+        function fijarPosicion(porcentaje: number) {
+          const pct = Math.min(100, Math.max(0, porcentaje));
+          antes!.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+          divisor!.style.left = `${pct}%`;
+          divisor!.setAttribute('aria-valuenow', String(Math.round(pct)));
+        }
+
+        function porcentajeDesdeEvento(clientX: number) {
+          const rect = slider!.getBoundingClientRect();
+          return ((clientX - rect.left) / rect.width) * 100;
+        }
+
+        divisor.addEventListener('pointerdown', (e) => {
+          arrastrando = true;
+          divisor.setPointerCapture(e.pointerId);
+        });
+        slider.addEventListener('pointermove', (e) => {
+          if (!arrastrando) return;
+          fijarPosicion(porcentajeDesdeEvento(e.clientX));
+        });
+        divisor.addEventListener('pointerup', () => {
+          arrastrando = false;
+        });
+        divisor.addEventListener('keydown', (e) => {
+          const actual = parseFloat(divisor.style.left) || 50;
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            fijarPosicion(actual - 5);
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            fijarPosicion(actual + 5);
+          }
+        });
+
+        fijarPosicion(50);
+      }
+
+      initBentoSlider();
+    </script>
 
     {/* Clientes corporativos (tabla reubicada de la ex-página corporativa,
         §5.3 / p.14). Mismo tratamiento que la Sección 6 de la Home: centrado,
         fondo blanco, logos en escala de grises que vuelven a color en hover. */}
     <MarcoSeccion cierra>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="overflow-x-clip bg-white">
         <div class="mx-auto max-w-6xl px-6 text-center">
-          <h2 class="text-h2 font-normal text-navy" data-reveal>Empresas que confiaron en NEST</h2>
-          <div data-reveal>
-            <GrillaLogos class="mt-10" />
-          </div>
+          <h2 class="text-h2 font-normal text-navy pt-[60px]" data-reveal>Empresas que confiaron en NEST</h2>
+        </div>
+        {/* GrillaLogos sin el px-6 fijo de este contenedor (24/08/2026, pedido
+            directo: fusionar la grilla de logos con el marco de la página,
+            mismo criterio ya aplicado en el bento de Modalidades más arriba).
+            Igual patrón que la Sección 6 de la Home: contenida en el margen
+            del marco (`--marco-x`, la misma guía que usan las escuadras de
+            `MarcoSeccion`), no en el `max-w-6xl px-6` con aire de sobra.
+            `overflow-x-clip` como salvaguarda, mismo motivo que en la Home. */}
+        <div class="mt-10" style={{ paddingInline: 'var(--marco-x, 0px)' }} data-reveal>
+          <GrillaLogos />
         </div>
       </section>
     </MarcoSeccion>
@@ -209,3 +411,229 @@ const serviciosLd = entries.map((s) => ({
     </MarcoSeccion>
   </HojaTecnica>
 </Layout>
+
+<style>
+  /* Bloque visual de la cabecera (Sección 1). Copiado tal cual de
+   * `.cab-visual` en nosotros.astro — ver el comentario extenso ahí para el
+   * detalle de cada medida. Misma técnica que `.form-a-la-guia` en
+   * index.astro y contacto.astro: cada `margin` negativo cancela un padding
+   * que separa el bloque de una línea del marco, para que muera EXACTO sobre
+   * ella y sin excederla. */
+  .cab-visual {
+    margin-inline: calc(-1 * var(--sangria-guia));
+    margin-bottom: -5rem;
+    aspect-ratio: 3 / 2;
+  }
+
+  @media (min-width: 768px) {
+    .cab-visual {
+      aspect-ratio: auto;
+      margin-top: -120px;
+      margin-bottom: -120px;
+      margin-inline-start: -1.5rem;
+      margin-inline-end: calc(-1 * var(--sangria-guia));
+    }
+  }
+
+  /* Bento de Modalidades (Sección 3). Mismo reticulado continuo de
+   * GrillaProceso.astro (ver ese archivo para el detalle de la técnica: borde
+   * superior/izquierdo en la grilla, derecho/inferior en cada celda, sin
+   * `gap`, así ningún cruce apila dos líneas de 1px). Desde `md:` son dos
+   * columnas iguales: las dos modalidades arriba (50/50) y la celda de imagen
+   * abajo, spaneando el 100% del ancho.
+   *
+   * `.mod-bento` no está anidado en el contenedor `max-w-6xl px-6` de la
+   * sección (ver el markup más arriba): es hermano directo de la
+   * `<section>`, así que por construcción mide el 100% del ancho real de
+   * página. Por eso redefine `--marco-x` con el mismo cálculo que
+   * `MarcoSeccion` (ver ese componente) y lo aplica como `margin-inline`:
+   * el bloque se detiene exactamente sobre la misma guía que sus propias
+   * esquinas en L y las de `MarcoSeccion`, fundido con ese límite sin
+   * padding de más, en vez de sangrar hasta el borde del viewport. */
+  .mod-bento {
+    --marco-x: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+    margin-inline: var(--marco-x);
+  }
+
+  /* Índice tipográfico (Sección 2). Mismo cálculo de `--marco-x` que
+   * `.mod-bento`: el `<ol>` es hermano directo de la `<section>`, así que se
+   * planta exacto sobre la guía del marco y el `border-y`/`divide-y` (ahora a
+   * ancho completo, ver el markup) llega hasta esa línea en vez de cortarse
+   * en el borde del `max-w-6xl` interno de cada ítem. */
+  .serv-lista {
+    --marco-x: max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2));
+    margin-inline: var(--marco-x);
+  }
+
+  .mod-bento-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border-top: 1px solid var(--color-rule);
+    border-left: 1px solid var(--color-rule);
+  }
+
+  .mod-bento-celda {
+    min-width: 0;
+    padding: 1.25rem;
+    border-right: 1px solid var(--color-rule);
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  /* Celda de imagen: sin padding y con altura mínima propia en mobile (ahí es
+   * una fila más, apilada, y sin una fila de grilla que le dé alto se vería
+   * de 0px). Desde `md:` es una fila de grilla propia (spanea las 2
+   * columnas), por lo que el `stretch` de grilla no la iguala a la fila de
+   * arriba —son filas distintas—: el `<script>` de más abajo mide el alto
+   * real de las celdas de texto y lo aplica acá. El `min-height` se
+   * mantiene como piso mientras el script no corrió (o con JS deshabilitado). */
+  .mod-bento-celda--img {
+    padding: 0;
+    min-height: 16rem;
+  }
+
+  /* Slider antes/después de la celda de imagen. `.mod-bento-slider-despues`
+   * queda de fondo a pantalla completa; `.mod-bento-slider-antes` se apila
+   * arriba y el <script> le recorta el `clip-path` según el divisor, así que
+   * arranca en 50% hasta que el script corre (por eso el `clip-path` inicial
+   * inline acá, no solo en JS). */
+  .mod-bento-slider {
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .mod-bento-slider-despues,
+  .mod-bento-slider-antes {
+    position: absolute;
+    inset: 0;
+  }
+  .mod-bento-slider-antes {
+    clip-path: inset(0 50% 0 0);
+  }
+
+  .mod-bento-slider-etiqueta {
+    position: absolute;
+    z-index: 3;
+    bottom: 1rem;
+    border-radius: 2px;
+    background-color: color-mix(in srgb, var(--color-arena) 55%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid color-mix(in srgb, var(--color-arena) 85%, transparent);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #fff;
+    pointer-events: none;
+  }
+  .mod-bento-slider-etiqueta--antes {
+    left: 1rem;
+  }
+  .mod-bento-slider-etiqueta--despues {
+    right: 1rem;
+  }
+
+  .mod-bento-slider-divisor {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 4;
+    width: 2px;
+    height: 100%;
+    background-color: #fff;
+    transform: translateX(-50%);
+    cursor: ew-resize;
+  }
+  .mod-bento-slider-divisor:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .mod-bento-slider-agarre {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background-color: #fff;
+    transform: translate(-50%, -50%);
+  }
+  .mod-bento-slider-agarre::before,
+  .mod-bento-slider-agarre::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+  }
+  .mod-bento-slider-agarre::before {
+    margin-right: 3px;
+    border-right: 6px solid var(--color-navy);
+  }
+  .mod-bento-slider-agarre::after {
+    margin-left: 3px;
+    border-left: 6px solid var(--color-navy);
+  }
+
+  @media (min-width: 768px) {
+    .mod-bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .mod-bento-celda {
+      padding: 2rem;
+    }
+    .mod-bento-celda--img {
+      padding: 0;
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 1024px) {
+    .mod-bento-celda {
+      padding: 3rem;
+    }
+  }
+
+  /* Escuadras en L, idénticas a `.gp-esq` de GrillaProceso: ancladas al
+   * 0/100% del rectángulo, que tras la sangría cae sobre las guías de
+   * página. */
+  .mod-bento-esq {
+    position: absolute;
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--color-navy);
+    pointer-events: none;
+  }
+  .mod-bento-esq--si {
+    top: 0;
+    left: 0;
+    border-top-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .mod-bento-esq--sd {
+    top: 0;
+    right: 0;
+    border-top-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+  .mod-bento-esq--ii {
+    bottom: 0;
+    left: 0;
+    border-bottom-width: 1.5px;
+    border-left-width: 1.5px;
+  }
+  .mod-bento-esq--id {
+    bottom: 0;
+    right: 0;
+    border-bottom-width: 1.5px;
+    border-right-width: 1.5px;
+  }
+</style>

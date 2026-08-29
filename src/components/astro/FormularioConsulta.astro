@@ -177,17 +177,29 @@ const tiposDeProyecto = [
      * variante glass: border-arena + glass + texto blanco, invierte a arena
      * sólido + navy en hover. En la variante clara (/contacto, fondo blanco)
      * se mantiene el arena sólido de siempre — texto blanco sobre transparente
-     * ahí sería ilegible. */}
+     * ahí sería ilegible.
+     *
+     * RELLENO PROGRESIVO en hover (18/08/2026, pedido explícito): el mismo
+     * `::before` que entra de izquierda a derecha que tiene `primario` en
+     * `Boton.astro`, en vez del cambio de color instantáneo. La clase
+     * `boton-relleno-*` la define este componente en su propio <style> —
+     * `Boton.astro` tiene su copia scopeada y los dos apuntan al mismo
+     * criterio; el pendiente de fondo sigue siendo que este submit deje de
+     * duplicar las clases del primario (ver bitácora 05, resolverlo con un
+     * prop `como="button"` en Boton). `relative overflow-hidden` para que el
+     * relleno quede acotado a la caja, y el texto en un <span> con
+     * `relative z-10` para que quede por encima. */}
     <button
       type="submit"
       class:list={[
-        'flex min-h-[44px] w-full items-center justify-center rounded-boton px-6 py-3 text-base font-medium uppercase tracking-[0.02em] transition-colors',
+        'relative flex min-h-[44px] w-full items-center justify-center overflow-hidden rounded-boton px-6 py-3 text-base font-medium uppercase tracking-[0.02em] transition-colors',
         sobreNavy
-          ? 'border border-arena bg-white/10 text-white backdrop-blur-2xl hover:bg-arena hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena'
+          ? 'boton-relleno-arena border border-arena bg-white/10 text-white backdrop-blur-2xl hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-arena'
           : 'bg-arena text-navy hover:bg-arena-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy',
       ]}
-      >Enviar consulta por WhatsApp →</button
     >
+      <span class="relative z-10">Enviar consulta por WhatsApp →</span>
+    </button>
     <p
       class:list={[
         'mt-3 text-center text-[10px] leading-relaxed',
@@ -208,6 +220,30 @@ const tiposDeProyecto = [
   form[data-glass] select option {
     background-color: #00263f;
     color: #fff;
+  }
+
+  /* Relleno de hover que entra de izquierda a derecha en el submit
+   * (18/08/2026) — misma técnica y mismo timing que `.boton-relleno-arena` en
+   * `Boton.astro` y que `.tst-btn` en `CarruselTestimonios.astro`: si cambia
+   * el easing o la duración en uno, sincronizar los tres. */
+  .boton-relleno-arena::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-color: var(--color-arena);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .boton-relleno-arena:hover::before,
+  .boton-relleno-arena:focus-visible::before {
+    transform: translateX(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boton-relleno-arena::before {
+      transition: none;
+    }
   }
 </style>
 

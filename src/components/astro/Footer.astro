@@ -10,23 +10,26 @@
  * y los íconos son SVG inline en el mismo trazo que el resto del sitio (24×24,
  * stroke 1.5, puntas redondeadas), sin sumar dependencias ni JS (§7.1).
  *
- * Croma y tipografía locales: fondo blanco (14/08/2026, mismo criterio ya
- * aplicado en las secciones de Home que pasaron de navy a blanco). Títulos de
- * columna en arena-800 (única variante de arena legible como texto sobre claro,
- * §1.2/Eyebrow), links en navy-700 con hover a navy (el arena NUNCA es texto
- * ni borde sobre blanco — da 1.70, falla WCAG), y los pesos que el sitio carga
+ * Croma y tipografía locales: fondo NAVY (18/08/2026, pedido explícito —
+ * reemplaza el fondo blanco del 14/08/2026, que a su vez había reemplazado un
+ * navy anterior; el sitio vuelve al navy en el footer específicamente,
+ * aunque la Home lo haya sacado del resto de las secciones). Mismo esquema de
+ * color que ya usan las superficies navy del sitio (`sobreNavy` de
+ * FormularioConsulta, el Nav sobre el hero): texto blanco, cuerpo secundario
+ * en navy-100 (casi blanco pero un escalón más apagado, para separar
+ * jerarquía sin bajar a un gris que no existe en la paleta), bordes en
+ * white/25, hover a arena — el mismo acento que usa el Nav sobre el hero.
+ * Títulos de columna en arena (arena de marca sobre navy SÍ pasa contraste;
+ * solo falla sobre blanco, §1.2/Eyebrow) y los pesos que el sitio carga
  * (300/400/500) — nada de `font-thin` ni `font-mono`, que no existen acá.
- * Ratios verificados: navy-700 sobre blanco 5.37 (AA), navy sobre blanco 13.46
- * (AAA), navy-200 (borde) es decorativo, no necesita ratio de texto.
  *
  * Los botones son 44×44 y no los ~28px de la referencia: es el tap target mínimo
  * (§7.3). Solo hay tres porque son los canales que NEST realmente tiene — no se
  * inventan perfiles de redes que no existen.
  *
- * Logo (14/08/2026): usa /logo-nest-oscuro.svg, no el /logo-nest.svg del hero.
- * Ese archivo es todo blanco (pensado para el video oscuro del hero de Home) e
- * invisible sobre este fondo blanco. La variante oscura es el mismo logo en
- * navy sólido.
+ * Logo (18/08/2026): vuelve a /logo-nest.svg, la variante blanca — invisible
+ * iba sobre el fondo blanco anterior, ahora es la correcta sobre navy. Mismo
+ * archivo que usa el Nav transparente del hero.
  *
  * Monocromo (16/08/2026, pedido del cliente): las dos variantes son de un solo
  * tono — blanco o navy según el fondo. Antes el isotipo iba en arena; se
@@ -67,21 +70,21 @@ const botones = [
   { href: `mailto:${site.email}`, etiqueta: 'Escribinos por email', icono: 'email' as const },
 ];
 
-const tituloColumna = 'block text-[0.625rem] font-medium uppercase tracking-[0.24em] text-arena-800';
+const tituloColumna = 'block text-[0.625rem] font-medium uppercase tracking-[0.24em] text-arena';
 const link =
-  'flex min-h-[44px] items-center text-sm text-navy-700 transition-colors hover:text-navy';
+  'flex min-h-[44px] items-center text-sm text-navy-100 transition-colors hover:text-arena';
 ---
 
-<footer class="border-t border-navy-200 bg-white text-navy">
+<footer class="border-t border-white/10 bg-navy text-white">
   <div class="mx-auto max-w-6xl px-6 py-14">
     <div class="grid grid-cols-6 gap-8 md:gap-10">
       {/* Bloque de marca: logo, descripción y botones. */}
       <div class="col-span-6 flex flex-col gap-5 md:col-span-4">
         <a href="/" class="w-max">
-          <img src="/logo-nest-oscuro.svg" alt="NEST" class="h-[2.7rem] w-auto" />
+          <img src="/logo-nest.svg" alt="NEST" class="h-[2.7rem] w-auto" />
         </a>
 
-        <p class="max-w-sm text-sm leading-relaxed text-navy-700">{site.descripcion}</p>
+        <p class="max-w-sm text-sm leading-relaxed text-navy-100">{site.descripcion}</p>
 
         <div class="flex gap-2">
           {
@@ -92,7 +95,7 @@ const link =
                 {...(b.icono !== 'email'
                   ? { target: '_blank', rel: 'noopener noreferrer' }
                   : {})}
-                class="flex h-11 w-11 items-center justify-center border border-navy-200 text-navy-700 transition-colors hover:border-navy hover:text-navy"
+                class="flex h-11 w-11 items-center justify-center border border-white/25 text-navy-100 transition-colors hover:border-arena hover:text-arena"
               >
                 {b.icono === 'instagram' && (
                   <svg
@@ -168,12 +171,12 @@ const link =
               </a>
             ))
           }
-          {site.direccion && <p class="mt-3 text-sm leading-relaxed text-navy-700">{site.direccion.display}</p>}
+          {site.direccion && <p class="mt-3 text-sm leading-relaxed text-navy-100">{site.direccion.display}</p>}
         </div>
       </address>
     </div>
 
-    <p class="mt-12 border-t border-navy-200 pt-6 text-center text-xs font-light text-navy-700">
+    <p class="mt-12 border-t border-white/10 pt-6 text-center text-xs font-light text-navy-100">
       © {year} {site.nombre}. Todos los derechos reservados.
     </p>
   </div>

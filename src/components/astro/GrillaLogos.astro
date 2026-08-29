@@ -27,8 +27,18 @@ interface Props {
 const { class: className } = Astro.props as Props;
 
 /** Logos que no se muestran, por número de archivo (decisión del 07/08/2026).
- * El asset sigue en /public/logos: se oculta, no se borra. */
-const ocultos = new Set(['08']);
+ * El asset sigue en /public/logos: se oculta, no se borra. `08` vuelto a
+ * mostrar (18/08/2026, pedido explícito: "añademe... el logo_08"). */
+const ocultos = new Set<string>([]);
+
+/* Google salió del sitio (22/08/2026, pedido del cliente): antes se insertaba
+ * `/logos/logo_google.svg` en la posición 6 con un splice. A diferencia de
+ * `ocultos`, acá el asset se borró: el pedido fue sacar la marca, no ocultarla.
+ *
+ * Quedan pendientes los logos de Perramus y SPI Astilleros; con esos dos la
+ * grilla pasaría a 14 celdas. Hoy son 12 (10 numeradas + Subway + Fabric
+ * Sushi), que cierran filas exactas en los dos breakpoints: 6 × 2 en mobile,
+ * 3 × 4 en desktop. */
 
 const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(2, '0'))
   .filter((n) => !ocultos.has(n))
@@ -36,14 +46,26 @@ const logosReales = Array.from({ length: 10 }, (_, i) => String(i + 1).padStart(
     src: `/logos/logo_${n}.svg`,
     alt: `Logo de cliente corporativo de NEST (${n})`,
   }));
-logosReales.splice(5, 0, { src: '/logos/logo_google.svg', alt: 'Logo de Google' });
+/* Subway (18/08/2026, pedido explícito). Ocupa la posición que hasta el
+ * 22/08/2026 tenía Google, que iba justo antes con otro splice. */
+logosReales.splice(5, 0, { src: '/logos/logo_subway.svg', alt: 'Logo de Subway' });
+
+/* Fabric Sushi (23/08/2026, pedido explícito). Único logo en PNG y no SVG: es
+ * el archivo que publica la marca. Venía blanco puro sobre transparente
+ * —invisible contra el fondo blanco de esta sección—, así que se recoloreó a
+ * #5A636E, un gris frío cuya luminancia (98) es la media de los otros logos ya
+ * pasados por el `grayscale` de la grilla, medida sobre el render real.
+ * OJO con el hover: la clase es la misma que en el resto, pero al ser un arte
+ * monocromo no hay color de marca que restituir, así que el efecto no se ve.
+ * Si aparece una versión a color del logo, reemplazar el archivo alcanza. */
+logosReales.splice(6, 0, { src: '/logos/logo_fabric-sushi.png', alt: 'Logo de Fabric Sushi' });
 
 /* Sin celdas de relleno: antes se completaba a un múltiplo de 4 y en mobile
  * (2 columnas) eso dejaba una fila entera vacía. Una fila sin ninguna imagen
  * mide solo su padding, así que las filas dejaban de ser uniformes y el
  * reticulado —que reparte porcentajes iguales— se desalineaba de los logos.
- * Con las celdas justas, mobile da 5 filas exactas (10/2) y desktop 3 (⌈10/4⌉),
- * y `auto-rows-fr` en la grilla garantiza que todas midan igual. */
+ * Con las celdas justas, mobile da ⌈n/2⌉ filas y desktop ⌈n/4⌉ sobre el total
+ * real de logos, y `auto-rows-fr` garantiza que todas midan igual. */
 const celdas = logosReales;
 
 /* Las dos extensiones que salen de la grilla se difuminan hacia el borde del
@@ -87,11 +109,20 @@ const reticulados = [
     /** Una vertical continua por cada límite de columna, sin cortes por fila
      * (16/08/2026): sin los puntos en los cruces, el corte por GAP dejaba un
      * hueco visible en cada intersección. */
-    segmentosV: Array.from({ length: cols + 1 }, (_, c) => ({
-      left: `${c * anchoCol}%`,
-      top: '0%',
-      height: '100%',
-    })),
+    /* La ÚLTIMA vertical se ancla con `right: 0` y no con `left: 100%`
+     * (18/08/2026). Con `left: 100%` su píxel cae justo AFUERA del borde
+     * derecho de la grilla, y como ese borde coincide con la guía derecha de
+     * página —cuyo píxel cae adentro— las dos líneas quedaban adyacentes en vez
+     * de superpuestas: 2px de banda que se leían como una línea extra del
+     * marco. Medido: reticulado en [1224,1225] contra guía en [1223,1224].
+     * Con `right: 0` ocupa el mismo píxel que la guía y se lee una sola línea,
+     * que es lo que ya pasaba del lado izquierdo (ahí `left: 0%` cae adentro y
+     * coincidía por casualidad). */
+    segmentosV: Array.from({ length: cols + 1 }, (_, c) =>
+      c === cols
+        ? { right: '0', top: '0%', height: '100%' }
+        : { left: `${c * anchoCol}%`, top: '0%', height: '100%' },
+    ),
     /** Una horizontal continua por fila, de punta a punta (con sus dos
      * extensiones que se funden hacia el borde real de pantalla), sin cortes
      * por columna. */
