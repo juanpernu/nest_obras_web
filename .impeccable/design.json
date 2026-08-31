@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-29T14:51:34Z",
+  "title": "Design System: NEST — nestobras.com.ar",
+  "extensions": {
+    "colorMeta": {
+      "navy-saturado-profundo": {
+        "role": "primary",
+        "displayName": "Navy Saturado Profundo",
+        "canonical": "#003057",
+        "tonalRamp": [
+          "#002646",
+          "#003057",
+          "#335979",
+          "#4d6e89",
+          "#66839a",
+          "#99acbc",
+          "#ccd6dd",
+          "#f2f5f7"
+        ]
+      },
+      "beige-calido-desaturado": {
+        "role": "secondary",
+        "displayName": "Beige Cálido Desaturado",
+        "canonical": "#d9c2b6",
+        "tonalRamp": [
+          "#3f2b21",
+          "#5c3f30",
+          "#865c46",
+          "#ae9b92",
+          "#c3afa4",
+          "#d9c2b6",
+          "#ece1db",
+          "#f0e6e0"
+        ]
+      },
+      "azul-medio-legible": {
+        "role": "neutral",
+        "displayName": "Azul Medio Legible",
+        "canonical": "#4d6e89"
+      },
+      "azul-limite-de-control": {
+        "role": "neutral",
+        "displayName": "Azul Límite de Control",
+        "canonical": "#66839a"
+      },
+      "azul-de-borde": {
+        "role": "neutral",
+        "displayName": "Azul de Borde",
+        "canonical": "#ccd6dd"
+      },
+      "azul-casi-blanco": {
+        "role": "neutral",
+        "displayName": "Azul Casi Blanco",
+        "canonical": "#e6eaee"
+      },
+      "azul-papel": {
+        "role": "neutral",
+        "displayName": "Azul Papel",
+        "canonical": "#f2f5f7"
+      },
+      "beige-papel": {
+        "role": "secondary",
+        "displayName": "Beige Papel",
+        "canonical": "#f0e6e0"
+      },
+      "beige-sombra": {
+        "role": "secondary",
+        "displayName": "Beige Sombra",
+        "canonical": "#c3afa4"
+      },
+      "terracota-apagada": {
+        "role": "secondary",
+        "displayName": "Terracota Apagada",
+        "canonical": "#865c46"
+      },
+      "blanco-papel": {
+        "role": "neutral",
+        "displayName": "Blanco Papel",
+        "canonical": "#ffffff"
+      },
+      "linea-de-guia": {
+        "role": "tertiary",
+        "displayName": "Línea de Guía",
+        "canonical": "color-mix(in srgb, #d9c2b6 60%, transparent)"
+      },
+      "tinta-neutra": {
+        "role": "tertiary",
+        "displayName": "Tinta Neutra",
+        "canonical": "rgb(0 0 0 / 0.5)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Solo el <h1> del hero de la Home, sobre video. Es el LCP: su animación se declara en CSS."
+      },
+      "stat": {
+        "displayName": "Estadística",
+        "purpose": "Los cuatro números de la barra de estadísticas. Peso normal a gran tamaño: dato editorial, no cartel."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "El <h1> de las cinco páginas internas, dentro de la hoja técnica."
+      },
+      "title": {
+        "displayName": "Título de sección",
+        "purpose": "Los <h2>. Peso 400: el tamaño ya jerarquiza."
+      },
+      "subtitle": {
+        "displayName": "Título de tarjeta",
+        "purpose": "<h3> de obra, servicio o valor."
+      },
+      "lead": {
+        "displayName": "Bajada",
+        "purpose": "Párrafo de entrada, máximo 680px. El peso 300 es lo que lo hace leer como aire."
+      },
+      "body": {
+        "displayName": "Cuerpo",
+        "purpose": "Texto general, entre 640 y 680px de medida."
+      },
+      "label": {
+        "displayName": "Eyebrow / etiqueta",
+        "purpose": "Mayúsculas con tracking abierto. Siempre <span>, nunca heading: no rompe la jerarquía H1→H2→H3."
+      }
+    },
+    "shadows": [
+      {
+        "name": "halo-capa-flotante",
+        "value": "0 12px 40px rgba(0,0,0,0.1)",
+        "purpose": "Header scrolleado, menú móvil y card de formulario. Separa la capa flotante sin dibujar un borde de caja."
+      },
+      {
+        "name": "accion-persistente",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+        "purpose": "Exclusiva del botón flotante de WhatsApp, que vive fuera del flujo."
+      },
+      {
+        "name": "realce-de-campo",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Campos de formulario. Único resto de sombra dentro del documento."
+      }
+    ],
+    "motion": [
+      {
+        "name": "curva-unica",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "La única curva del sitio. Estados, revelados y entradas usan esta."
+      },
+      {
+        "name": "estado-control",
+        "value": "300ms",
+        "purpose": "Relleno de botón, cambio de color, grayscale, hamburguesa."
+      },
+      {
+        "name": "revelado-en-tarjeta",
+        "value": "500ms",
+        "purpose": "Texto y velo que aparecen dentro de una tarjeta destacada."
+      },
+      {
+        "name": "entrada-de-bloque",
+        "value": "1.1s / 28px",
+        "purpose": "Entrada por scroll (data-reveal) y entrada del hero. Los dos mecanismos tienen que verse iguales."
+      },
+      {
+        "name": "escalonado",
+        "value": "240ms",
+        "purpose": "Delay entre bloques hermanos dentro de una <section>, calculado en runtime por posición."
+      },
+      {
+        "name": "trazo-de-arena",
+        "value": "1s / delay 0.7s",
+        "purpose": "La línea de 3px que se dibuja bajo el <h1> una vez que el título ya es visible."
+      },
+      {
+        "name": "contador",
+        "value": "1400ms ease-out cúbico",
+        "purpose": "Conteo de las estadísticas al entrar la barra en viewport."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "guia",
+        "value": "1192px"
+      },
+      {
+        "name": "container-max",
+        "value": "1920px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón primario (sobre navy)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA principal sobre fondo navy o fotografía oscura. En reposo es solo trazo; el arena entra de izquierda a derecha.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\"><span>Consultá tu proyecto</span></a>",
+      "css": ".ds-btn-primary { position: relative; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; min-height: 44px; padding: 0.5rem; border: 1px solid var(--color-arena, #d9c2b6); border-radius: 0; background-color: rgb(255 255 255 / 0.1); backdrop-filter: blur(40px); color: #fff; font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; text-decoration: none; transition: color 0.3s; } .ds-btn-primary::before { content: ''; position: absolute; inset: 0; z-index: 0; background-color: var(--color-arena, #d9c2b6); transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-primary span { position: relative; z-index: 10; } .ds-btn-primary:hover, .ds-btn-primary:focus-visible { color: var(--color-navy, #003057); } .ds-btn-primary:hover::before, .ds-btn-primary:focus-visible::before { transform: translateX(0); } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-arena, #d9c2b6); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botón primario claro (sobre blanco)",
+      "kind": "button",
+      "refersTo": "button-primary-light",
+      "description": "El mismo lenguaje de caja para fondo claro: borde y texto navy, relleno navy sólido en hover. Es el CTA del header scrolleado.",
+      "html": "<a class=\"ds-btn-primary-light\" href=\"#\"><span>Consultá tu proyecto</span></a>",
+      "css": ".ds-btn-primary-light { position: relative; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; min-height: 44px; padding: 0.5rem; border: 1px solid var(--color-navy, #003057); border-radius: 0; background-color: transparent; color: var(--color-navy, #003057); font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; text-decoration: none; transition: color 0.3s; } .ds-btn-primary-light::before { content: ''; position: absolute; inset: 0; z-index: 0; background-color: var(--color-navy, #003057); transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-primary-light span { position: relative; z-index: 10; } .ds-btn-primary-light:hover, .ds-btn-primary-light:focus-visible { color: #fff; } .ds-btn-primary-light:hover::before, .ds-btn-primary-light:focus-visible::before { transform: translateX(0); } .ds-btn-primary-light:focus-visible { outline: 2px solid var(--color-navy, #003057); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botón subrayado",
+      "kind": "button",
+      "refersTo": "button-underline",
+      "description": "Acción secundaria sin caja: el trazo se convierte en un subrayado de 3px que crece de 0 a 100% del ancho del texto, animado por background-size.",
+      "html": "<a class=\"ds-btn-underline\" href=\"#\"><span>Ver obras</span></a>",
+      "css": ".ds-btn-underline { display: inline-flex; align-items: center; min-height: 44px; padding: 0.75rem 0; color: var(--color-navy, #003057); font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; text-decoration: none; } .ds-btn-underline span { padding-bottom: 0.25rem; background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 3px; transition: background-size 0.3s ease-out; } .ds-btn-underline:hover span, .ds-btn-underline:focus-visible span { background-size: 100% 3px; } .ds-btn-underline:focus-visible { outline: 2px solid var(--color-navy, #003057); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botón de envío (fondo claro)",
+      "kind": "button",
+      "refersTo": "button-submit",
+      "description": "Submit del formulario sobre fondo claro. La única superficie sólida de arena del sistema: es lo único que pasa contraste ahí.",
+      "html": "<button class=\"ds-btn-submit\" type=\"submit\"><span>Enviar consulta por WhatsApp →</span></button>",
+      "css": ".ds-btn-submit { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; border: none; border-radius: 0; background-color: var(--color-arena, #d9c2b6); color: var(--color-navy, #003057); font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; font-size: 1rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.02em; cursor: pointer; transition: background-color 0.3s; } .ds-btn-submit:hover { background-color: var(--color-arena-600, #c3afa4); } .ds-btn-submit:focus-visible { outline: 2px solid var(--color-navy, #003057); outline-offset: 2px; }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Campo de formulario en fondo claro. 44px de alto y 16px de fuente son requisitos, no estética: tap target y no-zoom en iOS.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-nombre\">Nombre completo *</label><input class=\"ds-field\" id=\"ds-nombre\" type=\"text\" placeholder=\"Ej: María González\">",
+      "css": ".ds-field-label { display: block; color: var(--color-navy, #003057); font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; } .ds-field { display: flex; width: 100%; min-height: 44px; margin-top: 0.5rem; padding: 0.5rem 0.75rem; appearance: none; border: 1px solid var(--color-navy-600, #66839a); border-radius: 0; background-color: #fff; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); color: var(--color-navy, #003057); font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; font-size: 1rem; outline: none; transition: color 0.2s, box-shadow 0.2s; } .ds-field::placeholder { color: var(--color-navy-700, #4d6e89); } .ds-field:focus-visible { border-color: var(--color-navy, #003057); box-shadow: 0 0 0 3px rgb(0 48 87 / 0.5); }"
+    },
+    {
+      "name": "Tarjeta de obra",
+      "kind": "card",
+      "refersTo": "card-obra",
+      "description": "Tarjeta de la grilla de /obras. Sin borde, sin fondo y sin sombra: la foto es la tarjeta. Blanco y negro en reposo, color en hover.",
+      "html": "<article class=\"ds-card-obra\"><a href=\"#\"><span class=\"ds-card-obra-foto\"><img src=\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3Crect width='4' height='3' fill='%23003057'/%3E%3Cpath d='M0 2.1 1.4 1l1.1.9L3.2 1.3 4 2v1H0z' fill='%234d6e89'/%3E%3C/svg%3E\" alt=\"\"></span><span class=\"ds-card-obra-txt\"><span class=\"ds-card-obra-nombre\">El Aromo</span><span class=\"ds-card-obra-meta\">Vivienda · Nordelta, Tigre</span></span></a></article>",
+      "css": ".ds-card-obra a { display: block; text-decoration: none; } .ds-card-obra-foto { display: block; aspect-ratio: 4 / 3; overflow: hidden; background-color: var(--color-navy, #003057); } .ds-card-obra-foto img { height: 100%; width: 100%; object-fit: cover; filter: grayscale(1); transition: filter 0.5s, transform 0.5s; } .ds-card-obra a:hover .ds-card-obra-foto img, .ds-card-obra a:focus-visible .ds-card-obra-foto img { filter: grayscale(0); transform: scale(1.03); } .ds-card-obra-txt { display: block; margin-top: 1rem; font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; } .ds-card-obra-nombre { display: block; color: var(--color-navy, #003057); font-size: 1.5rem; font-weight: 500; line-height: 1.3; } .ds-card-obra-meta { display: block; margin-top: 0.25rem; color: var(--color-navy-700, #4d6e89); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.06em; } .ds-card-obra a:focus-visible { outline: 2px solid var(--color-navy, #003057); outline-offset: 2px; }"
+    },
+    {
+      "name": "Marco de sección (hoja técnica)",
+      "kind": "custom",
+      "description": "El componente firma del sistema: dos reglas horizontales casi subliminales y cuatro escuadras de registro de 9px en navy, alineadas con las guías de página.",
+      "html": "<div class=\"ds-marco\"><span class=\"ds-marco-regla ds-marco-regla--sup\"></span><span class=\"ds-marco-regla ds-marco-regla--inf\"></span><span class=\"ds-marco-esq ds-marco-esq--si\"></span><span class=\"ds-marco-esq ds-marco-esq--sd\"></span><span class=\"ds-marco-esq ds-marco-esq--ii\"></span><span class=\"ds-marco-esq ds-marco-esq--id\"></span><span class=\"ds-marco-eyebrow\">Servicios</span><span class=\"ds-marco-titulo\">Lo que construimos</span></div>",
+      "css": ".ds-marco { position: relative; padding: 3rem 1.5rem; background: #fff; font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; } .ds-marco-regla { position: absolute; left: 0; right: 0; height: 1px; background-color: var(--color-rule, rgb(217 194 182 / 0.6)); pointer-events: none; } .ds-marco-regla--sup { top: 0; } .ds-marco-regla--inf { bottom: 0; } .ds-marco-esq { position: absolute; width: 9px; height: 9px; border-style: solid; border-width: 0; border-color: var(--color-navy, #003057); pointer-events: none; } .ds-marco-esq--si { top: 0; left: 0.75rem; border-top-width: 1.5px; border-left-width: 1.5px; } .ds-marco-esq--sd { top: 0; right: 0.75rem; border-top-width: 1.5px; border-right-width: 1.5px; } .ds-marco-esq--ii { bottom: 0; left: 0.75rem; border-bottom-width: 1.5px; border-left-width: 1.5px; } .ds-marco-esq--id { bottom: 0; right: 0.75rem; border-bottom-width: 1.5px; border-right-width: 1.5px; } .ds-marco-eyebrow { display: block; margin-bottom: 0.625rem; color: var(--color-arena-800, #865c46); font-size: 0.6875rem; font-weight: 500; line-height: 1; text-transform: uppercase; letter-spacing: 0.18em; } .ds-marco-titulo { display: block; color: var(--color-navy, #003057); font-size: 2.625rem; font-weight: 400; line-height: 1.2; letter-spacing: -0.01em; }"
+    },
+    {
+      "name": "Píldora de ícono",
+      "kind": "custom",
+      "refersTo": "icon-pill",
+      "description": "Contenedor cuadrado de 56px en beige papel para los íconos de servicio. Sin borde y sin radio: la superficie sola ya lo separa del fondo.",
+      "html": "<span class=\"ds-icon-pill\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10.5 12 3l9 7.5\"></path><path d=\"M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5\"></path><path d=\"M9.75 21v-6.25h4.5V21\"></path></svg></span>",
+      "css": ".ds-icon-pill { display: flex; width: 56px; height: 56px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: 0; background: var(--color-arena-200, #f0e6e0); color: var(--color-navy, #003057); } .ds-icon-pill svg { width: 26px; height: 26px; }"
+    },
+    {
+      "name": "Header scrolleado (capa flotante)",
+      "kind": "nav",
+      "refersTo": "header-scrolled",
+      "description": "El único lenguaje con glass y sombra del sistema: aparece cuando el header pasa 8px de scroll y se superpone al contenido.",
+      "html": "<header class=\"ds-nav\"><span class=\"ds-nav-logo\">NEST</span><nav class=\"ds-nav-links\"><a class=\"is-active\" href=\"#\">Home</a><a href=\"#\">Nosotros</a><a href=\"#\">Servicios</a><a href=\"#\">Obras</a></nav></header>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--color-navy-200, #ccd6dd); background-color: rgb(255 255 255 / 0.7); backdrop-filter: blur(12px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); color: var(--color-navy, #003057); font-family: 'Roboto Condensed', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif; } .ds-nav-logo { font-size: 1.5rem; font-weight: 500; letter-spacing: 0.08em; } .ds-nav-links { display: flex; align-items: center; gap: 2rem; } .ds-nav-links a { display: flex; min-height: 44px; align-items: center; color: inherit; font-size: 17.6px; text-transform: uppercase; letter-spacing: 0.08em; text-decoration: none; transition: color 0.3s; } .ds-nav-links a:hover { color: var(--color-navy-700, #4d6e89); } .ds-nav-links a.is-active { font-weight: 500; } .ds-nav-links a:focus-visible { outline: 2px solid var(--color-navy, #003057); outline-offset: 2px; }"
+    },
+    {
+      "name": "Botón flotante de WhatsApp",
+      "kind": "button",
+      "refersTo": "fab-whatsapp",
+      "description": "La única forma redonda del sitio. Es circular precisamente porque no pertenece al documento: vive en la capa flotante, fijo en todas las páginas.",
+      "html": "<a class=\"ds-fab\" href=\"#\" aria-label=\"Escribinos por WhatsApp\"><svg viewBox=\"0 0 24 24\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3.5 20l1.2-4.7A8.5 8.5 0 1 1 21 11.5Z M8.8 9.2c0 3 2.2 5.2 5.2 5.2l1-1.3-1.7-.8-.8.7c-.9-.4-1.6-1.1-2-2l.7-.8-.8-1.7-1.3 1Z\"></path></svg></a>",
+      "css": ".ds-fab { display: flex; width: 56px; height: 56px; align-items: center; justify-content: center; border-radius: 9999px; background-color: var(--color-arena, #d9c2b6); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); transition: background-color 0.3s; } .ds-fab svg { width: 28px; height: 28px; fill: var(--color-navy, #003057); } .ds-fab:hover { background-color: var(--color-arena-600, #c3afa4); } .ds-fab:focus-visible { outline: 2px solid var(--color-navy, #003057); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Obra Vista",
+    "overview": "Hormigón a la vista: nada se tapa, y lo que sostiene la pieza es lo que se ve. El sitio no aplica una capa decorativa encima del contenido — el contenido, encuadrado con precisión, es el acabado. De ahí las tres ausencias que definen el sistema más que cualquier presencia: cero radio, cero sombra, cero degradado en todo el cuerpo del documento. Una tarjeta de obra es una foto y dos líneas de texto; una tarjeta de servicio no tiene fondo hasta que la apuntás; un botón en reposo es un rectángulo de 1px de trazo. Cuando una superficie no se justifica, no existe.\n\nSobre ese material desnudo corre un solo recurso gráfico: el marco de hoja técnica. Dos guías verticales de 1px recorren el documento entero de la primera sección a la última, y cada bloque de contenido clipea sus cuatro esquinas sobre ellas con escuadras de registro en navy. Las reglas horizontales son casi subliminales; lo que ancla el ojo son las esquinas. Tres franjas de rayado diagonal a 115° marcan cambio de capítulo, no separación de sección. El efecto acumulado es que la página se lee como un plano de obra —márgenes de imprenta, marcas de registro, achurado— sin que ninguna de esas piezas grite.\n\nEl carácter resultante es sobrio, preciso y cálido. La precisión manda: la geometría es exacta, el movimiento tiene una sola curva y los pesos tipográficos son tres. Pero el beige de marca y la fotografía de obra real —blanco y negro en reposo, color al apuntarla— impiden que se lea como un documento frío. Es un profesional que explica bien, no un catálogo técnico ni un folleto.",
+    "keyCharacteristics": [
+      "Radio cero y sombra cero en todo el cuerpo del documento; la única excepción es la capa flotante.",
+      "El marco de hoja técnica —guías, escuadras de 9px, rayado a 115°— como único ornamento del sistema.",
+      "Dos colores de marca y nada más; los neutros derivan del navy, nunca son grises ajenos.",
+      "Los controles nacen como trazo y se rellenan al usarse, siempre de izquierda a derecha.",
+      "Fotografía en blanco y negro que revela color en hover, tap o foco.",
+      "Tres pesos tipográficos (300/400/500); el énfasis chico se hace con mayúsculas y tracking, nunca con bold.",
+      "Presupuesto de recursos como restricción de diseño: cada efecto se resuelve en CSS, sin hidratación."
+    ],
+    "rules": [
+      {
+        "name": "La Regla del Arena",
+        "section": "colors",
+        "body": "El arena #d9c2b6 sobre blanco da 1.70 y falla todo — AA, AAA y el umbral 3.0 de componentes de interfaz. Sobre fondo claro el arena solo puede ser fondo grande, línea puramente ornamental o relleno de hover; nunca texto, borde de control, ícono con significado, anillo de foco ni estado. Sobre fondo claro el acento es navy. El arena brilla sobre oscuro."
+      },
+      {
+        "name": "La Regla de la Tinta Neutra",
+        "section": "colors",
+        "body": "Todo velo sobre fotografía es negro, no navy. Un tinte de marca sobre la foto la vuelve una ilustración de marca; el negro la deja ser una foto. Además rinde: el velo negro al 70 % sube el contraste contra texto blanco de 5.41 a 8.5 en el peor caso."
+      },
+      {
+        "name": "La Regla del Neutro Derivado",
+        "section": "colors",
+        "body": "Ningún gris nuevo entra al sistema. Todo neutro sale de mezclar navy con blanco. Si hace falta un tono que no está, se calcula desde el navy y se verifica el ratio; no se toma de una paleta ajena."
+      },
+      {
+        "name": "La Regla de los Tres Pesos",
+        "section": "typography",
+        "body": "Solo existen 300, 400 y 500. Pedir 600 o 700 dispara bold sintético: el navegador engorda el trazo por su cuenta y el resultado desentona con todo lo demás. Si hace falta más énfasis del que da el 500, se cambia el tamaño, el color o el caso — nunca el peso."
+      },
+      {
+        "name": "La Regla de la Versalita",
+        "section": "typography",
+        "body": "El énfasis en texto chico se hace con mayúsculas más tracking, nunca con bold ni con color de acento. Es el mismo recurso en eyebrow, nav, botones, metadatos y encabezados de ficha: cuanto más chico el texto, más abierto el tracking (0.06em → 0.24em)."
+      },
+      {
+        "name": "La Regla del H1 Visible",
+        "section": "typography",
+        "body": "El <h1> es el LCP de todas las rutas. Su animación de entrada se declara en CSS y arranca en el primer frame; nunca depende de un script ni de un observer, y nunca arranca en opacity: 0 gobernado por JS. Un <h1> en opacidad cero deja de ser candidato a LCP y la métrica se degrada entre 140 y 424 ms."
+      },
+      {
+        "name": "La Regla de las Dos Guías",
+        "section": "layout",
+        "body": "Todo lo que dibuje marco —guías, reglas, escuadras, rayado, sangrías— se posiciona con max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2)). Nunca con un valor propio, y nunca con 100vw: 100vw cuenta la barra de scroll y el contenedor no, y esa diferencia es scroll horizontal garantizado."
+      },
+      {
+        "name": "La Regla de la Regla Compartida",
+        "section": "layout",
+        "body": "La regla horizontal pertenece siempre al borde superior del bloque. La inferior se dibuja solo cuando el bloque cierra una cadena de secciones pegadas —la última de la página, o la anterior a una franja de rayado— vía la prop cierra. Si cada sección dibujara las dos, en cada junta habría dos líneas de 1px apiladas."
+      },
+      {
+        "name": "La Regla del Corte de Capítulo",
+        "section": "layout",
+        "body": "El rayado diagonal separa capítulos, no secciones. En la Home son tres, uno por cambio de tema. Si fuera entre todas las secciones dejaría de leerse como corte y pasaría a ser un fondo."
+      },
+      {
+        "name": "La Regla de los Dos Planos",
+        "section": "elevation",
+        "body": "Glass, blur y sombra son atributos de la capa flotante, no efectos disponibles. Solo puede usarlos un elemento que efectivamente se superpone a otro contenido: header, menú, card sobre foto, botón fijo. Un bloque que vive en el flujo del documento es plano, sin discusión."
+      },
+      {
+        "name": "La Regla del Blur Proporcional",
+        "section": "elevation",
+        "body": "La fuerza del blur es proporcional a cuánto contenido tapa la superficie: 12px para la barra de 44px de alto, 40px para el menú móvil que cubre la pantalla. No es un valor de gusto."
+      },
+      {
+        "name": "La Regla del Radio Cero",
+        "section": "shapes",
+        "body": "Ningún elemento del documento lleva border-radius. Si algo necesita distinguirse, se distingue por trazo, color o superficie. La única excepción viva es el botón flotante de WhatsApp, y es circular precisamente porque no pertenece al documento."
+      },
+      {
+        "name": "La Regla de la Escuadra en las Cuatro Esquinas",
+        "section": "shapes",
+        "body": "Las escuadras marcan las cuatro esquinas de un rectángulo, y nada más. Los cruces internos de un reticulado no se marcan. En una junta entre dos secciones encadenadas, las dos escuadras inferiores de una y las dos superiores de la siguiente se encuentran sobre la misma regla y forman una marca de registro completa."
+      },
+      {
+        "name": "La Regla del Trazo",
+        "section": "components",
+        "body": "El reposo es línea; el relleno es la llegada. Botón: borde de 1px que se rellena. Link: subrayado que crece de 0 a 100 %. Campo: borde, nunca fondo de color. Tarjeta de servicio: sin superficie hasta el hover. Ningún control nace como caja sólida salvo el submit en fondo claro, donde el arena macizo es lo único que pasa contraste."
+      },
+      {
+        "name": "La Regla de Izquierda a Derecha",
+        "section": "components",
+        "body": "Todo relleno progresivo entra desde la izquierda con transform: translateX(-100%) → 0, nunca con un cambio de color instantáneo ni animando width. La única excepción son los botones de flecha del carrusel, donde el relleno entra desde el lado al que apunta la flecha. Tres archivos comparten esta receta: si cambia el timing en uno, se sincronizan los tres."
+      },
+      {
+        "name": "La Regla de la Curva Única",
+        "section": "components",
+        "body": "Todo el movimiento del sitio usa cubic-bezier(0.22, 1, 0.36, 1). Las duraciones son igual de disciplinadas: 300ms para estados de control, 500ms para revelado dentro de una tarjeta, 1.1s con 28px de recorrido para la entrada de un bloque. Toda animación tiene su rama prefers-reduced-motion, y la regla para decidir qué se apaga es: el fade informa el estado y va siempre; el desplazamiento es decorativo y solo corre si no se pidió menos movimiento."
+      }
+    ],
+    "dos": [
+      "Do posicionar cualquier elemento de marco con max(var(--guia-margen), calc((100% - var(--container-6xl)) / 2)), para que caiga sobre las guías de página.",
+      "Do usar navy como acento sobre fondo claro y arena como acento sobre navy, siempre.",
+      "Do resolver los patrones interactivos con HTML y CSS nativos: <details> para el menú, :has() para el foco de fila y el filtro de obras, scroll-snap para carruseles. El sitio tiene cero directivas client:* y eso es una restricción de diseño, no solo técnica.",
+      "Do dar 44×44px mínimo a todo objetivo táctil, y 16px de font-size a todo campo de formulario.",
+      "Do escribir mayúsculas con tracking abierto para cualquier texto chico de énfasis (0.06em a 0.24em según el tamaño).",
+      "Do entregar la fotografía en blanco y negro por defecto, con el color como respuesta a hover, foco o tap.",
+      "Do declarar en CSS la animación de entrada de cualquier bloque que contenga el <h1>; nunca gobernarla desde JS.",
+      "Do verificar el ratio de contraste antes de estrenar un token de la escala que hoy no tiene consumidor."
+    ],
+    "donts": [
+      "Don't poner arena sobre fondo claro como texto, borde de control, ícono con significado, anillo de foco o estado. 1.70 rompe el criterio de accesibilidad 100 del proyecto.",
+      "Don't agregar border-radius, sombra ni degradado a nada que viva en el flujo del documento. Esos tres recursos pertenecen a la capa flotante.",
+      "Don't pedir pesos tipográficos fuera de 300/400/500: dispara bold sintético.",
+      "Don't usar 100vw para sangrar a ancho completo. Con left: 0; right: 0 sobre un bloque que ya es de ancho completo alcanza, y no mete scroll horizontal.",
+      "Don't dibujar la regla inferior de una sección que tiene otra sección con marco pegada abajo.",
+      "Don't teñir de navy un velo sobre fotografía: la tinta sobre foto es negra.",
+      "Don't derivar hacia la constructora argentina genérica: fotos de stock con casco, dorados y degradados, carrusel de valores con íconos de librería, sellos de calidad inventados. El PDF de contenido trae amarillo y dorado; no son de la marca.",
+      "Don't derivar hacia el estudio de arquitectura frío: blanco absoluto, tipografía diminuta, contraste al mínimo, navegación críptica y la obra escondida detrás de la interfaz. Este sitio existe para que alguien escriba una consulta.",
+      "Don't meter un embed de terceros en el hero. Se intentó tres veces con YouTube y se revirtió tres veces; el historial está en docs/DEUDA-TECNICA.md §5.",
+      "Don't reintroducir líneas dasheadas. Se eliminaron del sitio entero el 15/08/2026 en favor de reglas continuas casi subliminales con marcas navy en las esquinas."
+    ]
+  }
+}
