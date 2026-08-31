@@ -33,7 +33,7 @@ Mapa real del código: `src/components/astro/` (componentes propios, cero `clien
 - Presupuesto de recursos como criterio de aceptación: LCP < 2s (el `<h1>` es el LCP), CLS < 0.05, JS < 5 KB por ruta, CSS < 20 KB, Lighthouse mobile ≥95 performance y **100 accesibilidad**.
 - El arena nunca porta significado sobre fondo claro (texto, borde de control, ícono, anillo de foco, estado) — ver `DESIGN.md` → La Regla del Arena. Sobre fondo claro el acento es navy.
 - Solo pesos tipográficos 300/400/500 — pedir 600 o 700 dispara bold sintético.
-- Radio 0 y sombra 0 en todo el cuerpo del documento; la única excepción es la capa flotante (header scrolleado, menú mobile, FAB de WhatsApp).
+- Radio 0 y sombra 0 en todo el cuerpo del documento. Dos excepciones, las dos documentadas: la capa flotante (header scrolleado, menú mobile, FAB de WhatsApp) y el `shadow-xs` de los campos de formulario. El vocabulario completo está en `DESIGN.md` → Shadow Vocabulary; ante duda, manda esa lista y no esta línea.
 - Nunca `100vw` para sangrar a ancho completo.
 - Acentuación correcta obligatoria en todo el sitio, incluidos `alt`, metadatos y mensajes del formulario.
 - Nada inventado: sin testimonios reales nuevos, sin precios, sin premios, sin certificaciones. La única excepción ya documentada (2 testimonios placeholder en producción, por pedido explícito del cliente) está en `docs/DEUDA-TECNICA.md` §2.3 — no la repliques como patrón.
@@ -44,7 +44,7 @@ Mapa real del código: `src/components/astro/` (componentes propios, cero `clien
 - `DESIGN.md` y `.impeccable/design.json` se **regeneran**, nunca se editan a mano: cambiá primero el sistema visual en el código (`src/styles/global.css`, componentes) y corré `/impeccable document` después. Nunca al revés.
 - `PRODUCT.md` se actualiza con `/impeccable init`.
 - `.impeccable/config.json` fija `buildPath: "code"` — Impeccable construye/audita sobre el código fuente en `src/`, no sobre un artefacto aparte.
-- `.impeccable/surfaces/brandbook-html.md` es el brief de una superficie puntual (el brandbook) y vive en el worktree `.claude/worktrees/brandbook-nest/`, no en la raíz de `main` — no lo busques ahí.
+- `.impeccable/surfaces/` guarda un brief por superficie: alcance, audiencia, dirección elegida y decisiones abiertas de esa ruta o artefacto. Leelo antes de tocar la superficie que describe; no copies verdad global ni tokens ahí adentro.
 - Todo lo demás (`docs/*.md`, `src/`) se edita a mano.
 - Verificación real, en este orden: `pnpm build` → `pnpm astro check` → `bash scripts/verificar-perf.sh` (JS/CSS sobre `dist/`) → `bash scripts/verificar-tracking.sh` (sobre `dist/`) → `grep -rn "client:" src` (tiene que devolver vacío).
 - El `verificar-html.sh` que cita `docs/PLAN-EJECUCION.md` §12 (`curl` contra un `$BASE_URL` en vivo) **no existe todavía** en `scripts/` — es trabajo pendiente, ver `docs/DEUDA-TECNICA.md` §4.

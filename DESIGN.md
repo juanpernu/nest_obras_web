@@ -182,8 +182,8 @@ Dos colores de marca —un azul frío de saturación máxima y un beige cálido 
 
 ### Neutral
 - **Blanco Papel** (`#ffffff`): fondo de todo el cuerpo del documento. Desde el 14/08/2026 **todas** las secciones son blancas; el navy quedó para el hero, el footer y las superficies fotográficas.
-- **Azul Medio Legible** (`#4d6e89`, token `navy-700`): el neutro de trabajo del sitio, con diferencia el más usado. Texto secundario, bajadas, metadatos de tarjeta, placeholders (5.48) y hover de link sobre claro.
-- **Azul Límite de Control** (`#66839a`, token `navy-600`): borde de campo de formulario en reposo. Elegido por contraste: 3.4:1 contra blanco, sobre el mínimo de 3:1 que WCAG 1.4.11 exige para el límite de un control.
+- **Azul Medio Legible** (`#4d6e89`, token `navy-700`): el neutro de trabajo del sitio, con diferencia el más usado. Texto secundario, bajadas, metadatos de tarjeta, placeholders (5.37) y hover de link sobre claro.
+- **Azul Límite de Control** (`#66839a`, token `navy-600`): borde de campo de formulario en reposo. Elegido por contraste: 3.98:1 contra blanco, sobre el mínimo de 3:1 que WCAG 1.4.11 exige para el límite de un control. No alcanza para texto: por debajo de 4.5 no puede portar palabras.
 - **Azul de Borde** (`#ccd6dd`, token `navy-200`): divisores de ficha técnica, borde del header scrolleado, etiquetas de estadística sobre navy.
 - **Azul Casi Blanco** (`#e6eaee`, token `navy-100`): cuerpo de texto sobre navy — un escalón por debajo del blanco para separar jerarquía en el footer y el hero sin bajar a un gris que no existe en la paleta (11.24 sobre navy).
 - **Azul Papel** (`#f2f5f7`, token `navy-50`): fondo de sección alterna.
@@ -302,7 +302,7 @@ El sistema declara **dos planos**, y la separación entre ellos es una regla de 
 
 ### Inputs / Fields
 - **Style:** alto mínimo 44px, radio 0, `appearance-none` también en los `<select>` (con chevron propio de 14px repuesto en el markup, para que los tres tipos de control compartan exactamente la misma caja). `font-size` fijo de 16px: por debajo, iOS hace zoom al enfocar.
-- **Claro:** fondo blanco, borde `navy-600` (3.4:1, el mínimo de WCAG 1.4.11 para el límite de un control), placeholder en `navy-700` (5.48).
+- **Claro:** fondo blanco, borde `navy-600` (3.98:1, sobre el mínimo de 3:1 que WCAG 1.4.11 pide para el límite de un control), placeholder en `navy-700` (5.37).
 - **Glass:** borde `white/25` sobre `bg-white/10` con blur, placeholder `white/60`. Los `<option>` se pintan a mano (`#00263f`) porque el navegador los renderiza en su propia capa y no heredan el fondo del control.
 - **Focus:** el borde pasa al color de anillo y se suma un ring de 3px al 40-50 % — navy sobre claro, arena sobre glass.
 - **Labels:** siempre visibles, en mayúsculas con 0.06em de tracking. Nunca placeholder como etiqueta.

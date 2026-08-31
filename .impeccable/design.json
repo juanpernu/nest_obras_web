@@ -14,25 +14,25 @@
           "#335979",
           "#4d6e89",
           "#66839a",
-          "#99acbc",
+          "#8098ab",
           "#ccd6dd",
           "#f2f5f7"
-        ]
+        ],
+        "rampNote": "Todos los pasos son tokens declarados en src/styles/global.css. No se sintetiza ninguno."
       },
       "beige-calido-desaturado": {
         "role": "secondary",
         "displayName": "Beige Cálido Desaturado",
         "canonical": "#d9c2b6",
         "tonalRamp": [
-          "#3f2b21",
-          "#5c3f30",
           "#865c46",
           "#ae9b92",
           "#c3afa4",
           "#d9c2b6",
           "#ece1db",
           "#f0e6e0"
-        ]
+        ],
+        "rampNote": "Seis pasos y no ocho: son los únicos tonos de arena que el sistema declara. Un séptimo o un octavo serían color inventado."
       },
       "azul-medio-legible": {
         "role": "neutral",
