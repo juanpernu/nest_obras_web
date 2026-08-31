@@ -43,3 +43,9 @@ pnpm-debug.log*
 # src/assets/, que sí consume el build (bug encontrado el 25/08/2026: varias
 # imágenes nunca se commitearon y rompían el deploy en Vercel).
 /assets/
+
+# Evidencia de inspección de Impeccable: capturas regenerables que quedan
+# viejas apenas cambia la página. Lo durable (DESIGN.md, el sidecar y los
+# briefs de superficie) sí se versiona.
+.impeccable/review/
+.impeccable/questions/
