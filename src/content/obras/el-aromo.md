@@ -4,6 +4,7 @@ zona: "Escobar, Zona Norte"
 localidad: Escobar
 tipo: vivienda
 orden: 2
+m2: 360
 portada: ../../assets/obras/el-aromo-5.png
 portadaAlt: "Vivienda premium en El Aromo, Escobar, construida por NEST"
 destacadaEnHome: true
@@ -17,6 +18,8 @@ subtitulo: "Obra residencial en Escobar, con un solo responsable de la obra y un
 ficha:
   - clave: "Tipo"
     valor: "Vivienda premium"
+  - clave: "Superficie"
+    valor: "360 m²"
   - clave: "Ubicación"
     valor: "Escobar, Zona Norte"
 galeria:

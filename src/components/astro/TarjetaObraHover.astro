@@ -73,9 +73,29 @@ const optimizada = await getImage({
      * hover/foco — en reposo la foto se ve entera. */}
     <div aria-hidden="true" class="velo-degrade"></div>
 
-    <div class="texto">
-      <h3 class="text-h3 font-medium">{nombre}</h3>
-      <p class="mt-1 text-sm uppercase tracking-[0.06em]">{tipoLabel} · {zona}</p>
+    <div class="texto flex items-end justify-between gap-4">
+      <div>
+        <h3 class="text-h3 font-medium">{nombre}</h3>
+        <p class="mt-1 text-sm uppercase tracking-[0.06em]">{tipoLabel} · {zona}</p>
+      </div>
+      {/* "Ver más" (03/09/2026, pedido directo: "botón secundario de ver más
+          con flecha en el hover, para navegar a su respectivo desglose").
+          NO es un <Boton> ni un <a> propio: toda la tarjeta YA es un <a
+          href> (más arriba) y anidar un segundo link adentro sería HTML
+          inválido. Es un <span> con el mismo lenguaje visual que la
+          variante `secundario` de Boton.astro —mayúsculas, subrayado de 3px
+          que crece de izquierda a derecha en hover/foco—, reusando el
+          `group` que ya tiene `.tarjeta` para que el subrayado responda al
+          mismo hover/foco que revela el resto de `.texto`, sin JS ni estado
+          propio. `aria-hidden`: no es información nueva para el lector de
+          pantalla, el `<a>` ya anuncia el destino por su nombre accesible
+          (el <h3>) — repetir "ver más" sería ruido. */}
+      <span
+        aria-hidden="true"
+        class="ver-mas shrink-0 pb-1 text-[15px] font-medium tracking-[0.02em] uppercase"
+      >
+        Ver más →
+      </span>
     </div>
   </a>
 </article>
@@ -151,9 +171,35 @@ const optimizada = await getImage({
     position: absolute;
     bottom: 1.25rem;
     left: 1.25rem;
+    right: 1.25rem;
     z-index: 20;
     color: #fff;
     opacity: 0;
+  }
+
+  /* Subrayado de "Ver más" (03/09/2026): mismo mecanismo que la variante
+   * `secundario` de Boton.astro (gradiente en `currentColor`, animado por
+   * `background-size` en vez de `width` — no dispara layout ni necesita
+   * pseudo-elemento ni JS), copiado acá porque este <span> no puede ser un
+   * <Boton> (ver el comentario del markup). Arranca en 0% y crece a 100%
+   * con el mismo `group-hover`/`group-focus-visible` que ya tiene `.tarjeta`. */
+  .ver-mas {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 3px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.3s ease-out;
+  }
+
+  .tarjeta:hover .ver-mas,
+  .tarjeta:focus-visible .ver-mas {
+    background-size: 100% 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ver-mas {
+      transition: none;
+    }
   }
 
   .tarjeta:hover .velo-degrade,

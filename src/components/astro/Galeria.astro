@@ -2,6 +2,29 @@
 /**
  * Galería de obra: carrusel con CSS scroll-snap + <dialog> nativo para ampliar
  * (§3.4). El único JS del sitio: ~12 líneas `is:inline` (no framework, no bundle).
+ *
+ * FLECHAS DE NAVEGACIÓN (pedido directo, 03/09/2026, feedback de página en
+ * /obras/prune: "puedes añadir debajo los botones de chevron como los que
+ * tenemos en la parte de testimonios"). Mismo botón circular que
+ * `.tst-btn` de CarruselTestimonios.astro —mismo tamaño, mismo borde,
+ * mismo relleno navy que entra desde el lado de la flecha al hover/focus,
+ * mismos paths de SVG— pero sin duplicar esas clases con otro nombre: viven
+ * acá como `.gal-btn` porque el color de fondo bajo el trazo cambia (acá
+ * blanco, en testimonios arena-200) y esa única diferencia no amerita
+ * compartir un selector entre dos componentes.
+ *
+ * No hay estado de slide activa que trackear como en el carrusel de
+ * testimonios: esto es una tira con scroll nativo (`scroll-snap`), así que
+ * cada click simplemente mueve el scroll un ancho de tarjeta con
+ * `scrollBy` + `behavior: smooth`. Los botones se deshabilitan solos en
+ * cada punta (`disabled` nativo, sin JS de más) escuchando el evento
+ * `scroll` del propio `<ul>` — así funcionan igual si el visitante llega a
+ * la punta arrastrando con el trackpad en vez de con los botones.
+ *
+ * ESCALA A TODAS LAS OBRAS con galería sin tocar `[id].astro`: este
+ * componente es el único punto de montaje (`src/pages/obras/[id].astro`),
+ * así que el cambio alcanza a cualquier obra con `paginaPropia` y `galeria`
+ * en su colección, no solo a PRUNE.
  */
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
@@ -41,6 +64,44 @@ const { galeria } = Astro.props as Props;
     }
   </ul>
 
+  {/* Alineado a la derecha (03/09/2026, pedido directo: "como en el de
+      testimonios") — mismo criterio que `.tst-nav` en CarruselTestimonios.astro,
+      acá con `justify-end` y no `md:absolute` porque esta fila no compite con
+      contenido debajo que deba desbordarla: es un bloque propio, no un overlay
+      sobre texto. */}
+  <div class="gal-nav mt-6 flex items-center justify-end gap-3.5">
+    <button
+      type="button"
+      class="gal-btn relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-boton border border-navy/25 text-navy transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-30"
+      data-gallery-prev
+      aria-label="Fotos anteriores"
+    >
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="relative z-10 h-[18px] w-[18px]">
+        <path
+          d="M10 12L6 8L10 4"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="gal-btn relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-boton border border-navy/25 text-navy transition-transform active:scale-95 disabled:pointer-events-none disabled:opacity-30"
+      data-gallery-next
+      aria-label="Fotos siguientes"
+    >
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="relative z-10 h-[18px] w-[18px]">
+        <path
+          d="M6 4L10 8L6 12"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+    </button>
+  </div>
+
   <dialog class="gallery-dialog m-auto max-w-[92vw] bg-transparent p-0 backdrop:bg-black/80">
     <div class="relative">
       <img class="gallery-dialog-img max-h-[85vh] w-auto" alt="" />
@@ -69,6 +130,59 @@ const { galeria } = Astro.props as Props;
       dialog.addEventListener('click', (e) => {
         if (e.target === dialog) dialog.close();
       });
+
+      // Flechas: mueven el scroll nativo un ancho de tarjeta (la primera
+      // <li> + su `gap`), no toda la tira — así siempre queda una foto de
+      // referencia a la vista, como en cualquier carrusel de a un paso.
+      const track = g.querySelector('ul');
+      const prev = g.querySelector('[data-gallery-prev]');
+      const next = g.querySelector('[data-gallery-next]');
+      const primeraFoto = track?.querySelector('li');
+      if (!track || !prev || !next || !primeraFoto) return;
+
+      const paso = () => primeraFoto.getBoundingClientRect().width + 16; // 16px = gap-4
+
+      prev.addEventListener('click', () => track.scrollBy({ left: -paso(), behavior: 'smooth' }));
+      next.addEventListener('click', () => track.scrollBy({ left: paso(), behavior: 'smooth' }));
+
+      // Deshabilita cada flecha en su punta, con el mismo scroll que ya
+      // dispara el `scroll-snap` (arrastre, trackpad, teclado): no hace
+      // falta un `IntersectionObserver` aparte para esto.
+      const actualizar = () => {
+        const maxScroll = track.scrollWidth - track.clientWidth - 1; // -1 por redondeo subpixel
+        prev.disabled = track.scrollLeft <= 0;
+        next.disabled = track.scrollLeft >= maxScroll;
+      };
+      track.addEventListener('scroll', actualizar, { passive: true });
+      new ResizeObserver(actualizar).observe(track);
+      actualizar();
     });
   </script>
 </div>
+
+<style>
+  /* Relleno que entra desde el lado al que apunta cada flecha. Copiado de
+   * `.tst-btn` en CarruselTestimonios.astro — ver el comentario de arriba
+   * sobre por qué no comparten selector. */
+  .gal-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-navy);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  [data-gallery-prev]::before {
+    transform: translateX(-100%);
+  }
+  [data-gallery-next]::before {
+    transform: translateX(100%);
+  }
+  .gal-btn:hover::before,
+  .gal-btn:focus-visible::before {
+    transform: translateX(0);
+  }
+  .gal-btn:hover,
+  .gal-btn:focus-visible {
+    color: #fff;
+  }
+</style>

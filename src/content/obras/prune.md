@@ -5,6 +5,7 @@ localidad: CABA
 tipo: corporativo
 anio: 2023
 orden: 1
+m2: 1200
 portada: ../../assets/obras/prune-home.jpeg
 portadaAlt: "Local de PRÜNE terminado por NEST, obra de retail corporativo"
 destacadaEnHome: true
@@ -22,6 +23,8 @@ ficha:
     valor: "Retail corporativo — expansión multisede"
   - clave: "Sucursales"
     valor: "10"
+  - clave: "Superficie total"
+    valor: "1200 m²"
   - clave: "Plazo"
     valor: "40 días"
   - clave: "Modalidad de trabajo"

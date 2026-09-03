@@ -55,6 +55,9 @@ const Tag = href ? 'a' : 'div';
       <h3 class="text-h3 font-medium text-navy">{d.nombre}</h3>
       <p class="mt-1 text-sm uppercase tracking-[0.06em] text-navy-700">
         {tipoLabel[d.tipo]} · {d.zona}
+        {/* m² (03/09/2026, pedido directo): opcional porque no todas las obras
+            lo tienen cargado — ver el comentario de `m2` en content.config.ts. */}
+        {d.m2 && ` · ${d.m2} m²`}
       </p>
     </div>
   </Tag>

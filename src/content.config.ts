@@ -28,6 +28,10 @@ const obras = defineCollection({
         tipo: z.enum(['vivienda', 'corporativo', 'refaccion', 'gastronomia', 'edificio']),
         anio: z.number().optional(),
         orden: z.number(),
+        /** Superficie en m² (03/09/2026, pedido directo: catálogo completo con
+         * m² provisto por el cliente). Opcional porque no todas las obras
+         * cargadas antes de esa fecha lo tienen todavía. */
+        m2: z.number().optional(),
 
         portada: image(),
         portadaAlt: z.string().min(10),

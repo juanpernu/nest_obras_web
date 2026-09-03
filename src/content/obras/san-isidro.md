@@ -1,11 +1,12 @@
 ---
-nombre: "Canton"
-zona: "Provincia"
-localidad: San Isidro
+nombre: "El Cantón"
+zona: "Escobar, Zona Norte"
+localidad: Escobar
 tipo: vivienda
 orden: 7
+m2: 300
 portada: ../../assets/obras/canton-portada.png
-portadaAlt: "Vivienda premium en Cantón construida por NEST"
+portadaAlt: "Vivienda premium en El Cantón, Escobar, construida por NEST"
 destacadaEnHome: false
 paginaPropia: false
 ---
