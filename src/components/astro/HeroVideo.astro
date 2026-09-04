@@ -53,6 +53,18 @@
  * pageview disfrazado. El engagement real lo cubre Enhanced Measurement de GA4.
  * El mapeo `video_play` existe en src/data/analytics.ts para un video con
  * controles de verdad, que es donde el evento sí significa algo.
+ *
+ * Prueba diagnóstica (04/09/2026): el video no autoplaya en Safari/iOS
+ * (sí funciona en Android/Chrome). Sospecha: WebKit no evalúa bien media
+ * queries compuestas con "and" en el atributo `media` de <source> dentro de
+ * <video> — a diferencia de <picture>, que está más probado. Se saca
+ * temporalmente "and (prefers-reduced-motion: no-preference)" de ambos
+ * <source>, dejando solo la condición de ancho, para confirmar si esa es la
+ * causa. Esto es TEMPORAL: mientras dure, el video se carga también para
+ * quienes tienen reduced-motion activado, perdiendo el ahorro de datos
+ * documentado arriba. No es la solución final — si se confirma el
+ * diagnóstico, hay que reponer el filtro de reduced-motion por otra vía
+ * (JS que decida el <source> en runtime, no el atributo `media`).
  */
 interface Props {
   srcDesktop: string;
@@ -74,12 +86,12 @@ const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props
   class:list={['hero-video', className]}
 >
   <source
-    media="(max-width: 767px) and (prefers-reduced-motion: no-preference)"
+    media="(max-width: 767px)"
     src={srcMobile}
     type="video/mp4"
   />
   <source
-    media="(min-width: 768px) and (prefers-reduced-motion: no-preference)"
+    media="(min-width: 768px)"
     src={srcDesktop}
     type="video/mp4"
   />
