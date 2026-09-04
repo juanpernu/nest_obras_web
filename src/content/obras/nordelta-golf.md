@@ -1,5 +1,5 @@
 ---
-nombre: "Los Olivos — Casa"
+nombre: "Los Olivos"
 zona: "Barrio Los Olivos, Pilar"
 localidad: Pilar
 tipo: vivienda

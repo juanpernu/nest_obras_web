@@ -1,12 +1,12 @@
 ---
-nombre: "Tacuarí 1051"
+nombre: "Tacuarí"
 zona: "San Telmo, CABA"
 localidad: CABA
 tipo: edificio
 orden: 5
 m2: 1600
 portada: ../../assets/obras/tacuari-1050-portada.png
-portadaAlt: "Edificio Tacuarí 1051 en CABA construido por NEST"
+portadaAlt: "Edificio Tacuarí en CABA construido por NEST"
 destacadaEnHome: true
 paginaPropia: true
 slug: tacuari-1051

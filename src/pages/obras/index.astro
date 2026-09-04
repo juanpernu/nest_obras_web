@@ -117,7 +117,14 @@ const labelBase =
             }
           </fieldset>
 
-          <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3" data-reveal>
+          {/* Sin `data-reveal` (04/09/2026, pedido explícito): las tarjetas de la
+              grilla ya no llevan el fade/translateY escalonado de entrada — se
+              muestran directas al cargar la vista, en mobile y desktop por
+              igual (el mecanismo de `main.astro` es el mismo en todos los
+              anchos, así que sacar el atributo alcanza en los dos breakpoints).
+              El resto de los bloques de la página (filtro, CTA de cierre)
+              sigue animando: el pedido fue puntual sobre las cards. */}
+          <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {obras.map((o) => <li data-tipo={o.data.tipo}><TarjetaObra obra={o} /></li>)}
           </ul>
         </div>

@@ -470,10 +470,13 @@ const seo = {
         arriba. Sin `gap` en ningún eje (18/08/2026, pedido explícito): las
         tarjetas van pegadas entre sí también apiladas en mobile, igual que ya
         estaban en la fila de desktop. */}
+    {/* Sin `data-reveal` (04/09/2026, pedido explícito): las tarjetas de
+        "Obras destacadas" ya no llevan el fade/translateY escalonado de
+        entrada — se muestran directas al cargar, en mobile y desktop por
+        igual. El encabezado de la sección (arriba) sigue animando. */}
     <div
       class="obras-fila relative z-10 mt-10 flex w-full flex-col sm:flex-row"
       style="padding-inline: var(--marco-x, 0px);"
-      data-reveal
     >
       {
         tarjetasDestacadas.map((t) => (

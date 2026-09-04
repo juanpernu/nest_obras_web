@@ -1,5 +1,5 @@
 ---
-nombre: "María del Buen Ayre — Vivienda"
+nombre: "María del Buen Ayre"
 zona: "Nordelta, Zona Norte"
 localidad: Tigre
 tipo: vivienda
