@@ -45,7 +45,7 @@ const labelBase =
         nosotros.astro (ver el <style> de esa página para el detalle de cada
         medida). Imagen real (22/08/2026): la foto de Casa Santa Bárbara. */}
     <MarcoSeccion cierra>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="cab-seccion bg-white py-20 md:py-[120px]">
         <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
           <CabeceraPagina
             sinContenedor
@@ -189,6 +189,30 @@ const labelBase =
         margin-bottom: -120px;
         margin-inline-start: -1.5rem;
         margin-inline-end: calc(-1 * var(--sangria-guia));
+      }
+    }
+
+    /* ALTO UNIFORME DE CABECERA EN ESCRITORIO (pedido directo, 03/09/2026).
+     * Copiado tal cual de `.cab-seccion` en nosotros.astro — ver el comentario
+     * extenso ahí. Esta página es la REFERENCIA de la medida (417px es el alto
+     * que tenía a 1280px), pero igual lleva la regla: su alto venía del alto
+     * intrínseco de la foto, que a 1024px daba 389px en vez de 417px. Sin
+     * fijarlo acá también, las tres coincidían a 1280px y volvían a
+     * desalinearse en el resto de los anchos de escritorio. */
+    @media (min-width: 1024px) {
+      .cab-seccion {
+        height: 417px;
+        padding-block: 0;
+      }
+
+      .cab-seccion > div {
+        height: 100%;
+        align-items: center;
+      }
+
+      .cab-visual {
+        height: 100%;
+        margin-block: 0;
       }
     }
   </style>

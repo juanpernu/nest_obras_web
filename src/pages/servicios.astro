@@ -8,9 +8,19 @@ import HojaTecnica from '@/components/astro/HojaTecnica.astro';
 import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import { Image } from 'astro:assets';
-import cabeceraImg from '@/assets/obras/el-aromo-4.jpg';
-import antesImg from '@/assets/obras/tacuari-1050-1.jpg';
-import despuesImg from '@/assets/obras/tacuari-1050-portada.png';
+/* Imagen propia de esta cabecera (03/09/2026, pedido directo vía feedback de
+ * página, `servicios-cabecera.jpg`) — reemplaza a `el-aromo-4.jpg`, que no
+ * se usaba en ningún otro lado y queda sin referencias tras este cambio. */
+import cabeceraImg from '@/assets/paginas/servicios-cabecera.jpg';
+/* Slider pasado a El Aromo (03/09/2026, pedido directo: "me puedes poner el
+ * antes y después de las imagenes de aromo?"). Reemplaza al par de Tacuarí
+ * 1050 (terraza/fachada, nunca un antes/después real — ver el historial
+ * completo de esta celda más abajo, en el JSX): estas dos SÍ son la misma
+ * obra en dos momentos reales, el mismo par que ya usa la página propia de
+ * /obras/el-aromo (`antesPorSlug.el-aromo` en obras/[id].astro) — mismos
+ * archivos, sin reprocesar ni recortar de nuevo. */
+import antesImg from '@/assets/obras/el-aromo-antes-real.jpg';
+import despuesImg from '@/assets/obras/el-aromo-5.png';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -83,7 +93,7 @@ const serviciosLd = entries.map((s) => ({
         base bajo la imagen (`bg-navy` en el contenedor) y el hover lo resuelve
         el propio `grayscale-0` de la <Image>, no un color de fondo distinto. */}
     <MarcoSeccion cierra>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="cab-seccion bg-white py-20 md:py-[120px]">
         <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
           <CabeceraPagina
             sinContenedor
@@ -94,7 +104,7 @@ const serviciosLd = entries.map((s) => ({
           <div class="cab-visual overflow-hidden bg-navy">
             <Image
               src={cabeceraImg}
-              alt="Obra de NEST en El Aromo"
+              alt="Cuadrilla de NEST colando losa en obra"
               widths={[400, 640, 960, 1280]}
               sizes="(min-width: 768px) 50vw, 100vw"
               class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
@@ -229,21 +239,28 @@ const serviciosLd = entries.map((s) => ({
               ))
             }
             {/* SLIDER ANTES/DESPUÉS (24/08/2026, pedido directo). Reemplaza al
-                placeholder navy por una comparativa arrastrable: dos fotos de
-                la misma obra (Tacuarí 1050) superpuestas, la de "antes"
-                recortada con `clip-path` según la posición del divisor. El
-                divisor se arrastra con mouse y con touch usando Pointer
-                Events (cubren ambos con la misma API, sin listeners
-                separados) — ver el <script> de más abajo, que además soporta
-                flechas de teclado sobre el propio divisor (rol `slider`).
-                Placeholder de imágenes: mismo criterio que `.cab-visual` más
-                arriba en esta misma página (obra real de NEST, no una foto
-                genérica). */}
+                placeholder navy por una comparativa arrastrable recortada con
+                `clip-path` según la posición del divisor. El divisor se
+                arrastra con mouse y con touch usando Pointer Events (cubren
+                ambos con la misma API, sin listeners separados) — ver el
+                <script> de más abajo, que además soporta flechas de teclado
+                sobre el propio divisor (rol `slider`).
+
+                HISTORIAL DE ESTA CELDA (03/09/2026, tres pedidos directos el
+                mismo día, con Tacuarí 1050): primero se renombró a
+                "Interior"/"Exterior" porque mostraba la terraza y la fachada
+                de la obra terminada, no un antes/después real. Después se
+                revirtió a "Antes"/"Después" con la terraza en "Después" y un
+                placeholder gris provisorio en "Antes". Por último se
+                reemplazó la obra entera: ahora es El Aromo, con su par real
+                de antes/después (obra en proceso → vivienda terminada) —
+                mismos archivos que usa /obras/el-aromo, sin generar nada
+                nuevo. Tacuarí 1050 ya no aparece en esta celda. */}
             <li class="mod-bento-celda mod-bento-celda--img mod-bento-slider bg-navy" data-bento-slider>
               <div class="mod-bento-slider-despues">
                 <Image
                   src={despuesImg}
-                  alt="Obra de NEST en Tacuarí 1050 terminada"
+                  alt="Vivienda terminada en El Aromo, Escobar, construida por NEST"
                   widths={[400, 640, 960, 1280, 1600]}
                   sizes="100vw"
                   class="h-full w-full object-cover"
@@ -252,7 +269,7 @@ const serviciosLd = entries.map((s) => ({
               <div class="mod-bento-slider-antes">
                 <Image
                   src={antesImg}
-                  alt="Obra de NEST en Tacuarí 1050 antes de la intervención"
+                  alt="Obra en proceso en El Aromo, Escobar, previa a la intervención"
                   widths={[400, 640, 960, 1280, 1600]}
                   sizes="100vw"
                   class="h-full w-full object-cover"
@@ -300,7 +317,11 @@ const serviciosLd = entries.map((s) => ({
 
         if (window.matchMedia('(min-width: 768px)').matches) {
           const alto = Math.max(...Array.from(celdasTexto).map((c) => c.offsetHeight));
-          img.style.height = `${alto}px`;
+          // +60px (pedido directo, 03/09/2026, feedback de página: "aumenta
+          // el height en escritorio... para que se aprecie mejor las
+          // imágenes"). Solo en esta rama —el `matchMedia` de arriba ya es
+          // el corte de escritorio del bento— así que mobile no se toca.
+          img.style.height = `${alto + 60}px`;
         } else {
           img.style.height = '';
         }
@@ -432,6 +453,29 @@ const serviciosLd = entries.map((s) => ({
       margin-bottom: -120px;
       margin-inline-start: -1.5rem;
       margin-inline-end: calc(-1 * var(--sangria-guia));
+    }
+  }
+
+  /* ALTO UNIFORME DE CABECERA EN ESCRITORIO (pedido directo, 03/09/2026).
+   * Copiado tal cual de `.cab-seccion` en nosotros.astro — ver el comentario
+   * extenso ahí para el detalle: por qué el alto lo fija la sección y no la
+   * imagen, por qué sale el `padding-block`, y por qué arranca en 1024px y no
+   * en `md:`. Los 417px son el alto que /obras tenía a 1280px, la referencia
+   * elegida. El texto no se tocó. */
+  @media (min-width: 1024px) {
+    .cab-seccion {
+      height: 417px;
+      padding-block: 0;
+    }
+
+    .cab-seccion > div {
+      height: 100%;
+      align-items: center;
+    }
+
+    .cab-visual {
+      height: 100%;
+      margin-block: 0;
     }
   }
 

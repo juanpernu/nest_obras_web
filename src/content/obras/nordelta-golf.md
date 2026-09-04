@@ -1,11 +1,12 @@
 ---
 nombre: "Los Olivos — Casa"
-zona: "Olivos, Zona Norte"
-localidad: Tigre
+zona: "Barrio Los Olivos, Pilar"
+localidad: Pilar
 tipo: vivienda
 orden: 11
+m2: 290
 portada: ../../assets/obras/nordelta-golf-portada.jpg
-portadaAlt: "Casa en Los Olivos construida por NEST"
+portadaAlt: "Casa en el Barrio Los Olivos, Pilar, construida por NEST"
 destacadaEnHome: false
 paginaPropia: false
 ---

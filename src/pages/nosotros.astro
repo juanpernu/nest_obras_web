@@ -17,9 +17,13 @@ import GrillaValores from '@/components/astro/GrillaValores.astro';
  * placeholders navy con el cartel "REEMPLAZAR CON FOTO REAL" impreso (ver
  * docs/DEUDA-TECNICA.md §2.1 y §2.4). */
 import { Image } from 'astro:assets';
-/* Compartida con el bloque "quiénes somos" de la Home — ver la nota del
- * import en index.astro (23/08/2026, deduplicación). */
-import cabeceraImg from '@/assets/paginas/obra-corporativa.webp';
+/* Imagen propia de esta cabecera (03/09/2026, pedido directo vía feedback de
+ * página, `nosotros-cabecera.png`) — YA NO es `obra-corporativa.webp`. Esa
+ * imagen sigue viva y sin tocar en `index.astro` (bloque "quiénes somos" de
+ * la Home, que la sigue usando): por eso este cambio agrega un archivo nuevo
+ * en vez de reemplazar el que compartían las dos páginas, que hubiera
+ * cambiado la Home sin que nadie lo pidiera. */
+import cabeceraImg from '@/assets/paginas/nosotros-cabecera.png';
 import { getCollection, render } from 'astro:content';
 import { site } from '@/data/site';
 
@@ -130,7 +134,7 @@ const personasLd = [
         `mx-auto max-w-6xl px-6`, que acá lo aporta la grilla. La animación de
         entrada no se duplicó ni se movió, que es de lo que depende el LCP. */}
     <MarcoSeccion cierra>
-      <section class="bg-white py-20 md:py-[120px]">
+      <section class="cab-seccion bg-white py-20 md:py-[120px]">
         <div class="mx-auto grid max-w-6xl items-stretch gap-12 px-6 md:grid-cols-2">
           <CabeceraPagina
             sinContenedor
@@ -151,7 +155,7 @@ const personasLd = [
                 después del layout. */}
             <Image
               src={cabeceraImg}
-              alt="Obra corporativa de NEST"
+              alt="Equipo de NEST trabajando en una obra"
               loading="eager"
               fetchpriority="high"
               decoding="sync"
@@ -439,6 +443,56 @@ const personasLd = [
       margin-bottom: -120px;
       margin-inline-start: -1.5rem;
       margin-inline-end: calc(-1 * var(--sangria-guia));
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+   * ALTO UNIFORME DE CABECERA EN ESCRITORIO (pedido directo, 03/09/2026:
+   * "que los tres headers tengan el mismo height, tomando como referencia el
+   * de obras... solo en escritorio").
+   *
+   * El alto de esta cabecera lo venía fijando el texto: con `items-stretch` la
+   * fila mide lo que mide la columna de texto y la imagen se estira a eso más
+   * los 240px de los márgenes negativos. Como las tres bajadas tienen largos
+   * muy distintos, las tres cabeceras medían distinto (medido a 1280px:
+   * /obras 417px, /servicios 546px, /nosotros 546px).
+   *
+   * Acá la sección pasa a tener un alto FIJO de 417px —el que /obras tenía a
+   * 1280px, la referencia elegida— y el texto se centra vertical dentro de
+   * ese rectángulo. El `padding-block` se anula porque el alto ya lo fija la
+   * sección: así la imagen a `height: 100%` vuelve a morir exacto sobre las
+   * dos reglas de <MarcoSeccion>, sin el hueco que dejaba una medida fija con
+   * el padding puesto.
+   *
+   * POR QUÉ NO ALCANZABA CON TOCAR SOLO LA IMAGEN: la bajada de esta página
+   * mide 296px de alto a 1280px. Con el `py-[120px]` del sistema, el piso de
+   * la sección era 296 + 240 = 536px, más que los 417px de /obras — sin
+   * recortar el texto (que el pedido excluye) la única salida es que el alto
+   * lo mande la sección y el padding salga del cálculo. Centrado, el texto
+   * queda con ~60px de aire arriba y abajo en vez de 120px.
+   *
+   * DESDE 1024px Y NO DESDE `md:` (768px) a propósito: el pedido es "solo
+   * escritorio", y a 768px esta bajada trepa a 419px de alto —más que los
+   * 417px del rectángulo— así que ahí se desbordaría. Entre 768px y 1023px
+   * sigue vigente el comportamiento elástico de arriba.
+   * ------------------------------------------------------------------------- */
+  @media (min-width: 1024px) {
+    .cab-seccion {
+      height: 417px;
+      padding-block: 0;
+    }
+
+    /* El `items-stretch` del markup se mantiene para la imagen (que va a
+     * `height: 100%`); acá el eje se recentra para que la columna de texto
+     * quede a media altura del rectángulo. */
+    .cab-seccion > div {
+      height: 100%;
+      align-items: center;
+    }
+
+    .cab-visual {
+      height: 100%;
+      margin-block: 0;
     }
   }
 

@@ -12,30 +12,31 @@ import { getCollection, render } from 'astro:content';
 import { Image } from 'astro:assets';
 import { site } from '@/data/site';
 import { tipoLabel } from '@/data/obras';
-import pruneAntes from '@/assets/obras/prune-antes.jpg';
+import pruneAntes from '@/assets/obras/prune-antes-real.jpg';
 import elAromoAntes from '@/assets/obras/el-aromo-antes-real.jpg';
-import tacuari1050Antes from '@/assets/obras/tacuari-1050-antes.jpg';
+import tacuari1051Antes from '@/assets/obras/tacuari-1051-antes-real.jpg';
 import elAromoDespues from '@/assets/obras/el-aromo-5.png';
 
-/* Placeholder TEMPORAL del lado "antes" del slider (25/08/2026, pedido
- * directo): "prune" y "tacuari-1051" todavía no tienen foto real del estado
- * previo a la intervención, así que su "antes" muestra esta imagen navy
- * genérica (generada por scripts/gen-placeholders.mjs, mismo criterio que las
- * galerías placeholder). "el-aromo" ya usa una foto real de obra en proceso.
- * REEMPLAZAR el resto por la foto real de cada obra en cuanto esté disponible
- * — cambiar el import correspondiente, no hace falta tocar el resto de esta
- * página. */
+/* Lado "antes" del slider: las tres obras con página propia ya tienen foto
+ * real del estado previo a la intervención — "el-aromo" desde el origen,
+ * "prune" y "tacuari-1051" sumadas el 03/09/2026 (pedido directo vía
+ * feedback de página, `prune-antes-real.jpg` y `tacuari-1051-antes-real.jpg`
+ * respectivamente; reemplazan a los placeholders navy que generaba
+ * scripts/gen-placeholders.mjs). Si mañana se suma una obra nueva con página
+ * propia y todavía no tiene foto del "antes", cae sola en el fallback de
+ * `antesImg` más abajo (la imagen "después") hasta que se le agregue acá su
+ * propio import. */
 const antesPorSlug: Record<string, ImageMetadata> = {
   prune: pruneAntes,
   'el-aromo': elAromoAntes,
-  'tacuari-1051': tacuari1050Antes,
+  'tacuari-1051': tacuari1051Antes,
 };
 
-/* Alt del lado "antes": para "el-aromo" describe la foto real de obra en
- * proceso; para el resto, todavía en placeholder navy, avisa que es
- * provisorio (ver comentario de `antesPorSlug` arriba). */
+/* Alt del lado "antes": describe lo que muestra cada foto real. */
 const antesAltPorSlug: Record<string, string> = {
   'el-aromo': 'Obra en proceso, previa a la intervención',
+  prune: 'Local de PRÜNE antes de la intervención de NEST',
+  'tacuari-1051': 'Tacuarí 1051 antes de la intervención de NEST',
 };
 
 /* Override puntual del lado "después" (25/08/2026, pedido directo): para
