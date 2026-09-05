@@ -21,8 +21,9 @@
  * ninguna marca: el sistema general tampoco marca cruces que no son una
  * esquina real, solo los 4 extremos de un rectángulo.
  */
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { imageMetadata } from 'astro/assets/utils';
 
 interface Props {
   class?: string;
@@ -71,22 +72,23 @@ logosReales.splice(6, 0, { src: '/logos/logo_fabric-sushi.png', alt: 'Logo de Fa
  * real de logos, y `auto-rows-fr` garantiza que todas midan igual. */
 /* width/height intrínsecos (05/09/2026, auditoría de performance): sin ellos
  * el <img> lazy no reserva su caja hasta que llega el archivo y la celda
- * puede saltar (CLS). Se leen del propio archivo en build —del atributo
- * width/height del SVG, o de la cabecera IHDR del PNG— así no hay una tabla
- * de dimensiones a mano que se desactualice al reemplazar un logo. Con
- * `h-12 w-auto` en el markup solo aportan la proporción. Los SVG además
+ * puede saltar (CLS). Se leen del propio archivo en build con el
+ * `imageMetadata` de Astro —el mismo parser que usa astro:assets: entiende
+ * SVG (width/height o viewBox, con o sin unidades), PNG, JPG y WebP— así no
+ * hay una tabla de dimensiones a mano que se desactualice al reemplazar un
+ * logo. (Code review del PR #12: la primera versión hacía un regex sobre el
+ * texto del SVG y se rompía con cualquier export que no fuera el de svgo.)
+ * Con `h-12 w-auto` en el markup solo aportan la proporción. Los SVG además
  * pasaron por svgo (multipass, precisión 2): 180 KB → 112 KB. */
-const dimensiones = (src: string): { width: number; height: number } => {
-  const archivo = readFileSync(join(process.cwd(), 'public', src));
-  if (src.endsWith('.png')) {
-    return { width: archivo.readUInt32BE(16), height: archivo.readUInt32BE(20) };
-  }
-  const m = archivo.toString('utf8').match(/width="([\d.]+)" height="([\d.]+)"/);
-  if (!m) throw new Error(`GrillaLogos: ${src} no declara width/height`);
-  return { width: Math.round(Number(m[1])), height: Math.round(Number(m[2])) };
+const dimensiones = async (src: string): Promise<{ width: number; height: number }> => {
+  const archivo = await readFile(join(process.cwd(), 'public', src));
+  const { width, height } = await imageMetadata(new Uint8Array(archivo), src);
+  return { width, height };
 };
 
-const celdas = logosReales.map((l) => ({ ...l, ...dimensiones(l.src) }));
+const celdas = await Promise.all(
+  logosReales.map(async (l) => ({ ...l, ...(await dimensiones(l.src)) })),
+);
 
 /* Las dos extensiones que salen de la grilla se difuminan hacia el borde del
  * viewport: arrancan opacas contra la grilla y llegan 100% transparentes justo

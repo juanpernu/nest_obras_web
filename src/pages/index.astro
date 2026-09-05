@@ -13,6 +13,11 @@ import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
 import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import type { Servicio } from '@/components/astro/GrillaServicios.astro';
 import elAromo5 from '@/assets/obras/el-aromo-5.png';
+
+/* Poster del hero: una sola constante para el <video> y para el preload del
+ * <Layout> (code review del PR #12: antes el layout tenía la ruta
+ * hardcodeada y un rename dejaba un preload de alta prioridad a un 404). */
+const heroPoster = '/hero-poster.jpg';
 import tacuari1 from '@/assets/obras/tacuari-1050-1.jpg';
 import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
@@ -146,7 +151,7 @@ const seo = {
 };
 ---
 
-<Layout title={seo.title} description={seo.description}>
+<Layout title={seo.title} description={seo.description} preloadImagen={heroPoster}>
   {/* Sección 1 — Hero. El LCP es el <h1>. El video del fondo es un <video>
       nativo propio, con autoplay en todos los anchos desde el 18/08/2026
       (public/hero-video.mp4 desktop, public/hero-video-mobile.mp4 recortado
@@ -164,7 +169,7 @@ const seo = {
     <HeroVideo
       srcDesktop="/hero-video.mp4"
       srcMobile="/hero-video-mobile.mp4"
-      poster="/hero-poster.jpg"
+      poster={heroPoster}
       class="absolute inset-0 -z-20 h-full w-full object-cover"
     />
     <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
@@ -387,6 +392,7 @@ const seo = {
         <Image
           src={quienesSomosImg}
           alt="Obra de NEST en desarrollo"
+          width={960}
           widths={[400, 640, 960]}
           sizes="(min-width: 768px) 50vw, 100vw"
           class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
