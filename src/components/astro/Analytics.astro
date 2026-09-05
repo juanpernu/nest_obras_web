@@ -54,6 +54,8 @@ interface Props {
 const { evento } = Astro.props as Props;
 
 // Sin ningún ID configurado no se renderiza nada: el sitio queda idéntico a hoy.
+// `data-analitica` en el <script> (05/09/2026): lo exime del conteo de JS
+// propio en scripts/verificar-perf.sh — analítica de terceros, exenta por §7.1.
 const activo = Boolean(GA4_ID || META_PIXEL_ID);
 
 // Al runtime va el mapa mínimo, como tuplas [ga4, meta]: `conversion` es
@@ -77,7 +79,7 @@ const vars = {
 
 {
   activo && (
-    <script is:inline define:vars={vars}>
+    <script is:inline data-analitica define:vars={vars}>
       (function () {
         var debug = /[?&]nest_debug=1/.test(location.search);
         if (location.hostname !== hostProd && !debug) return;

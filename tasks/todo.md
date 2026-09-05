@@ -244,3 +244,4 @@ Ratios WCAG recalculados (la estimación del doc de identidad estaba mal; el doc
 - Sin Lighthouse (no se levantó servidor ni browser, por pedido). Pendiente medir en deploy de preview.
 - Nota: Cache-Control de un día en /logos/*: un logo reemplazado puede tardar hasta 24 h en verse.
 - [x] Testimonios reales (05/09/2026): reemplazados los placeholders por dos reseñas de Google (M. Etchebarne, V. Odriozola) con link "Reseña en Google". Pendiente: link de compartir del Perfil de Negocio en `site.googleResenas`.
+- [x] Code review del PR #12 aplicado en `fix/code-review-pr12` → develop: woff en la excepción de inlining, verificar-perf.sh suma JS inline, width en 3 <Image>, GrillaLogos con imageMetadata, hero con gesto `once` acotado y visibilitychange persistente (script hoisted minificado), preload del poster como prop del Layout. Home 5.0 KB de JS inline (presupuesto 5 KB).
