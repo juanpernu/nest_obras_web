@@ -28,6 +28,37 @@
 @import "@fontsource/roboto-condensed/400.css";
 @import "@fontsource/roboto-condensed/500.css";
 
+/* Fallbacks métricos (05/09/2026, auditoría de performance): mientras llega
+ * Roboto Condensed (`font-display: swap`) el texto se pinta con una fuente
+ * local ajustada para ocupar el mismo espacio, así el swap no reacomoda el
+ * layout (CLS). Medido con fontkitten sobre los woff2 de Fontsource y las
+ * fuentes del sistema (macOS): Roboto Condensed = ascent 1900 / descent 500 /
+ * lineGap 0 sobre 2048 upm, ancho medio 0.426 em (400) en un texto en español;
+ * Arial Narrow 0.388 em, Arial 0.473 em. size-adjust = ancho RC / ancho del
+ * fallback; ascent/descent = métrica de RC dividida por ese size-adjust, para
+ * que la altura de línea coincida después del escalado. Si se recalibra, medir
+ * contra el <h1> real y no contra un placeholder. Los pesos 300/500 varían
+ * <1% de ancho respecto del 400 y comparten estas métricas. */
+@font-face {
+  font-family: "Roboto Condensed Fallback";
+  src: local("Arial Narrow");
+  size-adjust: 109.8%;
+  ascent-override: 84.5%;
+  descent-override: 22.2%;
+  line-gap-override: 0%;
+}
+
+/* Sin Arial Narrow (Android, la mayoría de Linux) cae a Arial, que es más
+ * ancha: se achica para igualar el ancho de RC. */
+@font-face {
+  font-family: "Roboto Condensed Fallback Arial";
+  src: local("Arial");
+  size-adjust: 90.1%;
+  ascent-override: 103%;
+  descent-override: 27.1%;
+  line-gap-override: 0%;
+}
+
 /*
  * Sistema de diseño de Nest Obras — de docs/identidad-visual.md.
  * EXTRAÍDO = medido del sitio real (es la marca). PROPUESTO = extensión para
@@ -73,12 +104,12 @@
   --color-aviso-light: #e8c07a;
 
   /* ---- Tipografía ---- */
-  /* "Arial Narrow" es un stopgap condensado (desktop) para reducir el salto al
-   * hacer swap. El fallback métrico definitivo (ascent/descent/size-adjust
-   * override, que sí ayuda en mobile) se define en Fase 4, medido contra el
-   * hero real — un <h1> placeholder no da CLS medible. fontaine no sirve acá:
-   * no inyecta en la CSS-var de Tailwind v4 y mal-derivó las métricas. */
-  --font-sans: "Roboto Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
+  /* Los dos "Roboto Condensed Fallback*" son los @font-face métricos de arriba
+   * (05/09/2026): Arial Narrow ajustada en desktop, Arial ajustada donde no
+   * hay Narrow. Si ninguna existe en el sistema el navegador sigue por el
+   * stack. fontaine no sirve acá: no inyecta en la CSS-var de Tailwind v4 y
+   * mal-derivó las métricas, por eso están escritos a mano. */
+  --font-sans: "Roboto Condensed", "Roboto Condensed Fallback", "Roboto Condensed Fallback Arial", ui-sans-serif, system-ui, sans-serif;
 
   /* Máximo subido a 70px (4.375rem) — pedido del 16/08/2026. Recalculado para
    * mantener la misma curva del sitio: el término base+vw sigue tocando el
@@ -270,6 +301,20 @@
     }
     to {
       opacity: 1;
+      transform: none;
+    }
+  }
+  /* Variante solo `transform` para el elemento LCP de cada ruta (05/09/2026,
+   * auditoría de performance): el h1 del hero, el h1 escalonado de
+   * CabeceraPagina y el bloque visual de /obras/[id]. Chrome no cuenta como
+   * LCP un elemento con opacity 0 hasta su primer frame visible, así que esos
+   * tres arrancan visibles y solo se desplazan, sin delay. Mismos 28px que
+   * `reveal-up` para que la entrada se lea igual que la del resto. */
+  @keyframes lcp-up {
+    from {
+      transform: translateY(28px);
+    }
+    to {
       transform: none;
     }
   }

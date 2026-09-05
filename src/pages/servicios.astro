@@ -102,9 +102,14 @@ const serviciosLd = entries.map((s) => ({
             bajada="Cubrimos todo el proceso de principio a fin: proyecto, permisos, ejecución y entrega. Con un solo responsable de la obra y un único punto de contacto."
           />
           <div class="cab-visual overflow-hidden bg-navy">
+            {/* `width={1280}` (05/09/2026, auditoría de performance): sin él, el
+                `src` de fallback queda en el ancho del original (~4000px)
+                aunque el srcset tope en 1280. Mismo criterio en el slider de
+                Modalidades de abajo y en obras/[id].astro. */}
             <Image
               src={cabeceraImg}
               alt="Cuadrilla de NEST colando losa en obra"
+              width={1280}
               widths={[400, 640, 960, 1280]}
               sizes="(min-width: 768px) 50vw, 100vw"
               class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
@@ -261,6 +266,7 @@ const serviciosLd = entries.map((s) => ({
                 <Image
                   src={despuesImg}
                   alt="Vivienda terminada en El Aromo, Escobar, construida por NEST"
+                  width={1600}
                   widths={[400, 640, 960, 1280, 1600]}
                   sizes="100vw"
                   class="h-full w-full object-cover"
@@ -270,6 +276,7 @@ const serviciosLd = entries.map((s) => ({
                 <Image
                   src={antesImg}
                   alt="Obra en proceso en El Aromo, Escobar, previa a la intervención"
+                  width={1600}
                   widths={[400, 640, 960, 1280, 1600]}
                   sizes="100vw"
                   class="h-full w-full object-cover"
@@ -329,7 +336,15 @@ const serviciosLd = entries.map((s) => ({
 
       sincronizarAltoBentoModalidades();
       document.fonts?.ready.then(sincronizarAltoBentoModalidades);
-      window.addEventListener('resize', sincronizarAltoBentoModalidades);
+      // En resize va dentro de requestAnimationFrame (05/09/2026, auditoría de
+      // performance): el handler lee `offsetHeight`, y hacerlo en cada evento
+      // forzaba un layout síncrono por evento. Con un solo frame pendiente se
+      // mide una vez por frame, como máximo.
+      let frameResize = 0;
+      window.addEventListener('resize', () => {
+        cancelAnimationFrame(frameResize);
+        frameResize = requestAnimationFrame(sincronizarAltoBentoModalidades);
+      });
     </script>
 
     <script>

@@ -175,11 +175,15 @@ const { testimonios, class: className } = Astro.props as Props;
   }
 
   /* `:global` porque estos nodos los crea el JS y no llevan el atributo de
-   * scope que Astro agrega al markup del componente. */
+   * scope que Astro agrega al markup del componente.
+   *
+   * Sin `rotateX(90deg)` (05/09/2026, auditoría de performance): la rotación
+   * 3D por palabra forzaba una capa compuesta por cada span. Queda solo
+   * opacity + translateY, con el mismo escalonado y la misma duración. */
   .tst-quote :global(.w-anim) {
     display: inline-block;
     opacity: 0;
-    transform: translateY(20px) rotateX(90deg);
+    transform: translateY(20px);
   }
   .tst-quote.is-in :global(.w-anim) {
     opacity: 1;

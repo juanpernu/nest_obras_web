@@ -27,13 +27,12 @@
  * navegador igual tenía que descargar los 1920px de ancho completos para
  * mostrar una franja central de ~600px.
  *
- * Los dos <source> siguen atados a `prefers-reduced-motion: no-preference`
- * además del ancho (WCAG 2.2.2): si no, con reduced-motion el navegador
- * igual descargaría los MB del video para recién pausarlo después — se
- * pierde el ahorro de datos que es la mitad del motivo de tener un archivo
- * mobile aparte. Con reduced-motion ningún <source> matchea y solo se pinta
- * el poster, en cualquier ancho. El orden de los <source> importa: el
- * navegador usa el PRIMERO que matchea, así que el de mobile va primero.
+ * El gate de `prefers-reduced-motion` (WCAG 2.2.2) se mantiene: con
+ * reduced-motion no se pide ningún archivo y solo se pinta el poster, en
+ * cualquier ancho — si no, el navegador descargaría los MB del video para
+ * recién pausarlo después, y se pierde el ahorro de datos que es la mitad del
+ * motivo de tener un archivo mobile aparte. Cómo se aplica hoy ese gate (y el
+ * de ancho) está en la nota del 05/09/2026 más abajo.
  *
  * El LCP es el <h1>: preload reducido + poster.
  *
@@ -54,17 +53,32 @@
  * El mapeo `video_play` existe en src/data/analytics.ts para un video con
  * controles de verdad, que es donde el evento sí significa algo.
  *
- * Prueba diagnóstica (04/09/2026): el video no autoplaya en Safari/iOS
- * (sí funciona en Android/Chrome). Sospecha: WebKit no evalúa bien media
- * queries compuestas con "and" en el atributo `media` de <source> dentro de
- * <video> — a diferencia de <picture>, que está más probado. Se saca
- * temporalmente "and (prefers-reduced-motion: no-preference)" de ambos
- * <source>, dejando solo la condición de ancho, para confirmar si esa es la
- * causa. Esto es TEMPORAL: mientras dure, el video se carga también para
- * quienes tienen reduced-motion activado, perdiendo el ahorro de datos
- * documentado arriba. No es la solución final — si se confirma el
- * diagnóstico, hay que reponer el filtro de reduced-motion por otra vía
- * (JS que decida el <source> en runtime, no el atributo `media`).
+ * Selección de fuente y arranque por JS (05/09/2026, bug reportado: en
+ * algunos browsers mobile el video no aparece o no arranca). Hasta acá todo
+ * dependía de atributos HTML: `media` en cada <source> para elegir archivo y
+ * `autoplay` para arrancar. Dos fallas quedaban sin cubrir:
+ *
+ *  1. Autoplay bloqueado por política del dispositivo (iOS en modo bajo
+ *     consumo, "ahorro de datos", ajustes de previsualización de video):
+ *     `autoplay` se ignora en silencio y no había ningún JS que reintentara
+ *     `play()` en el primer gesto de la persona, que es cuando el navegador
+ *     sí lo permite.
+ *  2. El diagnóstico del 04/09 (WebKit y media queries compuestas en el
+ *     `media` de <source>) más el historial de `preload` muestran que la
+ *     elección declarativa del archivo es frágil en WebKit. Se reemplaza por
+ *     `matchMedia` en runtime, que es lo que ya se había apuntado como
+ *     solución final: vuelve el filtro de `prefers-reduced-motion` (con
+ *     reduced-motion no se asigna `src` y queda el poster, sin bajar bytes)
+ *     y el gate de ancho decide entre el archivo mobile y el desktop.
+ *
+ * El script va `is:inline` justo después del <video>, así corre en cuanto el
+ * parser llega ahí y el pedido del archivo sale antes de que termine de
+ * parsear el documento; y no depende del bundle ni de la red. Sin JS queda
+ * el poster (el reveal del resto de la página ya asume JS igual).
+ * `muted` se fija también desde JS (`muted` + `defaultMuted`) porque WebKit
+ * exige que el elemento esté silenciado en el momento de `play()`, no solo
+ * en el markup. Los reintentos se limpian en cuanto el video reporta
+ * `playing`.
  */
 interface Props {
   srcDesktop: string;
@@ -76,6 +90,9 @@ const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props
 ---
 
 <video
+  data-hero-video
+  data-src-desktop={srcDesktop}
+  data-src-mobile={srcMobile}
   poster={poster}
   preload="metadata"
   autoplay
@@ -84,15 +101,47 @@ const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props
   loop
   aria-hidden="true"
   class:list={['hero-video', className]}
->
-  <source
-    media="(max-width: 767px)"
-    src={srcMobile}
-    type="video/mp4"
-  />
-  <source
-    media="(min-width: 768px)"
-    src={srcDesktop}
-    type="video/mp4"
-  />
-</video>
+></video>
+
+<script is:inline>
+  (function () {
+    var video = document.querySelector('video[data-hero-video]');
+    if (!video || video.src) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var mobile = window.matchMedia('(max-width: 767px)').matches;
+    video.src = mobile ? video.dataset.srcMobile : video.dataset.srcDesktop;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.load();
+
+    var gestos = ['touchend', 'pointerdown', 'click', 'keydown'];
+
+    function limpiar() {
+      gestos.forEach(function (g) {
+        document.removeEventListener(g, intentar, true);
+      });
+      document.removeEventListener('visibilitychange', alVolver);
+      video.removeEventListener('canplay', intentar);
+    }
+
+    function intentar() {
+      if (!video.paused) return;
+      var promesa = video.play();
+      if (promesa && promesa.catch) promesa.catch(function () {});
+    }
+
+    function alVolver() {
+      if (!document.hidden) intentar();
+    }
+
+    video.addEventListener('playing', limpiar, { once: true });
+    video.addEventListener('canplay', intentar);
+    gestos.forEach(function (g) {
+      document.addEventListener(g, intentar, true);
+    });
+    document.addEventListener('visibilitychange', alVolver);
+
+    intentar();
+  })();
+</script>

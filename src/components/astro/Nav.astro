@@ -50,12 +50,16 @@ const links = [
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const activo = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 const esHome = path === '/';
+// 05/09/2026 (auditoría de performance): el header transiciona solo color,
+// fondo y borde. Animar box-shadow y backdrop-filter repintaba el header
+// completo durante los 300ms de cada cambio de estado; ahora el blur y la
+// sombra entran de golpe con `data-scrolled` y solo el color se funde.
 ---
 
 <header
   id="site-header"
   class:list={[
-    'group z-50 border-b border-transparent py-3 transition-[background-color,box-shadow,border-color,backdrop-filter,color] duration-300',
+    'group z-50 border-b border-transparent py-3 transition-[background-color,border-color,color] duration-300',
     esHome
       ? 'fixed inset-x-0 top-0 bg-transparent text-white data-[scrolled=true]:text-navy'
       : 'sticky top-0 bg-white text-navy',
@@ -232,7 +236,16 @@ const esHome = path === '/';
   // resto), que ya es un header válido — no hay contenido que dependa de esto
   // para funcionar.
   const header = document.getElementById('site-header');
-  const actualizarScroll = () => header?.setAttribute('data-scrolled', String(window.scrollY > 8));
+  // 05/09/2026 (auditoría de performance): se escribe el atributo solo cuando
+  // el estado cambia. Antes se hacía setAttribute en cada evento de scroll,
+  // aunque el valor fuera el mismo, y eso invalidaba estilos sin necesidad.
+  let scrolleado: boolean | undefined;
+  const actualizarScroll = () => {
+    const ahora = window.scrollY > 8;
+    if (ahora === scrolleado) return;
+    scrolleado = ahora;
+    header?.setAttribute('data-scrolled', String(ahora));
+  };
   actualizarScroll();
   document.addEventListener('scroll', actualizarScroll, { passive: true });
 </script>

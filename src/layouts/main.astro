@@ -9,8 +9,12 @@
  */
 import '@/styles/global.css';
 import { site } from '@/data/site';
-// Preload solo el peso del hero/<h1> (300, latin) — el resto compite con el LCP (identidad §2.1).
-import heroFont from '@fontsource/roboto-condensed/files/roboto-condensed-latin-300-normal.woff2?url';
+// Preload solo el peso del <h1> (latin) — el resto compite con el LCP (identidad §2.1).
+// 05/09/2026 (auditoría de performance): antes se precargaba 300, pero el 300
+// solo lo usan los párrafos `font-light`. El <h1> de la home es 400 y el de las
+// subpáginas (CabeceraPagina) es 500: se precarga el que cada ruta pinta primero.
+import fuente400 from '@fontsource/roboto-condensed/files/roboto-condensed-latin-400-normal.woff2?url';
+import fuente500 from '@fontsource/roboto-condensed/files/roboto-condensed-latin-500-normal.woff2?url';
 import Nav from '@/components/astro/Nav.astro';
 import Footer from '@/components/astro/Footer.astro';
 import BotonFlotanteWhatsapp from '@/components/astro/BotonFlotanteWhatsapp.astro';
@@ -52,6 +56,9 @@ const {
   jsonLd = [],
   evento,
 } = Astro.props as Props;
+
+const esHome = Astro.url.pathname.replace(/\/$/, '') === '';
+const heroFont = esHome ? fuente400 : fuente500;
 
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
@@ -131,8 +138,19 @@ const grafo = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Favicon (05/09/2026): isotipo de NEST en blanco sobre navy, hecho a
+        partir de los tres trazos de la marca en /logo-nest-oscuro.svg (sin el
+        texto). SVG para browsers modernos, .ico (16/32/48 con PNG embebido)
+        de fallback y apple-touch-icon de 180px para la pantalla de inicio
+        de iOS, que ignora el SVG. Los tres se generan de public/favicon.svg. */}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href={heroFont} as="font" type="font/woff2" crossorigin />
+    {/* 05/09/2026: el poster del hero es el LCP de la home. Se precarga solo
+        acá (el resto de las rutas no lo pinta) y con prioridad alta para que
+        no espere detrás del CSS y las fuentes. */}
+    {esHome && <link rel="preload" href="/hero-poster.jpg" as="image" fetchpriority="high" />}
     <meta name="generator" content={Astro.generator} />
 
     <title>{title}</title>
@@ -240,6 +258,14 @@ const grafo = {
     transform: none;
   }
 
+  /* 05/09/2026 (auditoría de performance): lo que ya está en el viewport al
+   * cargar se muestra de una, sin transición ni escalonado — antes arrancaba
+   * en opacity 0 igual que el resto y el último bloque de la primera sección
+   * recién aparecía a ~2.5s. El script marca esos elementos con esta clase. */
+  .js-reveal [data-reveal].visible.sin-transicion {
+    transition: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .js-reveal [data-reveal] {
       opacity: 1;
@@ -270,12 +296,33 @@ const grafo = {
     ) {
       mostrarTodo();
     } else {
-      for (const seccion of document.querySelectorAll('section')) {
-        seccion
+      // 05/09/2026 (auditoría de performance): lo que ya está dentro del
+      // viewport al cargar no se anima ni se observa — se marca visible sin
+      // transición (`.sin-transicion`, ver el <style>) y sin delay. El efecto
+      // queda solo para lo que entra por scroll. Se decide por posición y no
+      // por el observer para que no haya ni un frame en opacity 0.
+      const altoViewport = window.innerHeight;
+      const porObservar = new Set<HTMLElement>();
+      for (const el of elementos) {
+        if (el.getBoundingClientRect().top < altoViewport) {
+          el.classList.add('visible', 'sin-transicion');
+        } else {
+          porObservar.add(el);
+        }
+      }
+
+      if (porObservar.size) {
+        for (const seccion of document.querySelectorAll('section')) {
           // 240ms y no 90 (18/08/2026): escalonado más marcado, ver el
-          // comentario de `.js-reveal [data-reveal]` en el <style>.
-          .querySelectorAll<HTMLElement>('[data-reveal]')
-          .forEach((el, i) => (el.style.transitionDelay = `${i * 240}ms`));
+          // comentario de `.js-reveal [data-reveal]` en el <style>. El índice
+          // cuenta solo los bloques que sí se van a animar dentro de la
+          // sección, así el primero que entra por scroll arranca en 0ms.
+          let i = 0;
+          for (const el of seccion.querySelectorAll<HTMLElement>('[data-reveal]')) {
+            if (!porObservar.has(el)) continue;
+            el.style.transitionDelay = `${i++ * 240}ms`;
+          }
+        }
       }
 
       const observador = new IntersectionObserver(
@@ -290,7 +337,7 @@ const grafo = {
         // asoma un píxel al borde de la ventana.
         { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
       );
-      elementos.forEach((el) => observador.observe(el));
+      porObservar.forEach((el) => observador.observe(el));
     }
   }
 
