@@ -133,28 +133,35 @@ const breadcrumb = {
                 "el-aromo" que usa otra foto pedida puntualmente (ver
                 `despuesPorSlug` más arriba).
 
-                ENTRADA ESCALONADA (25/08/2026): último elemento de la cadena
-                que arranca en CabeceraPagina (eyebrow 0s → h1 0.25s → bajada
-                0.5s) — este bloque cierra en 0.75s, mismo incremento de 0.25s
-                por paso que usa el hero de la Home. CSS-only (`reveal-up`
-                declarado, no `data-reveal`) por el mismo motivo que
-                CabeceraPagina: el "después" de acá adentro es la LCP de la
-                ruta y con `data-reveal` (opacity vía JS/IntersectionObserver)
-                deja de ser candidato hasta que corre el observer. */}
+                ENTRADA (25/08/2026, corregida el 05/09/2026): antes cerraba
+                la cadena escalonada de CabeceraPagina (eyebrow 0s → h1 →
+                bajada 0.5s) con `reveal-up` a los 0.75s. El "después" de acá
+                adentro es la LCP de la ruta, y Chrome no cuenta como LCP un
+                elemento con opacity 0: el timestamp se iba al primer frame
+                visible, 0.75s más el fade. Por eso ahora anima SOLO
+                `transform` (keyframe `lcp-up` de global.css), sin
+                delay y sin `opacity-0`. Sigue siendo CSS-only y no
+                `data-reveal` por el mismo motivo: con opacity vía
+                JS/IntersectionObserver deja de ser candidato hasta que corre
+                el observer. Eyebrow y bajada mantienen su escalonado. */}
             <div
-              class="cab-visual overflow-hidden bg-navy opacity-0 motion-safe:animate-[reveal-up_0.7s_0.75s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+              class="cab-visual overflow-hidden bg-navy motion-safe:animate-[lcp-up_0.7s_cubic-bezier(0.22,1,0.36,1)_both]"
               data-obra-slider
             >
               <div class="obra-slider-despues">
                 {/* eager + fetchpriority alta: mismo motivo que en nosotros.astro,
                     servicios.astro y obras/index.astro — este bloque es la LCP de
                     la ruta. */}
+                {/* `width={1280}` en ambas capas (05/09/2026, auditoría de
+                    performance): sin él, el `src` de fallback queda en el
+                    ancho del original (~4000px) aunque el srcset tope en 1280. */}
                 <Image
                   src={despuesImg}
                   alt={despuesAlt}
                   loading="eager"
                   fetchpriority="high"
                   decoding="sync"
+                  width={1280}
                   widths={[400, 640, 960, 1280]}
                   sizes="(min-width: 768px) 50vw, 100vw"
                   class="h-full w-full object-cover"
@@ -164,6 +171,7 @@ const breadcrumb = {
                 <Image
                   src={antesImg}
                   alt={`${d.nombre}: ${antesAltPorSlug[d.slug!] ?? 'imagen provisoria, pendiente de reemplazo por una foto real del estado previo a la obra'}`}
+                  width={1280}
                   widths={[400, 640, 960, 1280]}
                   sizes="(min-width: 768px) 50vw, 100vw"
                   class="h-full w-full object-cover obra-slider-imagen-antes"

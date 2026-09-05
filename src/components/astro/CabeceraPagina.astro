@@ -75,7 +75,12 @@ const claseEyebrow = conMigas ? 'mt-6 mb-2.5' : 'mb-2.5';
           <slot name="migas" />
           <Eyebrow class={claseEyebrow}>{eyebrow}</Eyebrow>
         </div>
-        <h1 class="max-w-[900px] text-h1 font-medium text-navy opacity-0 motion-safe:animate-[reveal-up_0.7s_0.25s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100">
+        {/* El h1 es la LCP de la ruta y anima SOLO `transform` (05/09/2026,
+            auditoría de performance): con `opacity-0` + 0.25s de delay Chrome
+            no lo contaba como LCP hasta el primer frame visible. Keyframe
+            `lcp-up` de global.css, sin delay; eyebrow y bajada
+            mantienen su escalonado. */}
+        <h1 class="max-w-[900px] text-h1 font-medium text-navy motion-safe:animate-[lcp-up_0.7s_cubic-bezier(0.22,1,0.36,1)_both]">
           <span class="subrayado-hero subrayado-hero--escalonado inline-block">{titulo}</span>
         </h1>
         {bajada && (
@@ -111,10 +116,11 @@ const claseEyebrow = conMigas ? 'mt-6 mb-2.5' : 'mb-2.5';
    * bloque completo (0.7s, sin delay propio), para que el trazo se dibuje
    * después de que el título ya es visible.
    *
-   * Variante `--escalonado` (25/08/2026): en la entrada escalonada el propio
-   * h1 ya lleva 0.25s de delay + 0.7s de duración (ver arriba), así que el
-   * trazo tiene que arrancar 0.25s más tarde que en la versión de bloque
-   * único: 0.95s en vez de 0.7s. */
+   * Variante `--escalonado` (25/08/2026): el trazo arrancaba 0.25s más tarde
+   * que en la versión de bloque único (0.95s en vez de 0.7s) porque el h1
+   * llevaba 0.25s de delay. Desde el 05/09/2026 el h1 escalonado arranca a
+   * los 0s (ver `lcp-up`), así que 0.95s sigue cayendo después de que
+   * termina; se deja igual para no mover el resto de la cadena. */
   .subrayado-hero {
     position: relative;
   }

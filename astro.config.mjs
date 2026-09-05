@@ -29,6 +29,16 @@ export default defineConfig({
     // diferencia es que ahora se ataca en la causa —el inlining— en vez de
     // evitando los archivos que traen `unicode-range`, así se conservan las dos
     // cosas: cero base64 y descarga por rango.
-    build: { assetsInlineLimit: 0 },
+    //
+    // 05/09/2026 (auditoría de performance): el `0` global tenía un costo
+    // colateral — también impedía que Astro inlineara los scripts hoisted y los
+    // CSS chicos de cada componente, y la home terminaba emitiendo 6
+    // `<script type="module" src>` y 6 `<link rel="stylesheet">` de entre 144 B
+    // y 1.4 KB (doce requests bloqueantes para menos de 5 KB). Ahora el límite
+    // solo se anula para las fuentes (.woff2): el resto vuelve al default de
+    // Vite (4 KB) y viaja inline.
+    build: {
+      assetsInlineLimit: (filePath) => (filePath.endsWith('.woff2') ? false : undefined),
+    },
   },
 });

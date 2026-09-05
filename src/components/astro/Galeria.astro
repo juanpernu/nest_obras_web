@@ -50,12 +50,18 @@ const { galeria } = Astro.props as Props;
                 mide 32vw ≈ 461 CSS px, que en DPR 2 pide ~922 px. Con el techo
                 anterior el candidato más grande se quedaba corto y el navegador
                 escalaba el bitmap hacia arriba. */}
+            {/* `fallbackFormat="jpeg"` (05/09/2026, auditoría de performance):
+                mismo motivo que en FotoObra.astro — sin él, el <img> de
+                fallback sale en el formato de la fuente (PNG/JPG originales
+                de 3-4 MB) y termina en dist/ aunque ningún browser moderno lo
+                pida. */}
             <Picture
               src={g.src}
               alt={g.alt}
               widths={[420, 840, 1000]}
               sizes="(min-width: 1024px) 32vw, 85vw"
               formats={['avif', 'webp']}
+              fallbackFormat="jpeg"
               class="aspect-[4/3] w-full object-cover"
             />
           </button>

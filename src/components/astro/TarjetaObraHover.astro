@@ -37,16 +37,35 @@ const { nombre, tipoLabel, zona, href, imagen, imagenAlt } = Astro.props as Prop
 
 /* Recorte a 4:3 en build, no con object-cover: hay fotos verticales y servirlas
  * enteras descartaba ~60% de los bytes descargados. 1216 = ancho de la tarjeta
- * en desktop (608px) a 2x. */
+ * en desktop (608px) a 2x.
+ *
+ * `widths` + `sizes` (05/09/2026, bug reportado: las tarjetas tardaban en
+ * aparecer al scrollear en algunos teléfonos). Hasta acá se emitía UNA sola
+ * variante de 1216px para todos los viewports: en un teléfono de 375px eso
+ * son 95-150 KB por tarjeta (350 KB por las tres), que además recién empiezan
+ * a bajar cuando `loading="lazy"` decide que la tarjeta está cerca — de ahí
+ * el hueco visible en el scroll. Con srcset el teléfono pide la variante de
+ * 400/800px (una fracción) y la imagen llega dentro de la ventana del lazy
+ * loading. Cada variante conserva el recorte 4:3 porque getImage deriva la
+ * altura de cada ancho a partir de width/height.
+ *
+ * `sizes`: abajo de 640px la tarjeta ocupa el ancho del viewport (menos el
+ * marco). Desde 640px la fila es de tres con `height: 600px` fija, y con
+ * `object-fit: cover` sobre un 4:3 el ancho que el navegador necesita para
+ * llenar esos 600px es 800px (600 × 4/3) aunque la columna sea más angosta —
+ * por eso el valor es 800px y no 33vw. Los 1216 cubren ese caso a 1.5x+ y el
+ * escritorio ancho. */
 const optimizada = await getImage({
   src: imagen,
   format: 'webp',
   width: 1216,
   height: 912,
+  widths: [400, 800, 1216],
   fit: 'cover',
   position: 'center',
   quality: 72,
 });
+const sizes = '(min-width: 640px) 800px, 100vw';
 ---
 
 <article>
@@ -54,6 +73,8 @@ const optimizada = await getImage({
     <div class="marco">
       <img
         src={optimizada.src}
+        srcset={optimizada.srcSet.attribute}
+        sizes={sizes}
         alt={imagenAlt}
         width="1200"
         height="900"
@@ -270,17 +291,24 @@ const optimizada = await getImage({
    * sin soporte simplemente no aplican la regla y no pasa nada roto — la
    * tarjeta en foco siempre se ve bien, solo no se "sfuma" el resto.
    * Gateado a `(hover: hover)`: en touch no hay hover persistente y esto
-   * podría dejar una tarjeta trabada en blur después de un tap. */
+   * podría dejar una tarjeta trabada "sfumada" después de un tap.
+   *
+   * Sin blur (05/09/2026, auditoría de performance): el `blur(4px)` sobre
+   * las hermanas obligaba a repintar varias fotos grandes en cada frame de
+   * la transición. El "desenfoque" ahora es grayscale + scale + una leve
+   * bajada de opacity, que compositan sin repintar. */
   @media (hover: hover) {
     .marco img {
       transition:
         filter 0.3s ease-out,
-        scale 0.3s ease-out;
+        scale 0.3s ease-out,
+        opacity 0.3s ease-out;
     }
 
     :global(.obras-fila:has(article:hover)) article:not(:hover) .marco img {
-      filter: grayscale(1) blur(4px);
+      filter: grayscale(1);
       scale: 1.1;
+      opacity: 0.7;
     }
   }
 </style>

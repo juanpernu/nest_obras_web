@@ -130,21 +130,29 @@ const equipo = defineCollection({
  * La Sección 7 de la Home no se renderiza si la colección está vacía; agregar un
  * .md por testimonio la publica, sin tocar código.
  *
- * ⚠️ Los dos .md cargados hoy son PLACEHOLDERS: "Juan R." y "María L." no existen.
- * Salen a producción por decisión explícita del cliente (2026-08-04), como
- * excepción a §6.3 ("no publicar testimonios placeholder como si fueran reales").
- * Ver docs/DEUDA-TECNICA.md §2.3. Reemplazar por los reales antes del launch.
+ * Reseñas reales (05/09/2026): los dos .md son reseñas públicas del Perfil de
+ * Negocio de Google, transcriptas literales. Reemplazan a los placeholders
+ * "Juan R." y "María L." que estuvieron publicados desde el 04/08/2026 (cerrado
+ * en docs/DEUDA-TECNICA.md §2.3). `fuente: google` hace que la tarjeta muestre
+ * el link "Reseña en Google" a `site.googleResenas`: la prueba de que la reseña
+ * es real es poder verla en Google, no un sello propio. NO se emite
+ * `Review`/`AggregateRating` en el JSON-LD (§6.6): marcar reseñas de terceros
+ * como propias va contra las políticas de Google.
  */
 const testimonios = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/testimonios' }),
   schema: z.object({
     nombre: z.string(),
     orden: z.number(),
-    /** Zona del cliente, bajo el nombre. Ej: "San Isidro, Zona Norte". */
-    zona: z.string(),
+    /** Zona del cliente. Opcional desde el 05/09/2026: las reseñas de Google
+     * no la traen; en su lugar se muestra `proyecto`. */
+    zona: z.string().optional(),
     /** Iniciales del avatar. Si falta, se derivan de `nombre`. */
     iniciales: z.string().max(3).optional(),
+    /** Tipo de obra, como eyebrow de la cita. Ej: "Obra corporativa". */
     proyecto: z.string().optional(),
+    /** Origen verificable de la reseña. `google` muestra el link al perfil. */
+    fuente: z.enum(['google']).optional(),
   }),
 });
 

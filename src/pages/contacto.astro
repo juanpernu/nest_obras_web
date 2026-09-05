@@ -105,11 +105,18 @@ const bloques = [
               hero) — el componente ya resuelve el contraste de labels,
               bordes y placeholders para esta variante (ver su comentario). */}
           <div class="form-a-la-guia relative isolate overflow-hidden bg-navy" data-reveal>
+            {/* quality 45 + widths 480/720 (05/09/2026, auditoría de performance):
+                es un fondo decorativo bajo un velo `bg-black/50`, no hace falta
+                fidelidad — a 640/960 y calidad default pesaba 128/297 KB. La
+                columna mide como mucho 576px desde md:, de ahí el `sizes` en px
+                y el `width` para que el `src` de fallback no sea el original. */}
             <Image
               src={hormigonSombra}
               alt=""
-              widths={[640, 960]}
-              sizes="(min-width: 768px) 50vw, 100vw"
+              width={720}
+              widths={[480, 720]}
+              quality={45}
+              sizes="(min-width: 768px) 576px, 100vw"
               class="absolute inset-0 -z-20 h-full w-full object-cover"
             />
             <div class="absolute inset-0 -z-10 bg-black/50" aria-hidden="true"></div>

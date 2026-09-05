@@ -3,7 +3,7 @@ nombre: "Tacuarí"
 zona: "San Telmo, CABA"
 localidad: CABA
 tipo: edificio
-orden: 5
+orden: 3
 m2: 1600
 portada: ../../assets/obras/tacuari-1050-portada.png
 portadaAlt: "Edificio Tacuarí en CABA construido por NEST"
@@ -67,8 +67,8 @@ NEST se hizo cargo de la obra de principio a fin, con dirección técnica propia
 
 ## El Resultado
 
-El edificio se entregó terminado, con el mismo estándar de terminaciones que NEST aplica en sus obras residenciales.
+El edificio se entregó dentro del plazo y del presupuesto proyectado, logrando que el retorno de los inversionistas fuera el esperado al momento de vender.
 
 ## Por qué este caso importa
 
-Una obra en altura no perdona la improvisación: cada retraso de un gremio arrastra al siguiente. Sostener el plazo acá es la mejor prueba de cómo NEST coordina una obra.
+1600 m² en 12 unidades de departamentos y un local comercial en planta baja, con presupuesto cerrado antes de empezar y sostenido hasta la entrega para una inversión que da el retorno esperado.

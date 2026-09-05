@@ -179,8 +179,16 @@ const seo = {
           `animation` (`reveal-up 1.1s 0.25s …`), que es donde el navegador lo
           lee — el mismo patrón que ya usaba la línea de arena de abajo.
 
-          La cadena queda: eyebrow 0s → h1 0.25s → línea 0.6s → párrafo 0.5s →
+          La cadena queda: eyebrow 0s → h1 0s → línea 0.6s → párrafo 0.5s →
           botones 0.75s, con 1.1s de duración cada uno.
+
+          El <h1> es la LCP de la ruta y va aparte (05/09/2026, auditoría de
+          performance): Chrome no cuenta como LCP un elemento con opacity 0 y
+          corría el timestamp al primer frame visible (0.25s de delay + el
+          fade). Por eso NO usa `reveal-up` (opacity+translate): anima solo
+          `transform` con el keyframe `lcp-up` de global.css, sin
+          delay y sin arrancar en `opacity-0`. El resto de los bloques mantiene
+          su escalonado tal cual.
 
           0.8125rem = 13px, 2px más que el 11px del componente. El `!` es
           necesario porque el tamaño base de Eyebrow también es un valor
@@ -191,7 +199,7 @@ const seo = {
         >Constructora premium · Zona Norte y CABA</Eyebrow
       >
       <h1
-        class="max-w-3xl text-hero font-normal opacity-0 motion-safe:animate-[reveal-up_1.1s_0.25s_cubic-bezier(0.22,1,0.36,1)_forwards] motion-reduce:opacity-100"
+        class="max-w-3xl text-hero font-normal motion-safe:animate-[lcp-up_1.1s_cubic-bezier(0.22,1,0.36,1)_both]"
       >
         Tu obra en manos expertas <br class="hidden lg:block" />
         <span class="subrayado-hero inline-block whitespace-nowrap">de principio a fin.</span>
@@ -338,7 +346,8 @@ const seo = {
             pedido explícito): el texto que antes vivía en el <p> se suma
             adentro del propio <h2>, sin agregar copy nuevo. */}
         {/* `id="qs-titulo"` (16/08/2026, pedido explícito): reveal palabra por
-            palabra con blur, mismo criterio que `.w-anim` en
+            palabra (opacity + translateY; el blur original se sacó el
+            05/09/2026 por costo de pintado), mismo criterio que `.w-anim` en
             CarruselTestimonios.astro pero sin React/framer-motion — el
             pedido original era un componente `"use client"` con
             framer-motion, imposible acá (§7.1 del plan: cero `client:*`,
@@ -681,11 +690,18 @@ const seo = {
           todavía no pintó. `FormularioConsulta` sigue con `sobreNavy` porque
           el fondo sigue siendo oscuro. */}
       <div class="form-a-la-guia relative isolate overflow-hidden bg-navy" data-reveal>
+        {/* quality 45 + widths 480/720 (05/09/2026, auditoría de performance):
+            es un fondo decorativo bajo un velo `bg-black/50`, no hace falta
+            fidelidad — a 640/960 y calidad default pesaba 128/297 KB. La
+            columna mide como mucho 576px desde md:, de ahí el `sizes` en px
+            y el `width` para que el `src` de fallback no sea el original. */}
         <Image
           src={hormigonSombra}
           alt=""
-          widths={[640, 960]}
-          sizes="(min-width: 768px) 50vw, 100vw"
+          width={720}
+          widths={[480, 720]}
+          quality={45}
+          sizes="(min-width: 768px) 576px, 100vw"
           class="absolute inset-0 -z-20 h-full w-full object-cover"
         />
         <div class="absolute inset-0 -z-10 bg-black/50" aria-hidden="true"></div>
@@ -702,8 +718,10 @@ const seo = {
    * ::after y no en el `background-size` del texto (la técnica de Boton.astro)
    * porque acá el trazo no responde a hover: se anima al cargar, reusando el
    * keyframe `hero-rule` que ya dibuja la línea de abajo. El delay pasó de
-   * 0.7s a 1.15s (18/08/2026) para seguir cayendo DESPUÉS del reveal del h1,
-   * que ahora arranca a los 0.25s y dura 1.1s. */
+   * 0.7s a 1.15s (18/08/2026) para seguir cayendo DESPUÉS del reveal del h1.
+   * Desde el 05/09/2026 el h1 arranca a los 0s (ver `lcp-up`) y dura 1.1s,
+   * así que 1.15s sigue cayendo después de que termina; se deja igual para
+   * no mover el resto de la cadena. */
   .subrayado-hero {
     position: relative;
   }
@@ -837,22 +855,27 @@ const seo = {
     }
   }
 
-  /* Reveal palabra por palabra con blur, #qs-titulo (16/08/2026, pedido
-   * explícito de replicar un efecto de referencia en React/framer-motion).
-   * Mismo criterio que `.w-anim` en CarruselTestimonios.astro: cada palabra
-   * en su propio <span>, con blur+opacity animando por transition (no por
-   * JS), y un `transitionDelay` escalonado que arma el JS de abajo. */
+  /* Reveal palabra por palabra, #qs-titulo (16/08/2026, pedido explícito de
+   * replicar un efecto de referencia en React/framer-motion). Mismo criterio
+   * que `.w-anim` en CarruselTestimonios.astro: cada palabra en su propio
+   * <span>, animando por transition (no por JS), y un `transitionDelay`
+   * escalonado que arma el JS de abajo.
+   *
+   * Sin blur (05/09/2026, auditoría de performance): el `filter: blur(6px)`
+   * por palabra, en ~60 spans a la vez, obligaba a repintar cada uno en cada
+   * frame. Ahora solo opacity + translateY —propiedades que compositan—, con
+   * el mismo escalonado y la misma duración. */
   #qs-titulo :global(.w-anim-qs) {
     display: inline-block;
     opacity: 0;
-    filter: blur(6px);
+    transform: translateY(12px);
     transition:
       opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-      filter 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   }
   #qs-titulo.is-in :global(.w-anim-qs) {
     opacity: 1;
-    filter: blur(0);
+    transform: none;
   }
   @media (prefers-reduced-motion: reduce) {
     #qs-titulo :global(.w-anim-qs) {

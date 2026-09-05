@@ -17,6 +17,7 @@
  * el JS la parte en palabras únicamente para animarla.
  */
 import type { CollectionEntry } from 'astro:content';
+import { site } from '@/data/site';
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 
 interface Props {
@@ -58,7 +59,7 @@ const { testimonios, class: className } = Astro.props as Props;
             <div class:list={['tst-slide', i === 0 && 'is-active']} data-i={i}>
               <span class="mb-8 inline-flex items-center gap-2 text-[0.825rem] tracking-[0.12em] text-navy-700 uppercase">
                 <i class="h-1.5 w-1.5 bg-navy" aria-hidden="true" />
-                {entry.data.zona}
+                {entry.data.proyecto ?? entry.data.zona}
               </span>
 
               <blockquote class="tst-quote text-h1 font-light text-navy [&_p]:mt-0">
@@ -68,7 +69,30 @@ const { testimonios, class: className } = Astro.props as Props;
               <div class="mt-10 flex items-end gap-6">
                 <div class="flex items-center gap-4">
                   <span class="tst-line h-px w-8 origin-left bg-navy" aria-hidden="true" />
-                  <span class="block font-medium text-navy">{entry.data.nombre}</span>
+                  <span class="min-w-0">
+                    <span class="block font-medium text-navy">{entry.data.nombre}</span>
+                    {/* Prueba de que la reseña es real (05/09/2026): link a las
+                        reseñas públicas del Perfil de Negocio de Google, en vez
+                        de un sello propio que nadie puede verificar. Sin
+                        `Review` en el JSON-LD a propósito (§6.6). */}
+                    {entry.data.fuente === 'google' && (
+                      <a
+                        href={site.googleResenas}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-1 inline-flex items-center gap-1.5 text-sm text-navy-700 underline decoration-navy/30 underline-offset-4 transition-colors hover:text-navy hover:decoration-navy"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="h-3.5 w-3.5 fill-current">
+                          <path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.8 3-4.3 3-7.4Z" />
+                          <path d="M12 21.6c2.7 0 4.9-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6a9.6 9.6 0 0 0 8.9 5.4Z" />
+                          <path d="M6.4 13.6a5.8 5.8 0 0 1 0-3.7V7.3H3.1a9.6 9.6 0 0 0 0 8.6l3.3-2.3Z" />
+                          <path d="M12 6.2c1.5 0 2.8.5 3.8 1.5l2.8-2.8A9.6 9.6 0 0 0 3.1 7.3l3.3 2.6c.8-2.3 3-3.7 5.6-3.7Z" />
+                        </svg>
+                        Reseña en Google
+                        <span class="sr-only">(se abre en una pestaña nueva)</span>
+                      </a>
+                    )}
+                  </span>
                 </div>
               </div>
             </div>
@@ -175,11 +199,15 @@ const { testimonios, class: className } = Astro.props as Props;
   }
 
   /* `:global` porque estos nodos los crea el JS y no llevan el atributo de
-   * scope que Astro agrega al markup del componente. */
+   * scope que Astro agrega al markup del componente.
+   *
+   * Sin `rotateX(90deg)` (05/09/2026, auditoría de performance): la rotación
+   * 3D por palabra forzaba una capa compuesta por cada span. Queda solo
+   * opacity + translateY, con el mismo escalonado y la misma duración. */
   .tst-quote :global(.w-anim) {
     display: inline-block;
     opacity: 0;
-    transform: translateY(20px) rotateX(90deg);
+    transform: translateY(20px);
   }
   .tst-quote.is-in :global(.w-anim) {
     opacity: 1;

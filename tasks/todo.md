@@ -223,3 +223,24 @@ Ratios WCAG recalculados (la estimación del doc de identidad estaba mal; el doc
   El ícono TIENE que ir en blanco: navy al 70% sobre el blanco de la sección compone #4D6E89, y el trazo navy anterior daba 2.53 contra eso — desaparecía. En blanco da 5.37 (WCAG 1.4.11 pide 3:1 para gráficos).
   El `backdrop-filter` hoy es decorativo: la Sección 4 es blanco liso y no hay nada detrás que difuminar. Va igual porque el pedido era replicar el tratamiento del navbar.
   El patrón `--rayado` queda en `global.css` junto a `--color-hatch`: hoy lo consume solo `FranjaRayado`, pero es un patrón del sistema y ahí está disponible sin volver a copiarlo.
+
+---
+
+## Fix 05/09/2026 — hero video mobile + lazy loading Obras destacadas (branch `fix/hero-video-obras-lazy`)
+
+- [x] Hero: elegir `src` por JS (ancho + reduced-motion) y forzar `play()` con reintento en el primer gesto / al volver visible. Sin `<source media>`.
+- [x] Obras destacadas (TarjetaObraHover): `srcset` con 400/800/1216 + `sizes` real, en vez de un único webp de 1216px.
+- [x] `pnpm build` + `astro check` + verificar HTML de dist.
+- [x] Revisión de performance (agente frontend-developer) — findings en el reporte del 05/09 (15 items, 4 altos; #4 hero resuelto en esta branch).
+- [x] /obras: Tacuarí 1051 pasa a `orden: 3` y Ianki Bar a `orden: 5` (intercambio, pedido directo).
+- [x] Favicon: isotipo NEST blanco sobre navy (favicon.svg fuente, favicon.ico 16/32/48, apple-touch-icon 180) enlazados en main.astro.
+- [x] Portada de Tacuarí 1051 reemplazada (src/assets/obras/tacuari-1050-portada.png, 1172×1342).
+- [x] Aplicados los 14 findings restantes de la auditoría (assetsInlineLimit, preload de fuente 400/500, preload del poster, reveal sin ocultar el viewport inicial, header sin transicionar blur/sombra, fallbackFormat en Galeria + width en <Image>, Cache-Control para /hero-* y /logos/*, hormigón 480/720 q45, sin blur/rotateX en animaciones por palabra ni en tarjetas hermanas, LCP sin opacity 0 (keyframe `lcp-up` en global.css), resize con rAF, logos svgo + width/height, fallback tipográfico con métricas medidas).
+
+### Revisión 05/09/2026
+- `pnpm build` exit 0, `astro check` 0 errores / 0 warnings.
+- Home: 2 stylesheets (antes 6), 0 scripts externos (antes 6), preload de fuente 400 + poster; subpáginas precargan 500 y 1 stylesheet.
+- dist/ pasa de 124 MB a 72 MB (fallbacks jpeg en Galeria).
+- Sin Lighthouse (no se levantó servidor ni browser, por pedido). Pendiente medir en deploy de preview.
+- Nota: Cache-Control de un día en /logos/*: un logo reemplazado puede tardar hasta 24 h en verse.
+- [x] Testimonios reales (05/09/2026): reemplazados los placeholders por dos reseñas de Google (M. Etchebarne, V. Odriozola) con link "Reseña en Google". Pendiente: link de compartir del Perfil de Negocio en `site.googleResenas`.

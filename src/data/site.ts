@@ -34,6 +34,9 @@ export interface SiteConfig {
   };
   email: string;
   instagram: string;
+  /** Reseñas públicas del Perfil de Negocio de Google (destino del link
+   * "Reseña en Google" de los testimonios). */
+  googleResenas: string;
   /** Pendiente hasta tener la dirección real (§11). */
   direccion: DireccionPostal | null;
   areaServed: string[];
@@ -52,6 +55,13 @@ export const site: SiteConfig = {
   },
   email: 'info@nestobras.com.ar',
   instagram: 'https://www.instagram.com/nest.obras/',
+  // TODO(NEST): reemplazar por el link de compartir del Perfil de Negocio
+  // (Google Maps → el negocio → Compartir, o el link corto `maps.app.goo.gl`).
+  // Mientras tanto, una búsqueda por nombre + dirección (el NAP exacto del
+  // perfil) lleva a la ficha con las reseñas.
+  googleResenas:
+    'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent('Nest Obras, Paraná 26, Ciudad de Buenos Aires'),
   direccion: {
     calle: 'Paraná 26',
     localidad: 'Ciudad Autónoma de Buenos Aires',
