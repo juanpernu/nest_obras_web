@@ -130,7 +130,9 @@ El PDF fuente (`NEST_Contenido_Web_Completo.pdf`) **no es accesible desde el ent
 - **Home §6** — párrafo de trayectoria corporativa (p. 14) → `src/pages/index.astro` (Sección 6).
 - **`/servicios`** — tabla/redacción de los 8 clientes corporativos (p. 14).
 
-### 2.3 🔴 Testimonios placeholder EN PRODUCCIÓN (excepción a §6.3)
+### 2.3 ✅ Testimonios placeholder EN PRODUCCIÓN (excepción a §6.3) — CERRADO 05/09/2026
+
+**Cerrado el 05/09/2026:** los dos placeholders se reemplazaron por dos reseñas reales del Perfil de Negocio de Google (`m-etchebarne.md`, `v-odriozola.md`), transcriptas literales. Cada tarjeta muestra el link "Reseña en Google" a `site.googleResenas` como prueba verificable; sigue **sin** `Review`/`AggregateRating` en el JSON-LD (§6.6). Pendiente menor: `site.googleResenas` es hoy una búsqueda de Maps por NAP; reemplazar por el link de compartir del perfil cuando NEST lo pase. Lo que sigue queda como historial.
 
 `src/content/testimonios/juan-r.md` y `maria-l.md` son **inventados**: "Juan R. — San Isidro" y "María L. — Nordelta" no son clientes reales, y sus textos tampoco. Se publican en la Home por **decisión explícita del cliente (2026-08-04)**, pedida en `NEST_cambios_home.md` punto 6.
 
@@ -165,7 +167,7 @@ La Sección 1 de `src/pages/nosotros.astro` abre con el texto a la izquierda y u
 | **Dirección física** (NAP) | `address` en el JSON-LD `GeneralContractor`, footer, Perfil de Negocio de Google | ✅ Resuelto 2026-08-04: Paraná 26, CABA, CPA **C1017AAE** — cargado en `site.ts`, emitido en el `PostalAddress` y visible en footer y bloque de contacto |
 | **Ficha de El Canton** (m², plazo, año, estilo) | publicar `/obras/el-canton` (`paginaPropia: true`) | Falta |
 | **Fotos reales de PRUNE** (≥8) | reemplazar placeholders del caso | Falta |
-| **Testimonios reales** | reemplazar los **placeholders publicados** (§2.3) | Falta (~semana 3) — 🔴 mientras tanto hay 2 reseñas inventadas en el aire |
+| **Testimonios reales** | reemplazar los **placeholders publicados** (§2.3) | ✅ 05/09/2026 — dos reseñas reales de Google; falta solo el link de compartir del perfil (`site.googleResenas`) |
 | **ID del Meta Pixel** | la medición de campañas de Meta (§6) | Falta — requiere acceso a `business.facebook.com` |
 
 ---

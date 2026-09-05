@@ -243,3 +243,4 @@ Ratios WCAG recalculados (la estimación del doc de identidad estaba mal; el doc
 - dist/ pasa de 124 MB a 72 MB (fallbacks jpeg en Galeria).
 - Sin Lighthouse (no se levantó servidor ni browser, por pedido). Pendiente medir en deploy de preview.
 - Nota: Cache-Control de un día en /logos/*: un logo reemplazado puede tardar hasta 24 h en verse.
+- [x] Testimonios reales (05/09/2026): reemplazados los placeholders por dos reseñas de Google (M. Etchebarne, V. Odriozola) con link "Reseña en Google". Pendiente: link de compartir del Perfil de Negocio en `site.googleResenas`.
