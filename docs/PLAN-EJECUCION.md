@@ -975,6 +975,8 @@ de remarketing, y lo segundo no se resuelve sin el pixel. Van con carga diferida
 bajo la excepción de §7.1 y Consent Mode v2 sin banner. Ver
 `src/components/astro/Analytics.astro` y `src/data/analytics.ts`.
 
+> **Actualización 05/09/2026:** se sumó **Vercel Web Analytics** como complemento (pageviews y Web Vitals de audiencia real en el dashboard de Vercel, sin cookies), con el snippet HTML y carga tras `load` —no el componente `@vercel/analytics/astro`, que agregaba ~2.7 KB de JS por ruta—; ver `src/components/astro/VercelAnalytics.astro`. GA4 + Meta siguen siendo la analítica de campañas. Requiere habilitarlo en el proyecto de Vercel (Analytics → Enable).
+
 | Dato | Bloquea | Quién lo trae |
 |---|---|---|
 | ID del Meta Pixel (`PUBLIC_META_PIXEL_ID`) | La medición de campañas de Meta | NEST — requiere acceso a business.facebook.com |

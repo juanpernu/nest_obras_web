@@ -24,6 +24,7 @@ import BotonFlotanteWhatsapp from '@/components/astro/BotonFlotanteWhatsapp.astr
 // No renderizarlo sin el guard — rompe la regla de cero hidratación (§7.1).
 import { Agentation } from 'agentation';
 import Analytics from '@/components/astro/Analytics.astro';
+import VercelAnalytics from '@/components/astro/VercelAnalytics.astro';
 import type { EventoDePagina } from '@/data/analytics';
 
 interface Props {
@@ -43,6 +44,12 @@ interface Props {
    * se instrumentan con `data-evento` en el elemento (ver Analytics.astro).
    */
   evento?: EventoDePagina;
+  /**
+   * Imagen a precargar con prioridad alta (candidata a LCP de la ruta). La
+   * home pasa el poster del hero: la ruta vive en la página, junto al <video>
+   * que la usa, así un rename no deja acá un preload a un 404.
+   */
+  preloadImagen?: string;
 }
 
 // Cast explícito: el binding implícito de `Props` a `Astro.props` no es fiable
@@ -55,6 +62,7 @@ const {
   noindex = false,
   jsonLd = [],
   evento,
+  preloadImagen,
 } = Astro.props as Props;
 
 const esHome = Astro.url.pathname.replace(/\/$/, '') === '';
@@ -147,10 +155,11 @@ const grafo = {
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="preload" href={heroFont} as="font" type="font/woff2" crossorigin />
-    {/* 05/09/2026: el poster del hero es el LCP de la home. Se precarga solo
-        acá (el resto de las rutas no lo pinta) y con prioridad alta para que
-        no espere detrás del CSS y las fuentes. */}
-    {esHome && <link rel="preload" href="/hero-poster.jpg" as="image" fetchpriority="high" />}
+    {/* 05/09/2026: la página que tiene una imagen candidata a LCP la precarga
+        con prioridad alta para que no espere detrás del CSS y las fuentes.
+        En la home es el poster del hero (el LCP de texto es el <h1>; el poster
+        es el candidato de imagen que Chrome ≥116 también evalúa). */}
+    {preloadImagen && <link rel="preload" href={preloadImagen} as="image" fetchpriority="high" />}
     <meta name="generator" content={Astro.generator} />
 
     <title>{title}</title>
@@ -196,14 +205,9 @@ const grafo = {
         El failsafe cubre el caso restante: JS habilitado (así que la clase se
         aplicó y el contenido está oculto) pero el módulo nunca corre. Si a los
         2s nadie reclamó el reveal, se destraba solo. */}
-    <script is:inline>
-      document.documentElement.classList.add('js-reveal');
-      setTimeout(function () {
-        if (!document.documentElement.hasAttribute('data-reveal-listo')) {
-          document.documentElement.classList.remove('js-reveal');
-        }
-      }, 2000);
-    </script>
+    {/* En una línea a propósito: `is:inline` no pasa por el minificador y cada
+        byte cuenta para el presupuesto de 5 KB de JS por ruta (§7.1). */}
+    <script is:inline>var h=document.documentElement;h.classList.add('js-reveal');setTimeout(function(){h.hasAttribute('data-reveal-listo')||h.classList.remove('js-reveal')},2000)</script>
   </head>
   <body class="flex min-h-screen flex-col bg-white">
     <Nav />
@@ -220,6 +224,7 @@ const grafo = {
         corriendo mucho antes del `load`, que es cuando se piden los scripts
         reales — el orden que Consent Mode exige se respeta igual. */}
     <Analytics evento={evento} />
+    <VercelAnalytics />
   </body>
 </html>
 

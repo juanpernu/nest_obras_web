@@ -159,6 +159,7 @@ const personasLd = [
               loading="eager"
               fetchpriority="high"
               decoding="sync"
+              width={1280}
               widths={[400, 640, 960, 1280]}
               sizes="(min-width: 768px) 50vw, 100vw"
               class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"
@@ -236,6 +237,7 @@ const personasLd = [
                       <Image
                         src={m.data.foto}
                         alt={`Retrato de ${m.data.nombre}`}
+                        width={1200}
                         widths={[440, 880, 1200]}
                         sizes="(min-width: 640px) 50vw, 100vw"
                         class="h-full w-full object-cover grayscale transition-[filter] duration-300 hover:grayscale-0"

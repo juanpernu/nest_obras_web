@@ -35,10 +35,13 @@ export default defineConfig({
     // CSS chicos de cada componente, y la home terminaba emitiendo 6
     // `<script type="module" src>` y 6 `<link rel="stylesheet">` de entre 144 B
     // y 1.4 KB (doce requests bloqueantes para menos de 5 KB). Ahora el límite
-    // solo se anula para las fuentes (.woff2): el resto vuelve al default de
-    // Vite (4 KB) y viaja inline.
+    // solo se anula para las fuentes: el resto vuelve al default de Vite (4 KB)
+    // y viaja inline. Cubre .woff2 Y .woff (code review del PR #12): los
+    // @font-face de Fontsource declaran un fallback .woff por peso, y los de
+    // greek-ext pesan ~1.4 KB, así que con `.woff2` solo quedaban en base64
+    // dentro del CSS principal — 6 KB muertos en todas las rutas.
     build: {
-      assetsInlineLimit: (filePath) => (filePath.endsWith('.woff2') ? false : undefined),
+      assetsInlineLimit: (filePath) => (/\.woff2?$/.test(filePath) ? false : undefined),
     },
   },
 });
