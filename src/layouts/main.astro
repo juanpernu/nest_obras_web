@@ -24,6 +24,7 @@ import BotonFlotanteWhatsapp from '@/components/astro/BotonFlotanteWhatsapp.astr
 // No renderizarlo sin el guard — rompe la regla de cero hidratación (§7.1).
 import { Agentation } from 'agentation';
 import Analytics from '@/components/astro/Analytics.astro';
+import VercelAnalytics from '@/components/astro/VercelAnalytics.astro';
 import type { EventoDePagina } from '@/data/analytics';
 
 interface Props {
@@ -223,6 +224,7 @@ const grafo = {
         corriendo mucho antes del `load`, que es cuando se piden los scripts
         reales — el orden que Consent Mode exige se respeta igual. */}
     <Analytics evento={evento} />
+    <VercelAnalytics />
   </body>
 </html>
 

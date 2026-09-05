@@ -22,6 +22,9 @@ done
 # type="application/ld+json"): desde el 05/09/2026 los scripts hoisted viajan
 # inline (assetsInlineLimit en astro.config.mjs), así que contar solo los
 # externos daba 0 y el presupuesto quedaba sin control (code review del PR #12).
+# Los <script data-analitica> (encoladores de GA4/Meta y Vercel Analytics) no
+# se cuentan: la analítica de terceros está exenta del presupuesto por §7.1,
+# con la condición de que el script real se inyecte después del `load`.
 while IFS= read -r html; do
   externo=0
   for js in $(grep -oE '/_astro/[A-Za-z0-9_./-]+\.js' "$html" | sort -u); do
@@ -32,6 +35,7 @@ while IFS= read -r html; do
     let n = 0;
     for (const m of h.matchAll(/<script(\b[^>]*)>([\s\S]*?)<\/script>/g)) {
       if (/type=["\x27]application\/ld\+json/.test(m[1])) continue;
+      if (/\bdata-analitica\b/.test(m[1])) continue;
       n += Buffer.byteLength(m[2]);
     }
     console.log(n);
