@@ -66,4 +66,4 @@ La vivienda se entregó terminada, con el nivel de terminaciones y el seguimient
 
 ## Por qué este caso importa
 
-Es el tipo de obra en el que la diferencia no está en el plano sino en el control diario: quién responde, quién coordina y quién se hace cargo cuando algo no sale como estaba previsto.
+En las obras residenciales la diferencia está en el control diario de la obra: un responsable que responde, coordina y supervisa la ejecución para comunicar al cliente.

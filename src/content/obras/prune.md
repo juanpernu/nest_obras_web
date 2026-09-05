@@ -49,7 +49,7 @@ galeria:
 
 ## El Desafío
 
-PRÜNE necesitaba abrir 10 sucursales en 40 días, con un estándar de marca uniforme en cada local y sin frenar su operación comercial.
+PRÜNE necesitaba acondicionar 10 sucursales en 40 días, con un estándar de marca uniforme en cada local y sin frenar su operación comercial.
 
 ## La Solución
 
