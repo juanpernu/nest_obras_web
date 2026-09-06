@@ -123,14 +123,22 @@ const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props
       video.paused ? video.play().catch(() => {}) : Promise.resolve();
 
     // Reintento por gesto, acotado: un solo gesto real alcanza para
-    // desbloquear el autoplay, así que el listener es `once` y solo sobre
-    // pointerdown (touchend y click eran redundantes: un tap dispara los
-    // tres; keydown se sacó por presupuesto de JS —en mobile, donde el
-    // bloqueo ocurre, el gesto es siempre un toque). Si ese intento falla, se
-    // rearma hasta 3 veces y después deja de insistir: sin el tope, con
-    // autoplay bloqueado de forma permanente cada toque llamaba a play() tres
-    // veces, para siempre.
+    // desbloquear el autoplay, así que los listeners son `once`. Si ese
+    // intento falla, se rearma hasta 3 veces y después deja de insistir: sin
+    // el tope, con autoplay bloqueado de forma permanente cada toque llamaba
+    // a play() para siempre.
+    //
+    // Bug en iPhone (05/09/2026, reportado en Chrome iOS): el gesto se
+    // escuchaba SOLO en `pointerdown`, y en WebKit un `pointerdown` de tipo
+    // "touch" NO otorga activación de usuario — la spec de HTML lo excluye a
+    // propósito para no contar los swipes, y la política de video de WebKit
+    // solo acepta `touchend`, `click`, `dblclick` y `keydown`. Así, cuando el
+    // autoplay estaba bloqueado (Modo de bajo consumo, "previsualización de
+    // video" apagada, Chrome iOS con su WKWebView), cada toque llamaba a
+    // play() sin permiso, fallaba, y el hero quedaba en el poster para
+    // siempre. `touchend` cubre el toque; `click` cubre mouse/lápiz.
     let intentos = 0;
+    const gestos = ['touchend', 'click'] as const;
     const opciones = { once: true, capture: true };
     const porGesto = () => {
       desarmar();
@@ -141,10 +149,10 @@ const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props
     };
     const armar = () => {
       if (intentos >= 3) return;
-      document.addEventListener('pointerdown', porGesto, opciones);
+      for (const g of gestos) document.addEventListener(g, porGesto, opciones);
     };
     const desarmar = () => {
-      document.removeEventListener('pointerdown', porGesto, true);
+      for (const g of gestos) document.removeEventListener(g, porGesto, true);
     };
 
     // visibilitychange se queda para siempre, a propósito: WebKit puede pausar
