@@ -58,13 +58,19 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
 <div class:list={['hero-video', className]} aria-hidden="true" data-yt={youtubeId}>
   {/* Prioridad alta y no lazy: el poster ocupa el viewport entero arriba de
       todo y es el candidato a LCP de imagen de la ruta —el <h1> es texto sobre
-      él—, así que retrasarlo empuja el LCP directamente. */}
+      él—, así que retrasarlo empuja el LCP directamente.
+      El archivo es la miniatura del propio video (i.ytimg.com/vi/<id>/
+      maxresdefault.jpg, 1280×720, reencodeada a ~50 KB con sharp), servida
+      desde public/ para no abrir una conexión más en el camino crítico. Así lo
+      que se ve mientras el player carga es el mismo cuadro con el que arranca
+      el video y no un placeholder distinto (pedido del 06/09/2026). Si se
+      cambia el video hay que regenerar public/hero-poster.jpg. */}
   <img
     class="hero-video-poster"
     src={poster}
     alt=""
-    width="1920"
-    height="1080"
+    width="1280"
+    height="720"
     fetchpriority="high"
     decoding="async"
   />
