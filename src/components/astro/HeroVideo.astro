@@ -2,168 +2,279 @@
 /**
  * Video de fondo del hero (docs/PLAN-EJECUCION.md §7.2).
  *
- * Vuelve a <video> nativo (17/08/2026, segunda reversión del embed de
- * YouTube). Historial completo en docs/DEUDA-TECNICA.md §5: hubo un primer
- * embed el 14/08/2026, revertido porque el player mostraba su propia UI
- * —título, controles, tarjeta "más videos"— en cada ciclo del loop; un
- * segundo intento el 16/08/2026 atacó esos tres puntos (pointer-events: none,
- * loop por playlist, autoplay forzado en todas las condiciones) pero el
- * problema de fondo seguía sin resolverse de forma confiable, y un embed de
- * terceros mete >1 MB de JS que no puede estar en el camino crítico sin
- * comprometer el budget de performance. El archivo es propio
- * (public/hero-video.mp4).
+ * EMBED DE YOUTUBE, tercera vez (06/09/2026, pedido explícito después del
+ * reporte de que el <video> nativo "se sigue pausando" en iPhone). Historial
+ * completo en docs/DEUDA-TECNICA.md §5: dos embeds previos (14 y 16/08/2026)
+ * se revirtieron a <video> nativo el 17/08 porque el player mostraba su UI en
+ * cada ciclo del loop y el handshake por postMessage "a mano" nunca contestaba,
+ * así que no había forma confiable de saber en qué estado estaba el player.
+ * El nativo, a su vez, quedaba en el poster o se pausaba en iPhone (Modo de
+ * bajo consumo, WKWebView de Chrome iOS) aun con el reintento por gesto
+ * corregido en el PR #15.
  *
- * Autoplay en mobile (18/08/2026, pedido explícito): hasta ahora el <source>
- * de arriba matcheaba solo en ≥768px, así que abajo de ese ancho ningún source
- * matcheaba y el navegador nunca pedía bytes de video — solo el poster. Eso
- * protegía el budget de performance (el archivo desktop pesa 9 MB) pero
- * dejaba el hero estático en el viewport donde más se navega.
+ * Qué cambia respecto de los dos intentos anteriores:
  *
- * La salida no es sacar el gate: es un SEGUNDO archivo, recortado 9:16 en vez
- * de escalado desde el 16:9 desktop (public/hero-video-mobile.mp4, 2.3 MB,
- * crop=608:1080 centrado en el punto de interés del plano). Tiene sentido
- * doble: pesa una fracción del original, y de paso corrige un desperdicio que
- * ya existía — con `object-cover` sobre un 16:9 en una pantalla vertical, el
- * navegador igual tenía que descargar los 1920px de ancho completos para
- * mostrar una franja central de ~600px.
+ *  - Se usa la IFrame Player API oficial (`youtube.com/iframe_api`) en vez del
+ *    postMessage crudo. Eso da `onStateChange` confiable, y con eso se cubren
+ *    las tres cosas que antes fallaban: ENDED → rebobinar y seguir (además de
+ *    `loop=1&playlist=<id>`); PAUSED → volver a reproducir (el "se sigue
+ *    pausando"); UNSTARTED/CUED → esperar el primer gesto y reproducir.
+ *  - El iframe se dimensiona un 30 % más grande que la caja y el contenedor
+ *    recorta el sobrante: la franja superior (título, "Ver en YouTube") y la
+ *    inferior (barra de progreso, logo) del player quedan fuera del recorte
+ *    aunque YouTube decida pintarlas. `controls=0` y `pointer-events: none`
+ *    siguen como primera línea; el recorte es la red de seguridad.
+ *  - El iframe se revela recién cuando el player reporta PLAYING. Si el
+ *    autoplay está bloqueado se sigue viendo el poster, no un player negro con
+ *    botón de play, y el primer toque en cualquier parte de la página arranca
+ *    el video (touchend/click, que son los eventos que WebKit acepta como
+ *    gesto — ver PR #15).
  *
- * El gate de `prefers-reduced-motion` (WCAG 2.2.2) se mantiene: con
- * reduced-motion no se pide ningún archivo y solo se pinta el poster, en
- * cualquier ancho — si no, el navegador descargaría los MB del video para
- * recién pausarlo después, y se pierde el ahorro de datos que es la mitad del
- * motivo de tener un archivo mobile aparte. Cómo se aplica hoy ese gate (y el
- * de ancho) está en la nota del 05/09/2026 más abajo.
+ * PRESUPUESTO DE PERFORMANCE. El embed trae >1 MB de JS de terceros, así que
+ * NO está en el HTML inicial: el LCP sigue siendo el <h1> y el poster (que ya
+ * se precarga desde el layout). El API y el iframe se cargan recién en `load`.
  *
- * El LCP es el <h1>: preload reducido + poster.
+ * AUTOPLAY EN TODOS LOS DISPOSITIVOS (pedido explícito, 06/09/2026, reafirma
+ * la decisión del 16/08/2026): se monta en todos los anchos y también con
+ * `prefers-reduced-motion` (contra WCAG 2.2.2; lo asume el cliente). El único
+ * recorte que queda es `saveData` / 2g, que es opt-in de la persona.
  *
- * Bug de Safari (25/08/2026): `preload="none"` + `autoplay` en WebKit puede
- * nunca disparar la carga real del video — se queda parado en el poster para
- * siempre (bug conocido de WebKit; en Chrome funciona bien). La solución es
- * `preload="metadata"` en vez de `"none"`: eso le da a Safari la señal que le
- * faltaba para arrancar la carga con autoplay, y solo trae los metadatos +
- * primeros bytes del archivo (unos pocos KB), no el video completo — el
- * budget de performance que motivó sacar `preload` en primer lugar sigue
- * intacto.
+ * Dominio `youtube-nocookie.com`: mismo player, sin cookies de tracking hasta
+ * que hay interacción — y acá no puede haberla (`pointer-events: none`).
  *
- * NO LLEVA `data-evento="video_play"` A PROPÓSITO. Es un video decorativo con
- * `autoplay muted` y `aria-hidden`: el evento `play` se dispara solo al cargar la
- * página, sin que nadie haya hecho nada. Medirlo daría una métrica que parece
- * engagement pero en realidad es "visita sin reduced-motion", o sea un
- * pageview disfrazado. El engagement real lo cubre Enhanced Measurement de GA4.
- * El mapeo `video_play` existe en src/data/analytics.ts para un video con
- * controles de verdad, que es donde el evento sí significa algo.
- *
- * Selección de fuente y arranque por JS (05/09/2026, bug reportado: en
- * algunos browsers mobile el video no aparece o no arranca). Hasta acá todo
- * dependía de atributos HTML: `media` en cada <source> para elegir archivo y
- * `autoplay` para arrancar. Dos fallas quedaban sin cubrir:
- *
- *  1. Autoplay bloqueado por política del dispositivo (iOS en modo bajo
- *     consumo, "ahorro de datos", ajustes de previsualización de video):
- *     `autoplay` se ignora en silencio y no había ningún JS que reintentara
- *     `play()` en el primer gesto de la persona, que es cuando el navegador
- *     sí lo permite.
- *  2. El diagnóstico del 04/09 (WebKit y media queries compuestas en el
- *     `media` de <source>) más el historial de `preload` muestran que la
- *     elección declarativa del archivo es frágil en WebKit. Se reemplaza por
- *     `matchMedia` en runtime, que es lo que ya se había apuntado como
- *     solución final: vuelve el filtro de `prefers-reduced-motion` (con
- *     reduced-motion no se asigna `src` y queda el poster, sin bajar bytes)
- *     y el gate de ancho decide entre el archivo mobile y el desktop.
- *
- * El script es un <script> hoisted de Astro (minificado e inlineado en el
- * HTML por assetsInlineLimit, así que tampoco depende de la red); corre como
- * módulo diferido, con el poster ya precargado desde el <head>. Sin JS queda
- * el poster (el reveal del resto de la página ya asume JS igual).
- * `muted` se fija también desde JS porque WebKit exige que el elemento esté
- * silenciado en el momento de `play()`, no solo en el markup (el atributo ya
- * cubre `defaultMuted`). Los reintentos se limpian en cuanto el video reporta
- * `playing`.
+ * NO LLEVA `data-evento="video_play"` A PROPÓSITO: es decorativo y autoplay;
+ * medirlo sería un pageview disfrazado (ver src/data/analytics.ts).
  */
 interface Props {
-  srcDesktop: string;
-  srcMobile: string;
+  /** ID del video (la `v=` de la URL de YouTube). */
+  youtubeId: string;
+  /** Imagen que se ve hasta que el player reporta que está reproduciendo. */
   poster: string;
   class?: string;
 }
-const { srcDesktop, srcMobile, poster, class: className } = Astro.props as Props;
+const { youtubeId, poster, class: className } = Astro.props as Props;
 ---
 
-<video
-  data-hero-video
-  data-src-desktop={srcDesktop}
-  data-src-mobile={srcMobile}
-  poster={poster}
-  preload="metadata"
-  autoplay
-  muted
-  playsinline
-  loop
-  aria-hidden="true"
-  class:list={['hero-video', className]}
-></video>
+<div class:list={['hero-video', className]} aria-hidden="true" data-yt={youtubeId}>
+  {/* Prioridad alta y no lazy: el poster ocupa el viewport entero arriba de
+      todo y es el candidato a LCP de imagen de la ruta —el <h1> es texto sobre
+      él—, así que retrasarlo empuja el LCP directamente. */}
+  <img
+    class="hero-video-poster"
+    src={poster}
+    alt=""
+    width="1920"
+    height="1080"
+    fetchpriority="high"
+    decoding="async"
+  />
+  {/* La API reemplaza este div por el <iframe> (mismo lugar en el árbol). */}
+  <div class="hero-video-player"></div>
+</div>
+
+<style>
+  /* El componente es dueño de su geometría: se estira sobre el contenedor
+     posicionado más cercano —el <section> del hero— y recorta lo que sobra del
+     video. El consumidor solo decide el stacking (la `-z-20` de index.astro).
+     `container-type: size` habilita las unidades cq* de abajo. */
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background-color: #000;
+    container-type: size;
+  }
+
+  .hero-video-poster {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+
+  /* Cobertura de la caja para un video 16:9 —se toma el mayor entre "ancho
+     completo" y "alto completo × 16/9", así nunca quedan bandas— multiplicada
+     por 1.3: el 15 % que sobra arriba y abajo es donde YouTube pinta título y
+     barra de controles, y queda fuera del recorte del contenedor. Primero en
+     unidades de viewport (el hero mide min-h-dvh, así que las describen bien)
+     y después, donde existen, en unidades de contenedor, que son exactas. */
+  .hero-video :global(iframe) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    width: 130vw;
+    height: 73.125vw;
+    min-width: 231.11vh;
+    min-height: 130vh;
+    border: 0;
+    /* El chrome de YouTube se dispara al hover. Sin puntero no hay chrome, y
+       además ningún click puede escaparse a youtube.com. */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  @supports (width: 1cqw) {
+    .hero-video :global(iframe) {
+      width: 130cqw;
+      height: 73.125cqw;
+      min-width: 231.11cqh;
+      min-height: 130cqh;
+    }
+  }
+
+  /* La pone el script cuando el player reporta PLAYING. */
+  .hero-video :global(iframe.visible) {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-video :global(iframe) {
+      transition: none;
+    }
+  }
+</style>
 
 <script>
-  /* Ver el bloque de comentarios del frontmatter ("Selección de fuente y
-   * arranque por JS"). Es un <script> hoisted y no `is:inline` (code review del
-   * PR #12): Astro lo minifica y lo inlinea igual (assetsInlineLimit), y la
-   * versión inline sin minificar pesaba 2.3 KB de los 5 KB de JS que admite
-   * la ruta. Corre como módulo diferido, después del parseo: el poster ya
-   * está precargado desde el <head> (main.astro), así que el primer paint no
-   * lo espera. */
-  const video = document.querySelector<HTMLVideoElement>('video[data-hero-video]');
+  /* Fachada del hero sobre la IFrame Player API de YouTube. Ver la nota
+   * extensa del frontmatter. */
+  interface YTPlayer {
+    mute(): void;
+    playVideo(): void;
+    seekTo(segundos: number, permitirBuscar: boolean): void;
+    getPlayerState(): number;
+    getIframe(): HTMLIFrameElement;
+  }
+  interface YTEvento {
+    target: YTPlayer;
+    data: number;
+  }
+  interface YTNamespace {
+    Player: new (
+      host: HTMLElement,
+      opciones: {
+        videoId: string;
+        host: string;
+        playerVars: Record<string, string | number>;
+        events: { onReady(e: YTEvento): void; onStateChange(e: YTEvento): void };
+      },
+    ) => YTPlayer;
+  }
+  declare global {
+    interface Window {
+      YT?: YTNamespace;
+      onYouTubeIframeAPIReady?: () => void;
+    }
+  }
 
-  if (video && !video.src && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const mobile = window.matchMedia('(max-width: 767px)').matches;
-    video.src = (mobile ? video.dataset.srcMobile : video.dataset.srcDesktop) as string;
-    video.muted = true;
-    video.load();
+  // Estados de YT.PlayerState.
+  const ENDED = 0;
+  const PLAYING = 1;
+  const PAUSED = 2;
 
-    const intentar = (): Promise<void> =>
-      video.paused ? video.play().catch(() => {}) : Promise.resolve();
+  const contenedor = document.querySelector<HTMLElement>('.hero-video');
+  const host = contenedor?.querySelector<HTMLElement>('.hero-video-player');
+  const videoId = contenedor?.dataset.yt;
 
-    // Reintento por gesto, acotado: un solo gesto real alcanza para
-    // desbloquear el autoplay, así que los listeners son `once`. Si ese
-    // intento falla, se rearma hasta 3 veces y después deja de insistir: sin
-    // el tope, con autoplay bloqueado de forma permanente cada toque llamaba
-    // a play() para siempre.
-    //
-    // Bug en iPhone (05/09/2026, reportado en Chrome iOS): el gesto se
-    // escuchaba SOLO en `pointerdown`, y en WebKit un `pointerdown` de tipo
-    // "touch" NO otorga activación de usuario — la spec de HTML lo excluye a
-    // propósito para no contar los swipes, y la política de video de WebKit
-    // solo acepta `touchend`, `click`, `dblclick` y `keydown`. Así, cuando el
-    // autoplay estaba bloqueado (Modo de bajo consumo, "previsualización de
-    // video" apagada, Chrome iOS con su WKWebView), cada toque llamaba a
-    // play() sin permiso, fallaba, y el hero quedaba en el poster para
-    // siempre. `touchend` cubre el toque; `click` cubre mouse/lápiz.
-    let intentos = 0;
-    const gestos = ['touchend', 'click'] as const;
-    const opciones = { once: true, capture: true };
-    const porGesto = () => {
-      desarmar();
-      intentos++;
-      intentar().then(() => {
-        if (video.paused) armar();
+  if (contenedor && host && videoId) {
+    let player: YTPlayer | undefined;
+
+    const reproducir = () => {
+      if (!player || player.getPlayerState() === PLAYING) return;
+      player.mute();
+      player.playVideo();
+    };
+
+    const crearPlayer = () => {
+      if (!window.YT) return;
+      player = new window.YT.Player(host, {
+        videoId,
+        host: 'https://www.youtube-nocookie.com',
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          rel: 0,
+          iv_load_policy: 3,
+          playsinline: 1,
+          // `playlist` con el propio id es lo que hace que `loop` funcione en
+          // un video suelto; sin eso YouTube cae en la pantalla final.
+          loop: 1,
+          playlist: videoId,
+          origin: window.location.origin,
+        },
+        events: {
+          onReady: (e) => {
+            const iframe = e.target.getIframe();
+            iframe.title = 'Video institucional de NEST';
+            iframe.setAttribute('tabindex', '-1');
+            iframe.setAttribute('aria-hidden', 'true');
+            e.target.mute();
+            e.target.playVideo();
+          },
+          onStateChange: (e) => {
+            if (e.data === PLAYING) {
+              e.target.getIframe().classList.add('visible');
+            } else if (e.data === ENDED) {
+              e.target.seekTo(0, true);
+              e.target.playVideo();
+            } else if (e.data === PAUSED) {
+              // Nadie puede pausarlo (pointer-events: none): si se pausó fue el
+              // sistema (bloqueo de pantalla, cambio de app, ahorro de energía).
+              e.target.playVideo();
+            }
+          },
+        },
       });
     };
-    const armar = () => {
-      if (intentos >= 3) return;
-      for (const g of gestos) document.addEventListener(g, porGesto, opciones);
-    };
-    const desarmar = () => {
-      for (const g of gestos) document.removeEventListener(g, porGesto, true);
+
+    const montar = () => {
+      if (window.YT?.Player) {
+        crearPlayer();
+        return;
+      }
+      window.onYouTubeIframeAPIReady = crearPlayer;
+      const script = document.createElement('script');
+      script.src = 'https://www.youtube.com/iframe_api';
+      script.async = true;
+      document.head.appendChild(script);
     };
 
-    // visibilitychange se queda para siempre, a propósito: WebKit puede pausar
-    // el video al bloquear la pantalla o cambiar de app y no retomarlo al
-    // volver; `intentar` no hace nada si ya está sonando.
+    /* Cuando el autoplay está bloqueado el player queda en UNSTARTED/CUED y el
+     * iframe invisible (se ve el poster). El primer gesto real de la persona lo
+     * arranca: touchend y click son los eventos que WebKit acepta como gesto
+     * (pointerdown de tipo touch NO cuenta; ver PR #15). Quedan armados para
+     * siempre: `reproducir` no hace nada si ya está sonando. */
+    for (const gesto of ['touchend', 'click'] as const) {
+      document.addEventListener(gesto, reproducir, { capture: true, passive: true });
+    }
+    // WebKit puede pausar el player al bloquear la pantalla o cambiar de app y
+    // no retomarlo al volver.
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) intentar();
+      if (!document.hidden) reproducir();
     });
-    video.addEventListener('playing', desarmar, { once: true });
-    video.addEventListener('canplay', () => intentar(), { once: true });
-    armar();
-    intentar();
+
+    /* El video es decorativo: no vale un solo byte si la persona pidió ahorrar
+     * datos o está en una conexión lenta. `connection` no existe en Safari ni
+     * Firefox, y ahí simplemente no se aplica. */
+    const conexion = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    const conexionPobre =
+      conexion?.saveData === true ||
+      (conexion?.effectiveType !== undefined && /^(slow-)?2g$/.test(conexion.effectiveType));
+
+    /* En `load` y no en idle: el video tiene que arrancar sin espera perceptible.
+     * Sigue después del LCP porque `load` ya implica que la ruta se pintó. */
+    if (!conexionPobre) {
+      if (document.readyState === 'complete') montar();
+      else window.addEventListener('load', montar, { once: true });
+    }
   }
 </script>

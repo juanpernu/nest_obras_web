@@ -774,6 +774,8 @@ El iframe va con `pointer-events: none` — es lo que impide que aparezca el chr
 
 No hay forma soportada de forzar la resolución: el ABR decide por tamaño renderizado y ancho de banda, así que el player se dimensiona a cubrir el viewport entero.
 
+> **06/09/2026:** vuelve el embed de YouTube (tercera vez, pedido explícito del cliente), ahora sobre la IFrame Player API — ver `HeroVideo.astro` y `DEUDA-TECNICA.md` §5. Los mp4 propios se eliminaron de `public/`.
+
 **El LCP tiene que ser el `<h1>`, no el video.**
 
 ### 7.3 Interacción táctil
