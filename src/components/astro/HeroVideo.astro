@@ -25,14 +25,16 @@
  *    aunque YouTube decida pintarlas. `controls=0` y `pointer-events: none`
  *    siguen como primera línea; el recorte es la red de seguridad.
  *  - El iframe se revela recién cuando el player reporta PLAYING. Si el
- *    autoplay está bloqueado se sigue viendo el poster, no un player negro con
+ *    autoplay está bloqueado se sigue viendo el fondo, no un player negro con
  *    botón de play, y el primer toque en cualquier parte de la página arranca
  *    el video (touchend/click, que son los eventos que WebKit acepta como
  *    gesto — ver PR #15).
  *
  * PRESUPUESTO DE PERFORMANCE. El embed trae >1 MB de JS de terceros, así que
- * NO está en el HTML inicial: el LCP sigue siendo el <h1> y el poster (que ya
- * se precarga desde el layout). El API y el iframe se cargan recién en `load`.
+ * NO está en el HTML inicial: el LCP sigue siendo el <h1>. El API y el iframe
+ * se cargan recién en `load`. No hay poster (pedido del 06/09/2026: solo el
+ * video); mientras carga se ve el fondo negro de la sección y una línea de
+ * carga fina en el borde superior.
  *
  * AUTOPLAY EN TODOS LOS DISPOSITIVOS (pedido explícito, 06/09/2026, reafirma
  * la decisión del 16/08/2026): se monta en todos los anchos y también con
@@ -48,32 +50,19 @@
 interface Props {
   /** ID del video (la `v=` de la URL de YouTube). */
   youtubeId: string;
-  /** Imagen que se ve hasta que el player reporta que está reproduciendo. */
-  poster: string;
   class?: string;
 }
-const { youtubeId, poster, class: className } = Astro.props as Props;
+const { youtubeId, class: className } = Astro.props as Props;
 ---
 
 <div class:list={['hero-video', className]} aria-hidden="true" data-yt={youtubeId}>
-  {/* Prioridad alta y no lazy: el poster ocupa el viewport entero arriba de
-      todo y es el candidato a LCP de imagen de la ruta —el <h1> es texto sobre
-      él—, así que retrasarlo empuja el LCP directamente.
-      El archivo es la miniatura del propio video (i.ytimg.com/vi/<id>/
-      maxresdefault.jpg, 1280×720, reencodeada a ~50 KB con sharp), servida
-      desde public/ para no abrir una conexión más en el camino crítico. Así lo
-      que se ve mientras el player carga es el mismo cuadro con el que arranca
-      el video y no un placeholder distinto (pedido del 06/09/2026). Si se
-      cambia el video hay que regenerar public/hero-poster.jpg. */}
-  <img
-    class="hero-video-poster"
-    src={poster}
-    alt=""
-    width="1280"
-    height="720"
-    fetchpriority="high"
-    decoding="async"
-  />
+  {/* SIN POSTER (06/09/2026, pedido explícito: "quiero que se vea solamente
+      el video"). Hasta que el player reporta PLAYING el fondo es el negro de
+      la sección y este indicador de carga —una línea fina en arena que barre
+      el borde superior del hero— avisa que algo viene. Desaparece con el
+      video; si el autoplay quedó bloqueado o falló, se apaga solo a los 10 s
+      para no quedar girando para siempre sobre un fondo vacío. */}
+  <div class="hero-video-cargando"></div>
   {/* La API reemplaza este div por el <iframe> (mismo lugar en el árbol). */}
   <div class="hero-video-player"></div>
 </div>
@@ -91,12 +80,33 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
     container-type: size;
   }
 
-  .hero-video-poster {
+  .hero-video-cargando {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    overflow: hidden;
+  }
+  .hero-video-cargando::after {
+    content: '';
     position: absolute;
     inset: 0;
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
+    width: 40%;
+    background: var(--color-arena);
+    animation: hero-video-barrido 1.4s ease-in-out infinite;
+  }
+  @keyframes hero-video-barrido {
+    from {
+      translate: -100% 0;
+    }
+    to {
+      translate: 250% 0;
+    }
+  }
+  /* PLAYING (o el corte de los 10 s): fuera el indicador. */
+  .hero-video[data-estado] .hero-video-cargando {
+    display: none;
   }
 
   /* Cobertura de la caja para un video 16:9 —se toma el mayor entre "ancho
@@ -132,13 +142,18 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
   }
 
   /* La pone el script cuando el player reporta PLAYING. */
-  .hero-video :global(iframe.visible) {
+  .hero-video[data-estado='reproduciendo'] :global(iframe) {
     opacity: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .hero-video :global(iframe) {
       transition: none;
+    }
+    .hero-video-cargando::after {
+      animation: none;
+      width: 100%;
+      opacity: 0.5;
     }
   }
 </style>
@@ -224,7 +239,7 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
           },
           onStateChange: (e) => {
             if (e.data === PLAYING) {
-              e.target.getIframe().classList.add('visible');
+              contenedor.dataset.estado = 'reproduciendo';
             } else if (e.data === ENDED) {
               e.target.seekTo(0, true);
               e.target.playVideo();
@@ -282,5 +297,13 @@ const { youtubeId, poster, class: className } = Astro.props as Props;
       if (document.readyState === 'complete') montar();
       else window.addEventListener('load', montar, { once: true });
     }
+
+    // Tope del indicador de carga: si en 10 s el player no reportó PLAYING
+    // (autoplay bloqueado, video no insertable, conexión pobre), se apaga y
+    // queda el fondo negro de la sección. Un gesto posterior puede seguir
+    // arrancando el video: `reproducir` no depende de este estado.
+    setTimeout(() => {
+      if (!contenedor.dataset.estado) contenedor.dataset.estado = 'sin-video';
+    }, 10_000);
   }
 </script>

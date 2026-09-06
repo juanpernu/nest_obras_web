@@ -14,10 +14,6 @@ import FranjaRayado from '@/components/astro/FranjaRayado.astro';
 import type { Servicio } from '@/components/astro/GrillaServicios.astro';
 import elAromo5 from '@/assets/obras/el-aromo-5.png';
 
-/* Poster del hero: una sola constante para el <video> y para el preload del
- * <Layout> (code review del PR #12: antes el layout tenía la ruta
- * hardcodeada y un rename dejaba un preload de alta prioridad a un 404). */
-const heroPoster = '/hero-poster.jpg';
 import tacuari1 from '@/assets/obras/tacuari-1050-1.jpg';
 import pruneHome from '@/assets/obras/prune-home.jpeg';
 import FormularioConsulta from '@/components/astro/FormularioConsulta.astro';
@@ -151,9 +147,9 @@ const seo = {
 };
 ---
 
-<Layout title={seo.title} description={seo.description} preloadImagen={heroPoster}>
+<Layout title={seo.title} description={seo.description}>
   {/* Sección 1 — Hero. El LCP es el <h1>. El video del fondo es un embed de
-      YouTube cargado como fachada sobre el poster (06/09/2026, tercera vez:
+      YouTube cargado como fachada, sin poster (06/09/2026, tercera vez:
       el <video> nativo se pausaba o quedaba en el poster en iPhone). Autoplay
       en todos los dispositivos, sin controles; el porqué y el historial de
       los dos embeds anteriores están en HeroVideo.astro y en
@@ -162,10 +158,9 @@ const seo = {
       navy/50 para leer como una sola superficie con el header en reposo
       (Nav.astro también navy), pero el cliente pidió un velo neutro sobre el
       video en vez de un tinte de marca. `bg-black` en el fallback de la
-      sección por la misma razón — es lo que se ve un instante antes de que
-      cargue el poster. */}
+      sección por la misma razón — es lo que se ve mientras carga el video. */}
   <section class="relative isolate flex min-h-dvh items-center overflow-hidden bg-black">
-    <HeroVideo youtubeId="tC5zaiZB-5o" poster={heroPoster} class="-z-20" />
+    <HeroVideo youtubeId="tC5zaiZB-5o" class="-z-20" />
     <div class="hero-overlay absolute inset-0 -z-10 bg-black/50"></div>
     <div class="mx-auto w-full max-w-6xl px-6 py-20 md:py-[120px] text-white">
       {/* ESCALONADO DEL HERO (corregido el 18/08/2026). Antes estos cuatro

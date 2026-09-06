@@ -118,7 +118,7 @@ Helpers a implementar: `verificarTurnstile()`, `guardarLeadAirtable()`, `enviarE
 Todo lo provisional está marcado en el código (`grep -rn "provisoria\|PROVISIONAL\|PENDIENTE" src`).
 
 ### 2.1 Imágenes placeholder
-- Hoy son placeholders navy generados por `scripts/gen-placeholders.mjs` (10 portadas + 8 galería PRUNE). `public/hero-poster.jpg` ya NO es placeholder (06/09/2026): es la miniatura `maxresdefault` del video de YouTube del hero, reencodeada con sharp; se regenera si cambia el video.
+- Hoy son placeholders navy generados por `scripts/gen-placeholders.mjs` (10 portadas + 8 galería PRUNE). `public/hero-poster.jpg` se eliminó (06/09/2026): el hero ya no tiene poster, solo el video de YouTube con una línea de carga hasta que arranca.
 - **Reemplazar por fotos reales con el MISMO nombre de archivo** (`src/assets/obras/<slug>-portada.jpg`, `prune-01..08.jpg`, `public/hero-poster.jpg`) y rebuild.
 - Al cargar las reales, **quitar el prefijo "Imagen provisoria — "** de los `alt` en los `.md` de obra.
 
