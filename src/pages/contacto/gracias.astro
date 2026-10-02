@@ -1,0 +1,32 @@
+---
+/**
+ * Confirmación del formulario de consulta (§5.1 Sección 9): destino del 303 de
+ * /api/consulta cuando el mail salió. noindex y fuera del sitemap.
+ */
+import Layout from '@/layouts/main.astro';
+import Boton from '@/components/astro/Boton.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+---
+
+<Layout
+  title="Consulta enviada | NEST"
+  description="Recibimos tu consulta. Te contactamos en menos de 24 horas."
+  noindex
+>
+  <HojaTecnica>
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <CabeceraPagina
+          eyebrow="Contacto"
+          titulo="Recibimos tu consulta"
+          bajada="Te contactamos en menos de 24 horas en días hábiles."
+        />
+        <div class="mx-auto mt-10 max-w-6xl px-6">
+          <Boton href="/obras" variante="primarioClaro">Mientras tanto, mirá nuestras obras →</Boton>
+        </div>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
+</Layout>

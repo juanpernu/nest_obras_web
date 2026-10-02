@@ -24,11 +24,19 @@ La **Fase 5 (formulario funcionando)** es el bloque de trabajo más grande y est
 
 ## 1. 🔴 Fase 5 — Formulario funcionando de punta a punta (PRIORIDAD)
 
+### 1.0 Estado al 01/10/2026 — envío por mail implementado
+Por pedido explícito, el formulario dejó de abrir WhatsApp y pasó a mandar la consulta por mail:
+- `src/pages/api/consulta.ts`: honeypot → validación server-side → mail con Resend (REST, sin SDK) a `NOTIFY_EMAIL` → 303 a `/contacto/gracias`. Si Resend falla, 303 a `/contacto/error`, que ofrece WhatsApp.
+- `src/pages/contacto/gracias.astro` y `src/pages/contacto/error.astro`: noindex y fuera del sitemap.
+- Secretos por `astro:env` (`RESEND_API_KEY`, `NOTIFY_EMAIL`, `access: 'secret'`): se leen en runtime, no se hornean en el bundle. Vercel igual los fija por deploy: cambiarlos exige redeployar.
+- Remitente: `info@nestobras.com.ar`. **Requiere el dominio verificado en Resend.**
+
+**Riesgo abierto:** sin Airtable, el mail es la única copia del lead. Si Resend responde bien pero el mail cae en spam, la consulta se pierde sin rastro. Lo que sigue pendiente de esta sección (Airtable, Turnstile) cierra ese riesgo.
+
 ### 1.1 Qué falta hoy
-- **No existe `src/pages/api/consulta.ts`** — `FormularioConsulta.astro` postea a `/api/consulta`, que hoy da 404.
-- **No existe `src/pages/contacto/gracias.astro`** (página de confirmación post-envío).
 - **No existe el widget de Turnstile** en el formulario.
-- **No están provisionadas** las cuentas/keys de Resend, Airtable y Cloudflare Turnstile.
+- **No están provisionadas** las cuentas/keys de Airtable y Cloudflare Turnstile.
+- **No hay persistencia del lead**: `/api/consulta` notifica, pero no guarda en Airtable.
 
 El formulario (`FormularioConsulta.astro`) ya está listo del lado del markup: `<form method="POST" action="/api/consulta">`, campos `nombre` / `contacto` / `tipo` / `mensaje`, honeypot `_gotcha`, `<select>` nativo, funciona sin JS.
 
@@ -91,7 +99,7 @@ Helpers a implementar: `verificarTurnstile()`, `guardarLeadAirtable()`, `enviarE
    | Variable | Pública | Uso |
    |---|---|---|
    | `RESEND_API_KEY` | No | enviar email |
-   | `NOTIFY_EMAIL` | No | destinatario de la notificación (`info@nestobras.com.ar`) |
+   | `NOTIFY_EMAIL` | No | destinatario de la notificación (`morena@nestobras.com.ar`, 02/10/2026) |
    | `AIRTABLE_TOKEN` | No | persistir lead |
    | `AIRTABLE_BASE_ID` | No | base de leads |
    | `TURNSTILE_SECRET_KEY` | No | verificar token |
