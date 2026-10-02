@@ -69,8 +69,7 @@ for (const [slug, title, sub] of galerias) {
   }
 }
 
-console.log('Poster del hero:');
-await gen(`${PUBLIC}hero-poster.jpg`, 1920, 1080, 'NEST', 'CONSTRUCTORA');
+/* El hero ya no tiene poster (06/09/2026): solo el video de YouTube. */
 
 /* Placeholder "antes" del slider antes/después en /obras/[id] (25/08/2026).
  * Ninguna de las 3 obras con página propia tiene foto real del estado previo
