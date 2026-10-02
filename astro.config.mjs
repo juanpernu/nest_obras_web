@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
@@ -14,7 +14,21 @@ export default defineConfig({
   // un <script src> real (~7 KB) en cada página y rompe "solo scripts inline"
   // (docs/PLAN-EJECUCION.md §7.1).
   adapter: vercel(),
-  integrations: [react(), sitemap()],
+  // Secretos de /api/consulta, la única ruta on-demand. `access: 'secret'` los
+  // lee en runtime (no se hornean en el bundle), así que el build local no los
+  // necesita. Ojo: Vercel fija las env vars al crear cada deploy, así que
+  // cambiarlas en el dashboard sí exige redeployar.
+  env: {
+    schema: {
+      RESEND_API_KEY: envField.string({ context: 'server', access: 'secret' }),
+      NOTIFY_EMAIL: envField.string({ context: 'server', access: 'secret' }),
+    },
+  },
+  integrations: [
+    react(),
+    // Las páginas de resultado del formulario son noindex: fuera del sitemap.
+    sitemap({ filter: (pagina) => !/\/contacto\/(gracias|error)$/.test(pagina) }),
+  ],
   vite: {
     plugins: [tailwindcss()],
     // `assetsInlineLimit: 0` — ningún asset se base64-inlinea en el CSS

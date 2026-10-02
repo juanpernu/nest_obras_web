@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
-# Chequeos de presupuesto de performance sobre dist/ (correr tras `pnpm build`).
+# Chequeos de presupuesto de performance sobre la salida estática (dist/ o dist/client/) (correr tras `pnpm build`).
 # Mide el presupuesto REAL de cara al usuario (JS referenciado por ruta, CSS gz);
 # la higiene del artefacto (chunks huérfanos) la resuelve prune-orphan-js.mjs.
 # Ver docs/PLAN-EJECUCION.md §7.1 y la auditoría de performance.
 set -u
+
+# Con una ruta on-demand (/api/consulta) Astro emite lo estático en dist/client/
+# y el server en dist/server/; sin ninguna, todo queda en dist/.
+DIST=dist
+[ -d dist/client ] && DIST=dist/client
 fail=0
 
 # CSS: presupuesto 20 KB gzip; aviso a partir del 80%.
-for css in dist/_astro/*.css; do
+for css in $DIST/_astro/*.css; do
   [ -e "$css" ] || continue
   gz=$(gzip -c "$css" | wc -c | tr -d ' ')
   if [ "$gz" -gt 20480 ]; then
@@ -28,7 +33,7 @@ done
 while IFS= read -r html; do
   externo=0
   for js in $(grep -oE '/_astro/[A-Za-z0-9_./-]+\.js' "$html" | sort -u); do
-    [ -e "dist${js}" ] && externo=$((externo + $(wc -c < "dist${js}")))
+    [ -e "${DIST}${js}" ] && externo=$((externo + $(wc -c < "${DIST}${js}")))
   done
   inline=$(node -e '
     const h = require("fs").readFileSync(process.argv[1], "utf8");
@@ -42,12 +47,12 @@ while IFS= read -r html; do
   ' "$html")
   total=$((externo + inline))
   [ "$total" -gt 5120 ] && { echo "FALLA: ${html} carga ${total} B de JS (${inline} inline + ${externo} externo, >5 KB)"; fail=1; }
-done < <(find dist -name "*.html")
+done < <(find "$DIST" -name "*.html")
 
 # Info (no falla): tras prune, cada .js de _astro debería ser alcanzable desde el
 # HTML; un número inesperado sugiere que prune-orphan-js.mjs no corrió.
-js_count=$(find dist/_astro -name "*.js" 2>/dev/null | wc -l | tr -d ' ')
-echo "info: ${js_count} archivo(s) .js en dist/_astro"
+js_count=$(find $DIST/_astro -name "*.js" 2>/dev/null | wc -l | tr -d ' ')
+echo "info: ${js_count} archivo(s) .js en $DIST/_astro"
 
 [ "$fail" -eq 0 ] && echo "OK: performance dentro de presupuesto (CSS < 20 KB gz, JS < 5 KB/ruta)."
 exit "$fail"

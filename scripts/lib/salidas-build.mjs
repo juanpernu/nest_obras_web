@@ -15,12 +15,18 @@
 // Se podan las dos y no solo la de Vercel a propósito: `dist/` es lo que sirve
 // `astro preview`, y si las dos no quedan iguales el preview deja de
 // representar lo que ve producción.
+//
+// Desde /api/consulta (01/10/2026) hay una ruta on-demand, y con eso Astro
+// emite lo estático en `dist/client/` (el server va a `dist/server/`). `dist/`
+// queda en la lista para un build sin rutas on-demand; cuando existe
+// `dist/client/`, recorrer `dist/` es un no-op: los dos scripts solo podan bajo
+// `<raíz>/_astro/`.
 import { readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /** Candidatas, relativas a este archivo (`scripts/lib/`), en orden de build. */
-const CANDIDATAS = ['../../dist/', '../../.vercel/output/static/'];
+const CANDIDATAS = ['../../dist/client/', '../../dist/', '../../.vercel/output/static/'];
 
 /**
  * Raíces de salida que existen en disco.

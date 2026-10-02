@@ -1,0 +1,43 @@
+---
+/**
+ * Destino del 303 de /api/consulta cuando el mail NO salió. Mientras el lead
+ * no se persista en Airtable (DEUDA-TECNICA §1) el mail es su única copia: si
+ * falla, la consulta no llegó, y lo honesto es decirlo y ofrecer WhatsApp.
+ * noindex y fuera del sitemap.
+ */
+import Layout from '@/layouts/main.astro';
+import Boton from '@/components/astro/Boton.astro';
+import CabeceraPagina from '@/components/astro/CabeceraPagina.astro';
+import HojaTecnica from '@/components/astro/HojaTecnica.astro';
+import MarcoSeccion from '@/components/astro/MarcoSeccion.astro';
+import { whatsappUrl } from '@/data/site';
+---
+
+<Layout
+  title="No pudimos enviar tu consulta | NEST"
+  description="Hubo un problema al enviar tu consulta. Escribinos por WhatsApp."
+  noindex
+>
+  <HojaTecnica>
+    <MarcoSeccion cierra>
+      <section class="bg-white py-20 md:py-[120px]">
+        <CabeceraPagina
+          eyebrow="Contacto"
+          titulo="No pudimos enviar tu consulta"
+          bajada="Fue un problema de nuestro lado, no de tus datos. Escribinos por WhatsApp y te respondemos en el día."
+        />
+        <div class="mx-auto mt-10 flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-4 px-6">
+          <Boton
+            href={whatsappUrl}
+            variante="primarioClaro"
+            data-evento="whatsapp_click"
+            data-evento-lugar="consulta_error"
+          >
+            Escribinos por WhatsApp →
+          </Boton>
+          <Boton href="/contacto" variante="secundario">Volver a intentar</Boton>
+        </div>
+      </section>
+    </MarcoSeccion>
+  </HojaTecnica>
+</Layout>

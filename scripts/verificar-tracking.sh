@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chequeos de la capa de tracking sobre dist/ (correr tras `pnpm build`).
+# Chequeos de la capa de tracking sobre la salida estática (dist/ o dist/client/) (correr tras `pnpm build`).
 # Ver src/components/astro/Analytics.astro y docs/PLAN-EJECUCION.md §7.1.
 #
 # ALCANCE: esto NO ejecuta JavaScript. Verifica marcado estático y la presencia
@@ -11,14 +11,19 @@
 # un <script src> de terceros metido en el HTML pasaría el presupuesto de JS sin
 # que nadie se entere y se comería el Lighthouse. Acá se corta.
 set -u
+
+# Con una ruta on-demand (/api/consulta) Astro emite lo estático en dist/client/
+# y el server en dist/server/; sin ninguna, todo queda en dist/.
+DIST=dist
+[ -d dist/client ] && DIST=dist/client
 fail=0
 
-if [ ! -d dist ]; then
-  echo "FALLA: no existe dist/ — correr 'pnpm build' primero."
+if [ ! -d "$DIST" ]; then
+  echo "FALLA: no existe $DIST/ — correr 'pnpm build' primero."
   exit 1
 fi
 
-html_files=$(find dist -name "*.html" | sort)
+html_files=$(find "$DIST" -name "*.html" | sort)
 
 # 1. El snippet inline tiene que estar en TODAS las páginas: el layout lo monta
 #    una sola vez, así que si falta en alguna es que esa ruta no usa el layout.
@@ -42,17 +47,17 @@ esperado() {
   done
 }
 
-esperado dist/index.html            whatsapp_click email_click cta_contacto obra_card_click
-esperado dist/contacto/index.html   whatsapp_click email_click tel_click form_submit
-esperado dist/obras/index.html      filtro_obras obra_card_click
-esperado dist/servicios/index.html  whatsapp_click
-esperado dist/nosotros/index.html   whatsapp_click
-esperado dist/privacidad/index.html email_click
+esperado $DIST/index.html            whatsapp_click email_click cta_contacto obra_card_click
+esperado $DIST/contacto/index.html   whatsapp_click email_click tel_click form_submit
+esperado $DIST/obras/index.html      filtro_obras obra_card_click
+esperado $DIST/servicios/index.html  whatsapp_click
+esperado $DIST/nosotros/index.html   whatsapp_click
+esperado $DIST/privacidad/index.html email_click
 
 # Los eventos de página no son atributos: viajan dentro del snippet.
-grep -q "obra_view" dist/obras/prune/index.html \
+grep -q "obra_view" $DIST/obras/prune/index.html \
   || { echo "FALLA: /obras/prune no dispara obra_view"; fail=1; }
-grep -q "servicio_view" dist/servicios/index.html \
+grep -q "servicio_view" $DIST/servicios/index.html \
   || { echo "FALLA: /servicios no dispara servicio_view"; fail=1; }
 
 # 3. Ningún script de terceros servido desde el HTML: gtag.js y fbevents.js SOLO
@@ -69,7 +74,7 @@ done
 #    tocar ningún atributo ni agregar ningún <script src>.
 invariante() {
   descripcion="$1"; patron="$2"
-  grep -q "$patron" dist/index.html \
+  grep -q "$patron" $DIST/index.html \
     || { echo "FALLA: ${descripcion} — no aparece /${patron}/ en el snippet"; fail=1; }
 }
 

@@ -29,7 +29,7 @@ Mapa real del código: `src/components/astro/` (componentes propios, cero `clien
 ## Invariantes
 
 - Cero directivas `client:*`. 0 KB de framework en el navegador.
-- Única ruta on-demand prevista: `/api/consulta` — **no existe todavía** (da 404 hoy). Los leads solo entran por WhatsApp hasta que se implemente.
+- Única ruta on-demand: `/api/consulta` (`src/pages/api/consulta.ts`). Hoy solo manda el lead por mail con Resend a `NOTIFY_EMAIL`; Airtable y Turnstile siguen pendientes (`docs/DEUDA-TECNICA.md` §1). Por esta ruta, lo estático del build sale en `dist/client/` y no en `dist/`.
 - Presupuesto de recursos como criterio de aceptación: LCP < 2s (el `<h1>` es el LCP), CLS < 0.05, JS < 5 KB por ruta, CSS < 20 KB, Lighthouse mobile ≥95 performance y **100 accesibilidad**.
 - El arena nunca porta significado sobre fondo claro (texto, borde de control, ícono, anillo de foco, estado) — ver `DESIGN.md` → La Regla del Arena. Sobre fondo claro el acento es navy.
 - Solo pesos tipográficos 300/400/500 — pedir 600 o 700 dispara bold sintético.
