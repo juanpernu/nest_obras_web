@@ -2,16 +2,15 @@
 /**
  * Formulario de consulta (§5.1 Sección 9, §8.2).
  *
- * Mejora progresiva, no WhatsApp puro: el <form> postea de verdad a
- * /api/consulta (endpoint on-demand, Fase 5) y encima de eso un script vanilla
- * intercepta el submit y abre WhatsApp con el mensaje ya armado. La razón de no
- * resolver solo con un deep link es que una conversión que vive únicamente en
- * wa.me queda fuera del alcance de crawlers y agentes (especificaciones-tecnicas
- * §8.2); y el día que el endpoint exista, el formulario ya funciona sin JS.
+ * Envío por mail (01/10/2026): el <form> postea nativo a /api/consulta, que
+ * manda la consulta por mail y redirige a /contacto/gracias (o /contacto/error).
+ * Antes un script interceptaba el submit y abría WhatsApp con el mensaje
+ * armado; el canal de WhatsApp sigue existiendo, pero como link aparte
+ * (/contacto, FAB), no como destino del formulario.
  *
- * El script es JS plano en un <script> de Astro, no una isla: sigue habiendo
- * cero directivas client:* (§7.1). Pesa bastante menos que el presupuesto de
- * 5 KB de JS por ruta.
+ * Funciona sin JS. El único script es JS plano en un <script> de Astro, no una
+ * isla (cero directivas client:*, §7.1): bloquea el doble envío y evita que un
+ * bot que llena el honeypot cuente como Lead.
  *
  * Inputs con font-size ≥16px para no disparar zoom en iOS (§7.3); honeypot
  * antispam (§8.1); <select> nativo (§3.4).
@@ -22,6 +21,7 @@
  * fotográfico se siga percibiendo detrás de los campos.
  */
 import { site } from '@/data/site';
+import { tiposDeProyecto } from '@/data/consulta';
 
 interface Props {
   class?: string;
@@ -72,12 +72,6 @@ const field = sobreNavy
 const fieldSelect = `${field} pr-9`;
 const chevronColor = sobreNavy ? 'text-white/70' : 'text-navy-600';
 
-const tiposDeProyecto = [
-  'Vivienda nueva',
-  'Refacción o ampliación',
-  'Proyecto corporativo o retail',
-  'Aún no lo tengo claro',
-];
 ---
 
 <form
@@ -85,7 +79,6 @@ const tiposDeProyecto = [
   action="/api/consulta"
   data-consulta
   data-glass={sobreNavy ? '' : undefined}
-  data-whatsapp={site.whatsapp.numero}
   data-evento="form_submit"
   class:list={['space-y-5', className]}
 >
@@ -142,7 +135,7 @@ const tiposDeProyecto = [
   {/* Spec del 10/08/2026: pasa de input libre a select con las zonas reales
    * de `site.areaServed` — mismo dato que ya alimenta el JSON-LD del layout,
    * no una lista nueva inventada para este campo. El `name="zona"` se
-   * mantiene: el script de abajo ya lo lee con ese nombre. */}
+   * mantiene: /api/consulta lo lee con ese nombre. */}
   <div>
     <label for="zona" class={label}>¿Desde dónde nos contactás?</label>
     <div class="campo-select relative mt-2">
@@ -198,16 +191,8 @@ const tiposDeProyecto = [
           : 'bg-arena text-navy hover:bg-arena-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy',
       ]}
     >
-      <span class="relative z-10">Enviar consulta por WhatsApp →</span>
+      <span class="relative z-10">Enviar consulta →</span>
     </button>
-    <p
-      class:list={[
-        'mt-3 text-center text-[10px] leading-relaxed',
-        sobreNavy ? 'text-white/70' : 'text-navy-700',
-      ]}
-    >
-      Al hacer clic se abre WhatsApp con tu consulta pre-cargada
-    </p>
   </div>
 </form>
 
@@ -248,41 +233,29 @@ const tiposDeProyecto = [
 </style>
 
 <script>
-  // Intercepta el submit y abre WhatsApp con el mensaje armado. Si este script
-  // no corre (JS deshabilitado, error de red), el navegador hace el POST normal
-  // a /api/consulta y no se pierde la consulta.
+  // Si este script no corre, el POST nativo a /api/consulta funciona igual.
+  // Va justo: la home queda pegada al presupuesto de 5 KB de JS por ruta.
   for (const form of document.querySelectorAll<HTMLFormElement>('form[data-consulta]')) {
+    const boton = form.querySelector('button')!;
+    const texto = boton.firstElementChild!;
+    const original = texto.textContent;
+    // Con el botón deshabilitado ni el click ni Enter vuelven a enviar: sin
+    // esto, un doble click manda el mail dos veces.
+    const enviando = (si: boolean) => {
+      boton.disabled = si;
+      texto.textContent = si ? 'Enviando…' : original;
+    };
+
     form.addEventListener('submit', (evento) => {
-      const numero = form.dataset.whatsapp;
-      if (!numero) return; // sin número no hay deep link: que siga el POST.
-
-      const datos = new FormData(form);
-      const valor = (campo: string) => String(datos.get(campo) ?? '').trim();
-
-      // Honeypot relleno ⇒ es un bot. Se corta acá, sin POST y sin WhatsApp.
-      // `stopPropagation` además evita que el listener delegado de analítica
+      // Honeypot lleno ⇒ bot: el POST sigue (el server lo descarta), pero
+      // `stopPropagation` evita que el listener delegado de analítica
       // (Analytics.astro, escucha 'submit' en document) cuente un Lead falso.
-      if (valor('_gotcha')) {
-        evento.preventDefault();
-        evento.stopPropagation();
-        return;
-      }
-
-      const zona = valor('zona');
-      const descripcion = valor('mensaje');
-      const mensaje = [
-        `Hola NEST, soy ${valor('nombre')}.`,
-        `Quiero consultar por: ${valor('tipo')}${zona ? ` en ${zona}` : ''}.`,
-        descripcion,
-      ]
-        .filter(Boolean)
-        .join(' ');
-
-      const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
-      evento.preventDefault();
-      // Nueva pestaña para no perder la página; si el navegador la bloquea,
-      // se navega en la actual antes que dejar el submit sin efecto.
-      if (!window.open(url, '_blank', 'noopener')) window.location.href = url;
+      if ((form.elements.namedItem('_gotcha') as HTMLInputElement).value) evento.stopPropagation();
+      enviando(true);
     });
+
+    // Volver con "atrás" desde /contacto/gracias restaura la página del bfcache
+    // con el botón todavía deshabilitado.
+    addEventListener('pageshow', (evento) => evento.persisted && enviando(false));
   }
 </script>
