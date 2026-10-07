@@ -14,7 +14,7 @@ La **Fase 5 (formulario funcionando)** es el bloque de trabajo más grande y est
 - **Fase 2** — contenido: `content.config.ts` (Zod + `superRefine`), 10 obras, 4 servicios, 2 equipo.
 - **Fase 3** — 11 componentes Astro (0 `client:*`).
 - **Fase 4** — 6 páginas: `/`, `/nosotros`, `/servicios`, `/obras`, `/obras/prune`, `/contacto`.
-- **Tracking** — GA4 (`G-TNT3V28PR5`) + Meta Pixel con carga diferida y Consent Mode v2, instrumentación declarativa por `data-evento`, y `/privacidad`. Ver §6.
+- **Tracking** — GA4 (`G-TNT3V28PR5`) + Meta Pixel (`2555368241624922`) con carga diferida y Consent Mode v2, instrumentación declarativa por `data-evento`, y `/privacidad`. Ver §6.
 - **Verde:** `pnpm build`, `astro check` 0/0/0, 0 KB JS de framework, CSS ~5 KB gz, contraste AA/AAA, un `<h1>` por página.
 - **Code reviews** de PR #1 y #2 aplicados (seguridad JSON-LD, accesibilidad/contraste, perf).
 
@@ -176,7 +176,7 @@ La Sección 1 de `src/pages/nosotros.astro` abre con el texto a la izquierda y u
 | **Ficha de El Canton** (m², plazo, año, estilo) | publicar `/obras/el-canton` (`paginaPropia: true`) | Falta |
 | **Fotos reales de PRUNE** (≥8) | reemplazar placeholders del caso | Falta |
 | **Testimonios reales** | reemplazar los **placeholders publicados** (§2.3) | ✅ 05/09/2026 — dos reseñas reales de Google; falta solo el link de compartir del perfil (`site.googleResenas`) |
-| **ID del Meta Pixel** | la medición de campañas de Meta (§6) | Falta — requiere acceso a `business.facebook.com` |
+| **ID del Meta Pixel** | la medición de campañas de Meta (§6) | ✅ 07/10/2026 — `2555368241624922`, en `PUBLIC_META_PIXEL_ID` (Vercel, Production + Preview). Mide en producción recién tras el próximo deploy |
 
 ---
 
@@ -222,7 +222,7 @@ componente se trackea agregando `data-evento="…"` al HTML, sin escribir JS.
 | Ítem | Bloquea | Nota |
 |---|---|---|
 | `PUBLIC_GA4_ID=G-TNT3V28PR5` en Vercel (producción) | Que el sitio deployado mida algo | Con `output: 'static'` hay que **redeployar** tras cargarla |
-| **ID del Meta Pixel** → `PUBLIC_META_PIXEL_ID` | Toda la medición de Meta | Requiere acceso a `business.facebook.com`. Vacío = el pixel no se inicializa y no rompe nada |
+| ~~**ID del Meta Pixel** → `PUBLIC_META_PIXEL_ID`~~ | Toda la medición de Meta | ✅ 07/10/2026 — `2555368241624922` cargado en Vercel (Production + Preview). Validar con Meta Pixel Helper contra producción después del deploy |
 | Marcar conversiones en la UI de GA4 | Que los leads figuren como conversión | `whatsapp_click`, `generate_lead`, `tel_click`. Administrar → Eventos → "Marcar como evento clave". **No se puede hacer desde el código** |
 | Prender **Enhanced Measurement** en GA4 | Scroll y engagement | Es un toggle de la propiedad, no código. Por eso no hay eventos de scroll en el catálogo |
 | **Validación legal de `/privacidad`** | 🔴 Publicar en producción | La página es un **borrador** redactado por desarrollo, no por un abogado |
