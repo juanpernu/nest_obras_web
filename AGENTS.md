@@ -51,6 +51,8 @@ Mapa real del código: `src/components/astro/` (componentes propios, cero `clien
 
 ## Trampas conocidas
 
-- Embed de YouTube en el hero: se intentó y revirtió tres veces (14, 16 y 17/08/2026) por superposición de la UI del player en cada loop. No reintentarlo sin leer `docs/DEUDA-TECNICA.md` §5. El hero usa `<video>` nativo (`hero-video.mp4` en desktop, `hero-video-mobile.mp4` en mobile).
+- Hero con YouTube (`HeroVideo.astro`): desde el 06/09/2026 (PR #16, pedido explícito del cliente) es un embed de `tC5zaiZB-5o` en `youtube-nocookie.com` sobre la **IFrame Player API oficial**, porque el `<video>` nativo se seguía pausando en iPhone. Los embeds anteriores (14, 16 y 17/08/2026) se revirtieron por la UI del player encima del video en cada loop y por un postMessage crudo que nunca contestaba. Antes de tocar el hero —o de volver al `<video>` nativo— leé `docs/DEUDA-TECNICA.md` §5: ahí está qué resolvió cada intento. Los mp4 ya no están en `public/` (quedan en el historial de git).
+  - Si el hero queda en negro (no hay poster desde el 06/09/2026; el indicador de carga se apaga solo a los 10 s), revisá primero que el video tenga habilitada la inserción (YouTube Studio → Detalles → Permitir inserción). Sin eso el player no reproduce, y es el comportamiento esperado: el iframe solo se revela cuando reporta PLAYING.
+  - El script del hero deja la home por encima del presupuesto de JS (5596 B > 5 KB en `verificar-perf.sh`, medido el 02/10/2026). Es un desvío conocido, no una regresión nueva: no lo "arregles" sacando el manejo de estados del player.
 - El content store de Astro no purga una colección de contenido que queda en cero: borrar el último `.md` de `src/content/*` no alcanza con `rm -rf .astro dist`; hay que borrar `node_modules/.astro/data-store.json` o el build republica entradas viejas.
 - El favicon publicado hoy es el default de Astro, sin reemplazar por el isotipo de NEST.
