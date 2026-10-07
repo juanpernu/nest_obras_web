@@ -64,23 +64,32 @@ const mapas = Object.fromEntries(
   Object.entries(EVENTOS).map(([clave, m]) => [clave, [m.ga4, m.meta]]),
 );
 
-// `define:vars` implica `is:inline`: el cuerpo del <script> es JS plano, no TS,
-// y Astro no lo procesa ni lo bundlea. Por eso no aparece en /_astro y no toca
-// el presupuesto que mide scripts/verificar-perf.sh.
-const vars = {
+// `is:inline`: el cuerpo del <script> es JS plano, no TS, y Astro no lo procesa
+// ni lo bundlea. Por eso no aparece en /_astro.
+//
+// La config viaja en `data-config` y NO con `define:vars` (07/10/2026): el
+// compilador de Astro 7 descarta TODOS los atributos de un <script> con
+// `define:vars`, así que `data-analitica` nunca llegaba al HTML y
+// verificar-perf.sh contaba el encolador como JS propio (+5 KB en cada ruta).
+// No se había notado porque ningún build tenía un ID cargado.
+const config = JSON.stringify({
   gaId: GA4_ID,
   pixelId: META_PIXEL_ID,
   hostProd: HOST_PRODUCCION,
   mapas,
   regiones: REGIONES_CONSENTIMIENTO_DENEGADO,
   eventoPagina: evento ?? null,
-};
+});
 ---
 
 {
   activo && (
-    <script is:inline data-analitica define:vars={vars}>
+    <script is:inline data-analitica data-config={config}>
       (function () {
+        var cfg = JSON.parse(document.currentScript.dataset.config);
+        var gaId = cfg.gaId, pixelId = cfg.pixelId, hostProd = cfg.hostProd,
+          mapas = cfg.mapas, regiones = cfg.regiones, eventoPagina = cfg.eventoPagina;
+
         var debug = /[?&]nest_debug=1/.test(location.search);
         if (location.hostname !== hostProd && !debug) return;
 

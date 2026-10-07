@@ -858,13 +858,14 @@ Solo las que llevan prefijo `PUBLIC_` llegan al navegador.
 
 **Con `output: 'static'` las `PUBLIC_*` se hornean EN BUILD.** Cargar o cambiar una
 variable en Vercel no alcanza: hay que redeployar para que llegue al HTML. Vale en
-particular para `PUBLIC_META_PIXEL_ID`, que hoy está vacía a la espera del ID.
+particular para `PUBLIC_META_PIXEL_ID`, cargada en Vercel (Production + Preview) el
+07/10/2026: el pixel recién mide en producción después del primer deploy posterior.
 
 Valores para `.env` local (el archivo está en `.gitignore`):
 
 ```
 PUBLIC_GA4_ID=G-TNT3V28PR5
-PUBLIC_META_PIXEL_ID=
+PUBLIC_META_PIXEL_ID=2555368241624922
 ```
 
 Si falta el ID de una plataforma, esa plataforma no se inicializa y no se descarga
@@ -981,7 +982,7 @@ bajo la excepción de §7.1 y Consent Mode v2 sin banner. Ver
 
 | Dato | Bloquea | Quién lo trae |
 |---|---|---|
-| ID del Meta Pixel (`PUBLIC_META_PIXEL_ID`) | La medición de campañas de Meta | NEST — requiere acceso a business.facebook.com |
+| ID del Meta Pixel (`PUBLIC_META_PIXEL_ID`) | La medición de campañas de Meta | ✅ 07/10/2026 — `2555368241624922`, cargado en Vercel |
 | Marcar las conversiones en la UI de GA4 | Que los leads figuren como conversión | NEST o acceso a la propiedad |
 | Validación legal de `/privacidad` | Publicar en producción | NEST |
 
