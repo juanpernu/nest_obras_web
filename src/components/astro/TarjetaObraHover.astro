@@ -69,7 +69,12 @@ const sizes = '(min-width: 640px) 800px, 100vw';
 ---
 
 <article>
-  <a href={href} class="tarjeta group aspect-[4/3] sm:aspect-auto sm:h-[600px]">
+  <a
+    href={href}
+    class="tarjeta group aspect-[4/3] sm:aspect-auto sm:h-[600px]"
+    data-evento="obra_card_click"
+    data-evento-obra={nombre}
+  >
     <div class="marco">
       <img
         src={optimizada.src}
